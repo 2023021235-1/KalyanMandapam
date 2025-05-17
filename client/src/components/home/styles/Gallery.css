@@ -1,0 +1,155 @@
+/* Gallery.css - Styling for Gallery Section with Carousel */
+
+/* --- Color Variables --- */
+:root {
+   /* White */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #ff9900; /* #f90 Orange */
+  --text-color: #000000; /* Black */
+  --hover-bg: #f0f0f0; /* Light grey for hover on white background */
+}
+
+.gallery-section {
+  background-color: var(--base-color); /* White background */
+  padding: 60px 0;
+  color: var(--text-color); /* Default text color */
+  text-align: center; /* Center the heading */
+}
+
+.container {
+    max-width:100vw; /* Match container from other sections */
+    height: 60vh;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.gallery-section-heading {
+  font-size: 3em;
+  margin-bottom: 40px; /* Space below heading */
+  font-weight: 700;
+  color: var(--primary-color); /* Heading color to Maroon */
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.gallery-section-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background-color: var(--secondary-color); /* Underline color to Orange */
+  border-radius: 1px;
+}
+
+.carousel-container {
+  position: relative;
+  max-width: 80vw; /* Set a max width for the carousel */
+  max-height: 50vh;
+  margin: 0 auto;
+  overflow: hidden; /* Hide extra slides */
+  border-radius: 8px; /* Optional: rounded corners */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.carousel-track {
+  display: flex; /* Arrange items in a row */
+  transition: transform 0.5s ease-in-out; /* Smooth sliding animation */
+}
+
+.carousel-item {
+  min-width: 100%; /* Each item takes full width of the container */
+  box-sizing: border-box; /* Include padding/border in width */
+}
+
+.carousel-image {
+  display: block; /* Remove extra space below image */
+  width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  /* Set a max height if you want consistent image heights,
+     but object-fit might be needed if images have different ratios */
+   max-height: 500px; /* Example max height */
+   object-fit: cover; /* Cover the area while maintaining aspect ratio */
+}
+
+/* Navigation Buttons */
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 10; /* Ensure buttons are above images */
+  border-radius: 4px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.carousel-button:hover {
+  opacity: 1;
+}
+
+.carousel-button.prev {
+  left: 10px;
+}
+
+.carousel-button.next {
+  right: 10px;
+}
+
+/* Indicators */
+.carousel-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.carousel-indicator {
+  width: 10px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.3); /* Dark grey semi-transparent */
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+.carousel-indicator.active {
+  background-color: var(--secondary-color); /* Active indicator color Orange */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 850px) {
+    .carousel-container {
+        max-width: 95%; /* Use percentage on smaller screens */
+    }
+}
+
+@media (max-width: 600px) {
+    .gallery-section-heading {
+        font-size: 2em;
+    }
+     .carousel-button {
+        padding: 8px 12px;
+        font-size: 16px;
+     }
+     .carousel-indicators {
+         bottom: 5px;
+         gap: 5px;
+     }
+     .carousel-indicator {
+         width: 8px;
+         height: 8px;
+     }
+}

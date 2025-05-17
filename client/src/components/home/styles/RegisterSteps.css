@@ -1,0 +1,179 @@
+/* RegisterSteps.css - Styling for Register Steps Section with Theme Colors */
+
+/* --- Color Variables --- */
+:root {
+  --base-color: #FFFFFF; /* White */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #ff9900; /* #f90 Orange */
+  --secondary-darker: #e68a00; /* Slightly darker orange for gradient */
+  --text-color: #000000; /* Black */
+  --hover-bg: #f0f0f0; /* Light grey for hover on white background */
+  --card-bg: var(--base-color); /* Card background will be base color */
+}
+
+.rs-register-steps-section {
+  padding: 80px 0;
+  background-color: var(--primary-color); /* Maroon background */
+  color: var(--base-color); /* Default text color in this section */
+}
+
+.rs-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.rs-container .rs-title {
+  color: var(--base-color); /* Title color to White */
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.2;
+  position: relative;
+}
+
+.rs-container .rs-title::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 3px;
+  background: var(--secondary-color); /* Underline color remains Orange */
+  border-radius: 2px;
+}
+
+
+.rs-steps-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.rs-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  transition: all 0.3s ease;
+  background-color: var(--card-bg); /* Card background is White */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: var(--text-color); /* Text inside card is Black */
+  flex: 1; /* Added flex-grow to distribute space */
+  min-width: 200px; /* Ensure cards don't get too small before wrapping */
+  max-width: 280px; /* Max width for cards */
+}
+
+.rs-step-card:hover {
+   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+   background-color: var(--hover-bg); /* Card hover background is light grey */
+}
+
+.rs-step-card:hover .rs-step-icon-container {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Adjusted shadow color */
+}
+
+
+.rs-step-icon-container {
+  width: 80px;
+  height: 80px;
+  /* Added Orange Gradient */
+  background: linear-gradient(45deg, var(--secondary-color), var(--secondary-darker));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  color: var(--base-color); /* Icon color is White */
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.rs-step-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.rs-step-title {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: var(--primary-color); /* Step title color remains Maroon (inside White card) */
+  font-weight: 600;
+}
+
+.rs-step-description {
+  color: var(--text-color); /* Step description color remains Black (inside White card) */
+  max-width: 250px;
+  text-align: center; /* Centered text for better look in cards */
+  margin-bottom: 0;
+}
+
+.rs-register-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.rs-btn {
+  display: inline-block;
+  padding: 12px 25px; /* Slightly more padding */
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.rs-btn-primary {
+  background-color: var(--secondary-color); /* Button background Orange */
+  color: var(--base-color); /* Button text color White */
+}
+
+.rs-btn-primary:hover {
+  background-color: darken(var(--secondary-color), 10%); /* Darker Orange on hover */
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .rs-steps-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .rs-step-card {
+    max-width: 350px;
+    width: 100%;
+    flex: none; /* Remove flex-grow on mobile */
+  }
+
+  .rs-step-description {
+      text-align: center;
+  }
+}
+
+/* Keyframes animation (kept as is) */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}

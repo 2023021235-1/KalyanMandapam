@@ -1,0 +1,386 @@
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f7f9;
+    }
+.login-wrapper {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Left Side - 40% */
+.login-left {
+  flex: 0.4;
+  background-color: #ebeff3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+/* doggy image  */
+.doggy {
+  width: 100%;
+  max-width: 750px;
+  height: 900px; 
+  object-fit: cover;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
+}
+
+    /* Right Side - 60% (Desktop) */
+    .login-right {
+      flex: 0.7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #eff1f4, #003366);
+      padding: 20px;
+    }
+/* for login box */
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      position: relative;
+    }
+/* for logo  */
+    .logo {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+
+    .login-box h2 {
+      margin-bottom: 10px;
+      text-align: center;
+      color: #003366;
+      font-weight: 600;
+      font-size: 1.4rem;
+    }
+
+    .login-box h3 {
+      margin-bottom: 25px;
+      font-weight: normal;
+      color: #555;
+    }
+
+    /* Tab Buttons */
+    .tab-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .tab-buttons button {
+      background: none;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 16px;
+      color: #003366;
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tab-buttons button.active-tab {
+      opacity: 1;
+      font-weight: bold;
+    }
+
+    .tab-buttons button.active-tab::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: #003366;
+    }
+
+    /* Radio Button Styling */
+    .form-group-login {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .form-group-login label {
+      display: flex;
+      align-items: center;
+      margin: 0 15px;
+      cursor: pointer;
+      position: relative;
+      padding-left: 25px;
+    }
+
+    .form-group-login input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .form-group-login .checkmark {
+      position: absolute;
+      left: 0;
+      height: 18px;
+      width: 18px;
+      background-color: #eee;
+      border-radius: 50%;
+      border: 2px solid #003366;
+    }
+
+    .form-group-login input:checked ~ .checkmark {
+      background-color: #003366;
+    }
+
+    .form-group-login .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+
+    .form-group-login input:checked ~ .checkmark:after {
+      display: block;
+    }
+
+    .form-group-login .checkmark:after {
+      left: 6px;
+      top: 2px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    /* Form Styles */
+    .login-form,
+    .signup-form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-form input,
+    .signup-form input,
+    .PhoneInput input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    .login-form input:focus,
+    .signup-form input:focus,
+    .PhoneInput input:focus {
+      outline: none;
+      border-color: #003366;
+      box-shadow: 0 0 5px rgba(0, 51, 102, 0.2);
+    }
+
+    /* Message Styling */
+    .success-message,
+    .error-message {
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .success-message {
+      background-color: #dff0d8;
+      color: #3c763d;
+      border: 1px solid #d6e9c6;
+    }
+
+    .error-message {
+      background-color: #f2dede;
+      color: #a94442;
+      border: 1px solid #ebccd1;
+    }
+
+    .login-form button,
+    .signup-form button {
+      width: 100%;
+      padding: 12px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+
+    .login-form button:hover,
+    .signup-form button:hover {
+      background-color: #001f3f;
+    }
+
+    .login-form button:active,
+    .signup-form button:active {
+      transform: scale(0.98);
+    }
+
+    .login-form button:disabled,
+    .signup-form button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .links {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .links a {
+      font-size: 14px;
+      color: #003366;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .links a:hover {
+      color: #001f3f;
+      text-decoration: underline;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .login-wrapper {
+        flex-direction: column;
+        /* New background image for smaller screens */
+        background-image: url('./bg.webp'); /* Replace with your mobile image path */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 100vh; /* Ensure full height */
+        align-items: center; /* Center the content vertically */
+        justify-content: center; /* Center the content horizontally */
+        padding: 20px; /* Add some padding around the edges */
+      }
+
+      .login-left {
+        display: none; /* Hide the left side on smaller screens */
+      }
+
+      .login-right {
+        flex: none;
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        background: none; /* Remove the gradient background */
+        display: flex; /* Enable flexbox for centering */
+        justify-content: center; /* Center the login box horizontally */
+        align-items: center; /* Center the login box vertically */
+      }
+
+      .login-box {
+        /* Keep all the desktop styling */
+        width: 90%; /* Adjust width as needed for smaller screens */
+        margin: 20px 0; /* Adjust vertical margin */
+        /* Remove or adjust background if needed, but keeping it white as per desktop */
+        /* background-color: rgba(255, 255, 255, 0.9); */
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Keep the shadow */
+        border-radius: 16px; /* Keep the border-radius */
+        padding: 40px; /* Keep the padding */
+      }
+
+      .tab-buttons button {
+        flex-grow: 1;
+        margin: 0;
+      }
+
+      .form-group-login {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .form-group-login label {
+        margin: 0 10px;
+      }
+    }
+
+    /* PhoneInput Specific Styles */
+    .PhoneInput {
+      margin-bottom: 15px;
+    }
+
+    .PhoneInput--focus {
+      border-color: #003366 !important;
+      box-shadow: 0 0 5px rgba(0, 51, 102, 0.2) !important;
+    }
+
+    /* Responsive Adjustments for Small Screens (further refine if needed) */
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 20px; /* Adjust padding for very small screens */
+        width: 95%;
+      }
+
+      .logo {
+        width: 60px;
+      }
+
+      .login-box h2 {
+        font-size: 1.2rem;
+      }
+
+      .login-box h3 {
+        font-size: 1rem;
+      }
+    }
+    /* ... other CSS ... */
+
+.back-button {
+  background: none;
+  border: none;
+  color: #003366;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 15px;
+  align-self: flex-start; /* Align to the start of the login-box */
+  display: flex;
+  align-items: center;
+  transition: opacity 0.3s ease;
+}
+
+.back-button:hover {
+  opacity: 0.7;
+}
+
+.back-button svg {
+  margin-right: 8px;
+}
+
+/* ... rest of your CSS ... */
+
+/* Mobile Responsive Adjustments (ensure back button is positioned correctly) */
+@media (max-width: 768px) {
+  /* ... other mobile styles ... */
+  .login-box {
+    /* ... other mobile login-box styles ... */
+    display: flex;
+    flex-direction: column; /* Ensure elements stack vertically */
+    align-items: center; /* Center items horizontally */
+  }
+}

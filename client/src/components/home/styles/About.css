@@ -1,0 +1,302 @@
+/* About.css - Styling for About Section with Theme Colors */
+
+/* --- Color Variables --- */
+:root {
+  --base-color: #FFFFFF; /* White */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #ff9900; /* #f90 Orange */
+  --text-color: #000000; /* Black */
+  --hover-bg: #f0f0f0; /* Light grey for hover on white background */
+}
+
+
+body {
+    margin: 0;
+    /* Keep body background simple, section styles handle main colors */
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-color); /* Default body text color */
+    background-color: var(--base-color); /* Default body background */
+}
+
+.About-section {
+    background-color: #fff; /* Change to White */
+    padding: 60px 0;
+    color: var(--text-color); /* Change text color to Black for contrast on white */
+    position: relative;
+    /* box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.2); Remove or adjust shadow for light background */
+}
+
+.About-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+    position: relative;
+    /* max-height: 60vh; Remove max-height if content is dynamic */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.About-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.About-section-heading {
+    font-size: 3em;
+    margin-bottom: 15px;
+    font-weight: 700;
+    color: var(--primary-color); /* Change heading color to Maroon */
+    text-align: center;
+    letter-spacing: 0.5px;
+    position: relative;
+    padding-bottom: 10px;
+    flex-shrink: 0;
+    /* text-shadow: none; Remove text-shadow for dark text on light background */
+}
+
+.About-section-heading::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background-color: var(--secondary-color); /* Change underline color to Orange */
+    border-radius: 1px;
+}
+
+.About-images-horizontal-row {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    perspective: 1000px;
+    flex-shrink: 0;
+}
+
+.About-official-card {
+    flex: 1;
+    min-width: 180px;
+    max-width: 350px;
+    background-color: var(--base-color); /* Card background to White */
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transform: translateZ(0);
+    color: var(--text-color); /* Ensure text inside card is black */
+}
+
+.About-official-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.About-official-card.About-main-official {
+    position: relative;
+}
+
+.About-official-card.About-main-official::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    height: 4px;
+    background-color: var(--secondary-color); /* Change accent line to Orange */
+    border-radius: 2px 2px 0 0;
+}
+
+.About-official-image {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+}
+
+.About-official-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.About-official-card:hover .About-official-image img {
+    transform: scale(1.03);
+}
+
+.About-official-info {
+    padding: 15px;
+    text-align: center;
+    background-color: var(--base-color); /* Info background to White */
+    border-top: 1px solid var(--hover-bg); /* Light border */
+}
+
+.About-official-info h3 {
+    font-size: 1.1em;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+    color: var(--primary-color); /* Official name color to Maroon */
+}
+
+.About-official-info p {
+    font-size: 0.9em;
+    margin: 0;
+    color: var(--text-color); /* Official designation color to Black */
+    font-weight: 500;
+}
+
+.About-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.About-section-description {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.About-section-description p {
+    text-align: justify;
+    font-size: 1em;
+    line-height: 1.6;
+    color: var(--text-color); /* Description text color to Black */
+    /* text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); Remove text-shadow */
+}
+
+.About-btn-primary {
+    display: inline-block;
+    padding: 10px 25px;
+    border: 2px solid var(--primary-color); /* Border color Maroon */
+    color: var(--primary-color); /* Initial text color Maroon */
+    background-color: transparent; /* Transparent background */
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    margin-top: 20px;
+}
+
+.About-btn-primary::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: var(--primary-color); /* Fill color on hover Maroon */
+    transition: height 0.3s ease;
+    z-index: -1;
+}
+
+.About-btn-primary:hover {
+    color: var(--base-color); /* Text color White on hover */
+    border-color: var(--primary-color); /* Border remains Maroon on hover */
+}
+
+.About-btn-primary:hover::before {
+    height: 100%;
+}
+
+@media (max-width: 992px) {
+    .About-section-heading {
+        font-size: 2.2em;
+    }
+
+    .About-section-description p {
+        font-size: 0.95em;
+    }
+
+     .About-section-description {
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    .About-section {
+        padding: 30px 0;
+    }
+    .About-container {
+   max-height: fit-content;
+}
+    .About-grid {
+        gap: 20px;
+    }
+
+    .About-section-heading {
+        font-size: 1.8em;
+    }
+
+    .About-images-horizontal-row {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .About-images-horizontal-row .About-official-card {
+        flex: none;
+        width: 90%;
+        max-width: 280px;
+    }
+
+    .About-official-image {
+        height: 120px;
+    }
+
+    .About-official-info h3 {
+        font-size: 1em;
+    }
+
+    .About-official-info p {
+        font-size: 0.85em;
+    }
+
+    .About-btn-primary {
+        padding: 8px 20px;
+        font-size: 0.9em;
+    }
+     .About-section-description {
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .About-container {
+        padding: 0 15px;
+    }
+
+    .About-section-heading {
+        font-size: 1.5em;
+    }
+
+    .About-section-description p {
+        font-size: 0.9em;
+        line-height: 1.5;
+    }
+
+    .About-btn-primary {
+        width: fit-content;
+    }
+     .About-section-description {
+        max-width: 95%;
+    }
+}
