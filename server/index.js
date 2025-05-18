@@ -13,6 +13,8 @@ mongoose.connect(process.env.URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/halls', require('./routes/hallRoutes'));
+app.use('/api/bookings', require('./routes/bookRoutes'));
 app.use('/api/otp', require('./routes/otpRoutes'));
 app.get('/health-check-polling', (req, res) => {
   res.status(200).send('OK');

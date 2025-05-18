@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const API = "https://kalyanmandapam.onrender.com/api";
+const API = "http://localhost:5000/api";
 
 function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleLanguage prop
   const [view, setView] = useState("login");
@@ -25,24 +25,36 @@ function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleL
 
   // ─── LOGIN ─────────────────────────────────────────────────────
   const handleLogin = async e => {
-    e.preventDefault();
-    setError(""); setSuccess(""); setLoading(true);
+  e.preventDefault();
+  setError(""); setSuccess(""); setLoading(true);
 
-    try {
-      const { data } = await axios.post(
-        `${API}/auth/login`,
-        { email, password }
-      );
-      const { token, user } = data;
-      localStorage.setItem("token", token);
-      setUser(user);
-      navigate("/home");
-    } catch (err) {
-      setError(err.response?.data?.message || (languageType === 'en' ? "Login failed" : "लॉगिन असफल"));
-    } finally {
-      setLoading(false);
+  try {
+    const { data } = await axios.post(
+      `${API}/auth/login`,
+      { email, password }
+    );
+    // `data` will now correctly have `userType` from the backend
+    const { token, user, userType } = data;
+    localStorage.setItem("token", token);
+    // setUser(user); // Assuming setUser updates some state with user details
+    // It might be better to store the whole user object or specific parts
+    localStorage.setItem("user", JSON.stringify({ ...user, userType })); // Store user info including type
+    // Or if your AuthContext/UserProvider handles this:
+    // loginUser({ token, user: { ...user, userType } }); // Example of calling a context function
+
+    console.log("Logged in user type:", userType); // This will now show the actual userType
+
+    if (userType === 'Admin') {
+      navigate("/admin");
+    } else {
+      navigate("/home"); // Or any other default route for non-admin users
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.message || (languageType === 'en' ? "Login failed" : "लॉगिन असफल"));
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ─── SIGNUP: STEP 1 ────────────────────────────────────────────
   const sendOtp = async e => {

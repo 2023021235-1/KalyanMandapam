@@ -17,6 +17,7 @@ import CheckRentSection from "./components/CheckRentSection";
 import CheckAvailabilitySection from "./components/CheckAvailabilitySection";
 import CheckRefundStatusSection from "./components/CheckRefundStatusSection";
 import BookNowSection from "./components/Book";
+import AdminPanel from "./components/AdminPanel";
 function App() {
   const [languageType, setLanguageType] = useState("en");
   const [user, setUser] = useState(null);
@@ -99,6 +100,7 @@ function App() {
          <Route path="/check-rent" element={<CheckRentSection languageType={languageType}/>} />
          <Route path="/availability" element={<CheckAvailabilitySection languageType={languageType}/>} />
          <Route path="/refund-status" element={<CheckRefundStatusSection user={user} languageType={languageType}/>} />
+         <Route path="/admin" element={<AdminPanel languageType={languageType} /> } />
       </Routes>
 
     <Footer languageType={languageType}/>

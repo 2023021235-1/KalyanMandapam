@@ -16,6 +16,7 @@
   --table-border-color: #ddd; /* Light grey for table borders */
   --table-header-bg: var(--hover-bg); /* Subtle background for table header */
   --delete-button-color: #f44336; /* Red for delete */
+  --cancel-button-color: #ff9800; /* Orange for cancel */
 }
 
 /* Overall Section Background */
@@ -224,25 +225,30 @@
     background-color: var(--hover-bg); /* Zebra striping for rows */
 }
 
-.bn-delete-button { /* Style for the delete button/link in the table */
+/* Style for the Cancel button in the table */
+.bn-cancel-button {
     background: none; /* No background */
     border: none; /* No border */
-    color: var(--delete-button-color); /* Red color */
+    color: var(--cancel-button-color); /* Orange color */
     cursor: pointer; /* Indicate clickable */
     font-size: 0.95em;
     font-weight: 600;
     transition: color 0.3s ease;
     padding: 0; /* Remove padding */
     text-decoration: underline; /* Make it look like a link */
+    margin-left: 5px; /* Space from edit button */
 }
 
-.bn-delete-button:hover {
-    color: darken(var(--delete-button-color), 15%); /* Darken on hover */
+.bn-cancel-button:hover {
+    color: darken(var(--cancel-button-color), 15%); /* Darken on hover */
     text-decoration: none; /* Remove underline on hover */
 }
 
+/* Remove the old delete button style if not used elsewhere */
+/* .bn-delete-button { ... } */
 
-/* Booking Type Selection Modal Styling */
+
+/* Booking Modal Styling */
 .bn-modal-overlay { /* Full screen overlay for the modal */
     position: fixed;
     top: 0;
@@ -305,26 +311,92 @@
     /* Removed border-bottom here, moved to footer margin-top */
 }
 
-.bn-booking-type-radios { /* Radio options wrapper */
-    /* No specific styles needed here */
+/* Form Styling */
+.bn-booking-form .bn-form-group {
+    margin-bottom: 20px;
 }
 
-.bn-radio-group { /* Container for each radio button and label */
-    margin-bottom: 15px;
+.bn-booking-form label {
+    display: block; /* Label on its own line */
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
+
+.bn-booking-form .bn-input,
+.bn-booking-form .bn-select {
+    width: 100%; /* Full width inputs */
+    padding: 10px;
+    border: 1px solid var(--form-input-border);
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    transition: border-color 0.3s ease;
+}
+
+.bn-booking-form .bn-input:focus,
+.bn-booking-form .bn-select:focus {
+    outline: none;
+    border-color: var(--form-input-focus-border);
+    box-shadow: 0 0 5px rgba(var(--secondary-color-rgb), 0.5);
+}
+
+.bn-booking-form .bn-checkbox-group {
     display: flex;
     align-items: center;
 }
 
-.bn-radio-group input[type="radio"] {
+.bn-booking-form .bn-checkbox-group input[type="checkbox"] {
     margin-right: 10px;
     cursor: pointer;
 }
 
-.bn-radio-group label {
-    font-size: 1em;
+.bn-booking-form .bn-checkbox-group label {
+    margin-bottom: 0; /* Remove bottom margin for inline label */
+    font-weight: normal; /* Normal weight for checkbox label */
     color: var(--text-color);
     cursor: pointer;
 }
+
+.bn-submit-button { /* Style for the form submit button */
+    background-color: var(--primary-color); /* Maroon */
+    width: 100%; /* Full width button */
+    padding: 12px; /* Larger padding */
+    font-size: 1.2em; /* Larger font size */
+    margin-top: 10px; /* Space above button */
+}
+
+.bn-submit-button:hover {
+    background-color: darken(var(--primary-color), 10%);
+}
+
+/* Rent Options Specific Styling */
+.bn-rent-options {
+    border: 1px solid var(--form-input-border);
+    border-radius: 4px;
+    padding: 15px;
+    background-color: #f9f9f9; /* Light background for the options box */
+}
+
+.bn-rent-options .bn-radio-group {
+    margin-bottom: 10px; /* Space between rent options */
+}
+
+.bn-rent-options .bn-radio-group label {
+     font-weight: normal;
+     color: var(--text-color);
+}
+
+.bn-rent-options .bn-amount-input {
+    margin-top: 10px; /* Space above the custom amount input */
+    /* Add specific styles if needed, e.g., smaller width if desired */
+}
+
+.bn-rent-options .bn-amount-input:disabled {
+    background-color: #eee;
+    cursor: not-allowed;
+}
+
 
 .bn-modal-footer { /* Modal footer */
     margin-top: auto; /* Push footer to the bottom */
@@ -371,7 +443,7 @@
         padding: 10px 8px;
         font-size: 0.95em;
     }
-    .bn-delete-button {
+    .bn-cancel-button { /* Adjusted for smaller screens */
         font-size: 0.9em;
     }
      .bn-modal-content {
@@ -442,7 +514,7 @@
         padding: 8px 6px;
         font-size: 0.9em;
     }
-    .bn-delete-button {
+    .bn-cancel-button { /* Adjusted for smaller screens */
         font-size: 0.85em;
     }
      .bn-modal-content {
@@ -522,7 +594,7 @@
              padding: 6px 4px;
              font-size: 0.8em;
          }
-         .bn-delete-button {
+         .bn-cancel-button { /* Adjusted for smaller screens */
              font-size: 0.8em;
          }
           .bn-modal-content {
