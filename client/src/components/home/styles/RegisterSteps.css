@@ -1,20 +1,19 @@
 /* RegisterSteps.css - Styling for Register Steps Section with Theme Colors */
 
-/* --- Color Variables --- */
 :root {
-  --base-color: #FFFFFF; /* White */
-  --primary-color: #800000; /* Maroon */
-  --secondary-color: #ff9900; /* #f90 Orange */
-  --secondary-darker: #e68a00; /* Slightly darker orange for gradient */
-  --text-color: #000000; /* Black */
-  --hover-bg: #f0f0f0; /* Light grey for hover on white background */
-  --card-bg: var(--base-color); /* Card background will be base color */
+  --base-color: #FFFFFF;
+  --primary-color: #800000;
+  --secondary-color: #ff9900;
+  --secondary-darker: #e68a00;
+  --text-color: #000000;
+  --hover-bg: #f0f0f0;
+  --card-bg: var(--base-color);
 }
 
 .rs-register-steps-section {
   padding: 80px 0;
-  background-color: var(--primary-color); /* Maroon background */
-  color: var(--base-color); /* Default text color in this section */
+  background-color: var(--primary-color);
+  color: var(--base-color);
 }
 
 .rs-container {
@@ -22,10 +21,11 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  box-sizing: border-box; /* Ensure padding is included */
 }
 
 .rs-container .rs-title {
-  color: var(--base-color); /* Title color to White */
+  color: var(--base-color);
   text-align: center;
   margin-bottom: 40px;
   font-size: 2rem;
@@ -42,15 +42,15 @@
   transform: translateX(-50%);
   width: 70px;
   height: 3px;
-  background: var(--secondary-color); /* Underline color remains Orange */
+  background: var(--secondary-color);
   border-radius: 2px;
 }
 
-
 .rs-steps-container {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
+  justify-content: center; /* Center items when they wrap */
+  gap: 20px; /* Space between flex items */
   margin-bottom: 40px;
 }
 
@@ -61,30 +61,29 @@
   text-align: center;
   padding: 20px;
   transition: all 0.3s ease;
-  background-color: var(--card-bg); /* Card background is White */
+  background-color: var(--card-bg);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: var(--text-color); /* Text inside card is Black */
-  flex: 1; /* Added flex-grow to distribute space */
-  min-width: 200px; /* Ensure cards don't get too small before wrapping */
-  max-width: 280px; /* Max width for cards */
+  color: var(--text-color);
+  flex: 1 1 250px; /* Allow cards to grow and shrink, with a preferred basis */
+  min-width: 200px; /* Minimum width for cards */
+  max-width: 280px; /* Maximum width for cards */
+  box-sizing: border-box; /* Include padding in the element's total width */
 }
 
 .rs-step-card:hover {
    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-   background-color: var(--hover-bg); /* Card hover background is light grey */
+   background-color: var(--hover-bg);
 }
 
 .rs-step-card:hover .rs-step-icon-container {
   transform: scale(1.1);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Adjusted shadow color */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
-
 
 .rs-step-icon-container {
   width: 80px;
   height: 80px;
-  /* Added Orange Gradient */
   background: linear-gradient(45deg, var(--secondary-color), var(--secondary-darker));
   border-radius: 50%;
   display: flex;
@@ -92,7 +91,7 @@
   justify-content: center;
   margin-bottom: 20px;
   padding: 15px;
-  color: var(--base-color); /* Icon color is White */
+  color: var(--base-color);
   transition: all 0.3s ease;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -105,15 +104,16 @@
 .rs-step-title {
   font-size: 1.2rem;
   margin-bottom: 10px;
-  color: var(--primary-color); /* Step title color remains Maroon (inside White card) */
+  color: var(--primary-color);
   font-weight: 600;
 }
 
 .rs-step-description {
-  color: var(--text-color); /* Step description color remains Black (inside White card) */
+  color: var(--text-color);
   max-width: 250px;
-  text-align: center; /* Centered text for better look in cards */
+  text-align: center;
   margin-bottom: 0;
+  width: 100%; /* Ensure description takes full width of card content area */
 }
 
 .rs-register-button-container {
@@ -124,7 +124,7 @@
 
 .rs-btn {
   display: inline-block;
-  padding: 12px 25px; /* Slightly more padding */
+  padding: 12px 25px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
@@ -136,36 +136,39 @@
 }
 
 .rs-btn-primary {
-  background-color: var(--secondary-color); /* Button background Orange */
-  color: var(--base-color); /* Button text color White */
+  background-color: var(--secondary-color);
+  color: var(--base-color);
 }
 
 .rs-btn-primary:hover {
-  background-color: darken(var(--secondary-color), 10%); /* Darker Orange on hover */
+  background-color: darken(var(--secondary-color), 10%);
   transform: translateY(-5px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 
 /* Responsive styles */
+/* The steps container will now wrap and center automatically due to flex-wrap and justify-content */
+/* The previous media query stacking is no longer strictly necessary but can be kept for explicit control */
 @media (max-width: 768px) {
   .rs-steps-container {
-    flex-direction: column;
-    align-items: center;
+    flex-direction: column; /* Stack cards vertically on smaller screens */
+    align-items: center; /* Center stacked cards */
+    gap: 20px; /* Maintain gap */
   }
 
   .rs-step-card {
-    max-width: 350px;
-    width: 100%;
-    flex: none; /* Remove flex-grow on mobile */
+    max-width: 350px; /* Allow cards to be wider when stacked */
+    width: 100%; /* Take full width up to max-width */
+    flex: none; /* Prevent flex-grow/shrink when stacked */
   }
 
   .rs-step-description {
-      text-align: center;
+      text-align: center; /* Keep text centered */
   }
 }
 
-/* Keyframes animation (kept as is) */
+/* Keyframes animation */
 @keyframes float {
   0% {
     transform: translateY(0px);
