@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const API = "https://kalyanmandapam.onrender.com/api";
 
-function LoginPage({ setUser }) {
+function LoginPage({ setUser, languageType }) {
   const [view, setView] = useState("login");
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -101,7 +101,7 @@ function LoginPage({ setUser }) {
   return (
     <div className="login-wrapper">
       <div className="login-left">
-        <img src="./dog1.webp" alt="Cute Pet" className="doggy" />
+        <img src="./image2.webp" alt="Cute Pet" className="doggy" />
       </div>
       <div className="login-right">
         <div className="login-box">
@@ -110,7 +110,7 @@ function LoginPage({ setUser }) {
           </button>
           <img src="./logo.webp" alt="Logo" className="logo" />
           <h2>Municipal Corporation Gorakhpur</h2>
-          <h3>Pet Registration Portal</h3>
+          <h3>Kalyan-Mandapam Registration Portal</h3>
 
           <div className="tab-buttons">
             <button

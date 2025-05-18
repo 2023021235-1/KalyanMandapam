@@ -46,7 +46,7 @@ const Hero = ({ languageType = 'en' }) => {
           <div className="hero-image">
             <div className="venue-circle">
               <img
-                src="./image.png"
+                src="./image.webp"
                 alt="Kalyan Mandapam Venue"
                 className="responsive-cover"
               />

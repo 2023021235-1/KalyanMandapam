@@ -39,7 +39,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #eff1f4, #003366);
+      background: linear-gradient(135deg, #eff1f4, #ffd7ac);
       padding: 20px;
     }
 /* for login box */
@@ -62,7 +62,7 @@
     .login-box h2 {
       margin-bottom: 10px;
       text-align: center;
-      color: #003366;
+      color: #660033;
       font-weight: 600;
       font-size: 1.4rem;
     }
@@ -87,7 +87,7 @@
       padding: 10px 20px;
       margin: 0 10px;
       font-size: 16px;
-      color: #003366;
+      color: #820543;
       opacity: 0.6;
       transition: opacity 0.3s ease;
       cursor: pointer;
@@ -106,7 +106,7 @@
       left: 0;
       width: 100%;
       height: 3px;
-      background-color: #003366;
+      background-color: #660033;
     }
 
     /* Radio Button Styling */
@@ -140,11 +140,11 @@
       width: 18px;
       background-color: #eee;
       border-radius: 50%;
-      border: 2px solid #003366;
+      border: 2px solid #660033;
     }
 
     .form-group-login input:checked ~ .checkmark {
-      background-color: #003366;
+      background-color: #660033;
     }
 
     .form-group-login .checkmark:after {
@@ -190,7 +190,7 @@
     .signup-form input:focus,
     .PhoneInput input:focus {
       outline: none;
-      border-color: #003366;
+      border-color: #660033;
       box-shadow: 0 0 5px rgba(0, 51, 102, 0.2);
     }
 
@@ -220,7 +220,7 @@
     .signup-form button {
       width: 100%;
       padding: 12px;
-      background-color: #003366;
+      background-color: #660033;
       color: white;
       border: none;
       border-radius: 8px;
@@ -253,7 +253,7 @@
 
     .links a {
       font-size: 14px;
-      color: #003366;
+      color: #660033;
       text-decoration: none;
       transition: color 0.3s ease;
     }
@@ -326,7 +326,7 @@
     }
 
     .PhoneInput--focus {
-      border-color: #003366 !important;
+      border-color: #660033 !important;
       box-shadow: 0 0 5px rgba(0, 51, 102, 0.2) !important;
     }
 
@@ -354,7 +354,7 @@
 .back-button {
   background: none;
   border: none;
-  color: #003366;
+  color: #660033;
   cursor: pointer;
   font-size: 16px;
   margin-bottom: 15px;

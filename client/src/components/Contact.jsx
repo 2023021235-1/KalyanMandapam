@@ -12,8 +12,8 @@ const ContactUsSection = ({ languageType = 'en' }) => {
       sectionHeading: 'Contact Us',
       subHeadingDetails: 'Get in Touch',
       email: 'info@kalyanmandapamgkp.com', // Replace with actual email
-      phone: '+91-XXXX-XXXXXX', // Replace with actual phone
-      address: '[Your Full Kalyan Mandapam Address, Gorakhpur, UP]', // Replace with actual address
+      phone: '9918000241', // Replace with actual phone
+      address: 'Nagar Nigam Gorakhpur, UP', // Replace with actual address
       mapTitle: 'Find Us Here',
       supportText: 'Please feel free to contact our dedicated support team at',
       supportPhone: '9918000241', // Example support phone - Replace with actual
@@ -24,8 +24,8 @@ const ContactUsSection = ({ languageType = 'en' }) => {
       sectionHeading: 'हमसे संपर्क करें',
       subHeadingDetails: 'संपर्क करें',
       email: 'info@kalyanmandapamgkp.com',
-      phone: '+91-XXXX-XXXXXX',
-      address: '[आपका पूरा कल्याण मंडपम पता, गोरखपुर, यूपी]',
+      phone: '9918000241',
+      address: 'नगर निगम गोरखपुर, यूपी',
       mapTitle: 'हमें यहाँ खोजें',
       supportText: 'कृपया हमारी समर्पित सहायता टीम से संपर्क करने में संकोच न करें',
       supportPhone: '9918000241',

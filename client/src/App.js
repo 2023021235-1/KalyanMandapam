@@ -89,7 +89,7 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={!user ? <LoginPage onLogin={handleLogin} setUser={setUser} /> : <Navigate to="/" />}
+          element={!user ? <LoginPage languageType={languageType} onLogin={handleLogin} setUser={setUser} /> : <Navigate to="/" />}
         />
         <Route path="/" element={<HomePage languageType={languageType}/>} />
         <Route path="/home" element={<HomePage languageType={languageType}/>} />
