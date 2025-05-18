@@ -28,7 +28,7 @@
   background-color: #fff; /* Ensure white background for the container */
   flex-direction: column; /* Stack top and bottom rows */
   /* max-width: 100vw; /* Removed max-width, let the inner content control it */
-  max-width: 1200px; /* Set a max-width for content alignment */
+  max-width: 100vw; /* Set a max-width for content alignment */
   margin: 0 auto; /* Center the container */
   width: 100%;
 }
