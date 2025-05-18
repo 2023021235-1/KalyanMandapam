@@ -283,7 +283,7 @@
         width: 100%;
         height: auto;
         min-height: auto;
-        background: linear-gradient(to right, #ffffff 0%, #eff1f4 50%, #ffd7ac 100%); /* Linear gradient for tablet */
+        background: linear-gradient(to right, #ffd7ac 0%, #eff1f4 50%, #ffd7ac 100%); /* Linear gradient for tablet */
         display: flex;
         justify-content: center;
         align-items: center;
