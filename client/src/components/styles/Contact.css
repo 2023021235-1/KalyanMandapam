@@ -1,0 +1,215 @@
+/* ContactUs.css - Styling for Contact Us Section */
+
+/* --- Color Variables --- */
+:root {
+  --base-color: #ffd7ac; /* Light peach (main theme base) */
+  --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #ff9900; /* #f90 Orange */
+  --text-color: #000000; /* Black */
+  --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
+  --button-text-color: var(--white-card-bg); /* White text on primary/secondary buttons */
+  --form-input-border: #ccc; /* Light grey border for form inputs */
+  --form-input-focus-border: var(--secondary-color); /* Orange border on focus */
+  --secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Overall Contact Us Section Background */
+.contact-us-section { /* Renamed section class */
+  background: linear-gradient(to bottom, #ffe6d8, #f0f0f0); /* Subtle white gradient */
+  padding: 60px 0;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: fit-content;
+}
+
+/* Section Heading */
+.contact-us-section-heading { /* Renamed heading class */
+  font-size: 3em;
+  margin-bottom: 40px;
+  font-weight: 700;
+  color: var(--primary-color);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.contact-us-section-heading::after { /* Renamed heading after class */
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background-color: var(--secondary-color);
+  border-radius: 1px;
+}
+
+/* Container for Contact Details and Map */
+.contact-us-content { /* Renamed content wrapper */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px; /* Space between blocks (if placed side-by-side in one section) */
+  justify-content: center;
+  text-align: left;
+  margin-bottom: 40px;
+}
+
+/* Style for the Contact Details & Map Block (the white card) */
+.contact-info-block {
+  flex: 1; /* Allow flex grow */
+  min-width: 300px;
+  max-width: 500px;
+  background-color: var(--white-card-bg); /* White background */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  /* If this is a standalone section, it might not need to be a flex item
+     in contact-us-content. Adjust layout if this is the only item in content. */
+   width: 100%; /* Make it take full width if it's the only block */
+   max-width: 800px; /* Or a wider max-width if it contains multiple sub-items */
+   margin: 0 auto; /* Center the block if it's not a flex item */
+}
+
+/* Contact Details List Styling */
+.contact-details {
+    width: 100%;
+}
+
+.contact-subheading {
+    font-size: 1.8em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  color: var(--text-color);
+}
+
+.contact-icon {
+  color: var(--secondary-color);
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.contact-info-text {
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
+.contact-info-text:hover {
+    color: var(--primary-color);
+}
+
+/* Map Embed Styling */
+.contact-map {
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-map iframe {
+    display: block;
+    flex-grow: 1;
+}
+
+
+/* Support and Hours Text Styling */
+.contact-extra-info {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 1em;
+    color: var(--text-color);
+}
+
+.contact-extra-info p {
+    margin: 5px 0;
+}
+
+.contact-support-phone,
+.contact-hours {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .contact-us-content { /* Renamed content wrapper */
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+  }
+
+  .contact-info-block { /* Apply mobile width */
+    min-width: 90%;
+    max-width: 95%;
+    width: 100%; /* Ensure it takes full width on mobile */
+    margin: 0; /* Remove margin if flex item */
+  }
+
+  .contact-subheading {
+      font-size: 1.5em;
+  }
+
+  .contact-info-block { /* Adjust padding */
+      padding: 20px;
+  }
+
+   .contact-item {
+       flex-direction: row;
+       align-items: center;
+   }
+    .contact-icon {
+       margin-right: 10px;
+       margin-bottom: 0;
+    }
+     .contact-info-text {
+         font-size: 1.1em;
+     }
+    @media (max-width: 480px) {
+         .contact-item {
+             flex-direction: column;
+             align-items: flex-start;
+         }
+          .contact-icon {
+              margin-bottom: 5px;
+              margin-right: 0;
+          }
+          .contact-info-text {
+             font-size: 1em;
+          }
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-us-section-heading { /* Renamed heading class */
+        font-size: 2em;
+    }
+     .contact-subheading {
+        font-size: 1.3em;
+     }
+
+     .contact-info-block { /* Adjust padding */
+         padding: 15px;
+     }
+}

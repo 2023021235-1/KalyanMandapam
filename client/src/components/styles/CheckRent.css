@@ -1,0 +1,267 @@
+/* CheckRent.css - Styling for Check Rent Section */
+
+/* --- Color Variables --- */
+:root {
+  --base-color: #ffd7ac; /* Light peach (main theme base) */
+  --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #ff9900; /* #f90 Orange */
+  --text-color: #000000; /* Black */
+  --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
+  --button-text-color: var(--white-card-bg); /* White text on primary buttons */
+  --form-input-border: #ccc; /* Light grey border for form inputs */
+  --form-input-focus-border: var(--secondary-color); /* Orange border on focus */
+  --secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --notes-heading-color: var(--primary-color); /* Maroon for notes heading */
+  --table-border-color: #ddd; /* Light grey for table borders */
+  --table-header-bg: var(--hover-bg); /* Subtle background for table header */
+}
+
+/* Overall Check Rent Section Background */
+.check-rent-section {
+  background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+  padding: 60px 0;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: fit-content;
+}
+
+/* Section Heading */
+.check-rent-section-heading {
+  font-size: 3em;
+  margin-bottom: 40px;
+  font-weight: 700;
+  color: var(--primary-color);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.check-rent-section-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background-color: var(--secondary-color);
+  border-radius: 1px;
+}
+
+/* Container for the Form Block */
+.check-rent-content {
+  display: flex;
+  justify-content: center;
+}
+
+/* Style for the Form Block (the white card) */
+.check-rent-form-block {
+  /* Dimensions as requested */
+  min-height: 60vh;
+  min-width: 70vw; /* This will be overridden on smaller screens */
+  max-width: 900px; /* Allow it to be wider on large screens */
+
+  background-color: var(--white-card-bg);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  align-items: center; /* Center items horizontally in the column */
+  width: 100%; /* Take full width up to max-width */
+  margin: 0 auto;
+  text-align: left; /* Reset text alignment for content inside the card */
+}
+
+
+/* Form Group (Label + Input/Select) */
+.form-group {
+  margin-bottom: 20px; /* Space below the dropdown */
+  width: 100%;
+  max-width: 400px; /* Optional: limit max width of the form elements within the card */
+  /* No margin-top needed as it's the first element after heading */
+}
+
+.form-group label {
+  display: block;
+  font-size: 1em;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* Styling for the Select Dropdown */
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--form-input-border);
+  border-radius: 4px;
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--white-card-bg);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2C114.7L159.2%2C7C154.2%2C1.8%2C146.5%2C0%2C138.7%2C0s-15.5%2C1.8-20.5%2C7L5.4%2C114.7c-7.1%2C7.1-7.1%2C18.6%2C0%2C25.7l21.1%2C21.1c7.1%2C7.1%2C18.6%2C7.1%2C25.7%2C0L138.7%2C84.8l86.2%2C86.2c7.1%2C7.1%2C18.6%2C7.1%2C25.7%2C0l21.1-21.1C294.2%2C133.4%2C294.2%2C121.8%2C287%2C114.7z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 12px auto;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 0 5px rgba(var(--secondary-color-rgb, 255, 153, 0), 0.5);
+}
+
+/* Removed Submit Button Styling */
+/* .check-rent-submit-btn { ... } */
+
+
+/* Rent Details Chart Styling */
+.rent-details-chart {
+    margin-top: 30px; /* Space above the chart */
+    width: 100%;
+    max-width: 400px; /* Optional: limit max width of the table */
+}
+
+.rent-details-chart h4 {
+    font-size: 1.2em;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.rent-details-chart table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.rent-details-chart th,
+.rent-details-chart td {
+    border: 1px solid var(--table-border-color);
+    padding: 10px;
+    text-align: left;
+    color: var(--text-color);
+}
+
+.rent-details-chart th {
+    background-color: var(--table-header-bg);
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+
+/* Notes Section Styling (Inside the card) */
+.check-rent-notes-card {
+    margin-top: 30px; /* Space above the notes */
+    width: 100%;
+    text-align: left;
+    padding-top: 20px;
+    border-top: 1px solid var(--hover-bg);
+}
+
+.notes-heading {
+    font-size: 1.3em;
+    color: var(--notes-heading-color);
+    margin-bottom: 15px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.check-rent-notes-card ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.check-rent-notes-card li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .check-rent-form-block {
+        min-width: 80vw;
+        max-width: 700px;
+    }
+     .form-group {
+        max-width: 350px;
+    }
+     .rent-details-chart {
+         max-width: 600px;
+     }
+      .check-rent-notes-card {
+         max-width: 600px;
+     }
+}
+
+
+@media (max-width: 768px) {
+  .check-rent-form-block {
+    min-height: 50vh;
+    min-width: 90vw;
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  .check-rent-section-heading {
+      font-size: 2em;
+  }
+
+   .form-group,
+   .rent-details-chart,
+   .check-rent-notes-card {
+      max-width: 100%;
+   }
+
+   .notes-heading {
+       font-size: 1.2em;
+   }
+}
+
+@media (max-width: 480px) {
+    .check-rent-section-heading {
+        font-size: 1.8em;
+    }
+
+     .check-rent-form-block {
+         min-height: 40vh;
+         padding: 15px;
+     }
+
+     .form-group label {
+         font-size: 0.9em;
+     }
+
+     .form-group select {
+         padding: 8px;
+         font-size: 0.9em;
+     }
+
+     .notes-heading {
+        font-size: 1em;
+     }
+
+     .check-rent-notes-card ul {
+        padding-left: 15px;
+     }
+
+     .check-rent-notes-card li {
+         font-size: 0.9em;
+     }
+}

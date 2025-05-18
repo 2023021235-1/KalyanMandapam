@@ -1,0 +1,186 @@
+/* QueryFeedback.css - Styling for Query & Feedback Section */
+
+/* --- Color Variables --- */
+:root {
+  --base-color: #ffd7ac; /* Light peach (main theme base) */
+  --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #ff9900; /* #f90 Orange */
+  --text-color: #000000; /* Black */
+  --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
+  --button-text-color: var(--white-card-bg); /* White text on primary/secondary buttons */
+  --form-input-border: #ccc; /* Light grey border for form inputs */
+  --form-input-focus-border: var(--secondary-color); /* Orange border on focus */
+  --secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Overall Query & Feedback Section Background */
+.query-feedback-section { /* New section class */
+  background: linear-gradient(to bottom, #ffe6d8, #f0f0f0); /* Subtle light grey to white gradient (can vary from contact section) */
+  padding: 60px 0;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: fit-content;
+}
+
+/* Section Heading */
+.query-feedback-section-heading { /* New heading class */
+  font-size: 3em;
+  margin-bottom: 40px;
+  font-weight: 700;
+  color: var(--primary-color);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.query-feedback-section-heading::after { /* New heading after class */
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background-color: var(--secondary-color);
+  border-radius: 1px;
+}
+
+/* Container for the Form */
+.query-feedback-content { /* New content wrapper (flexbox if needed, but form is likely the only item) */
+  display: flex; /* Use flex to center the form block */
+  justify-content: center;
+  /* gap: 40px; Not needed if only one block */
+  /* margin-bottom: 40px; Not needed */
+}
+
+/* Style for the Form Block (the white card) */
+.query-feedback-form-block { /* New class for the form card */
+  /* flex: 1; Not needed if not side-by-side */
+  min-width: 300px;
+  max-width: 800px; /* Control the form card width */
+  background-color: var(--white-card-bg); /* White background */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+   width: 100%; /* Make it take full width up to max-width */
+   margin: 0 auto; /* Center the block */
+}
+
+/* Reuse subheading style from contact section */
+.contact-subheading {
+    font-size: 1.8em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+
+/* Form Styling (Copied from Contact.css) */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  
+}
+
+.form-group label {
+  display: block;
+  font-size: 1em;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+  text-align: justify;
+  font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--form-input-border);
+  border-radius: 4px;
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--white-card-bg); /* Input background White */
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 0 5px rgba(var(--secondary-color-rgb, 255, 153, 0), 0.5);
+}
+
+/* Submit Button Styling (Copied and potentially renamed/styled) */
+.query-feedback-submit-btn { /* New button class */
+  display: flex;
+  align-items: center;
+  margin-left:40%;
+  justify-content: center;
+  width: auto;
+  padding: 10px 25px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  /* Using primary button theme */
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
+}
+
+.query-feedback-submit-btn:hover {
+    background-color: darken(var(--primary-color), 10%);
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .query-feedback-form-block { /* Apply mobile width to the form block */
+    min-width: 90%;
+    max-width: 95%;
+    width: 100%;
+    padding: 20px; /* Adjust padding */
+  }
+
+  .contact-subheading { /* Reuse subheading class */
+      font-size: 1.5em;
+  }
+}
+
+@media (max-width: 480px) {
+    .query-feedback-section-heading { /* New heading class */
+        font-size: 2em;
+    }
+     .contact-subheading { /* Reuse subheading class */
+        font-size: 1.3em;
+     }
+
+     .query-feedback-form-block { /* Adjust padding */
+         padding: 15px;
+     }
+     .form-group label {
+         font-size: 0.9em;
+     }
+     .form-group input[type="text"],
+     .form-group input[type="email"],
+     .form-group textarea {
+         padding: 8px;
+         font-size: 0.9em;
+     }
+      .query-feedback-submit-btn { /* New button class */
+          padding: 8px 20px;
+          font-size: 1em;
+      }
+}

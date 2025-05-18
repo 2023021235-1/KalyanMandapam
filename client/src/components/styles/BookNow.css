@@ -1,0 +1,556 @@
+/* BookNow.css - Styling for Book Now Section (Revised) */
+
+/* --- Color Variables --- */
+:root {
+  --base-color: #ffd7ac; /* Light peach (main theme base) */
+  --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #ff9900; /* #f90 Orange */
+  --text-color: #000000; /* Black */
+  --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
+  --button-text-color: var(--white-card-bg); /* White text on primary buttons */
+  --form-input-border: #ccc; /* Light grey border for form inputs */
+  --form-input-focus-border: var(--secondary-color); /* Orange border on focus */
+  --secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --table-border-color: #ddd; /* Light grey for table borders */
+  --table-header-bg: var(--hover-bg); /* Subtle background for table header */
+  --delete-button-color: #f44336; /* Red for delete */
+}
+
+/* Overall Section Background */
+.bn-section { /* Main section container */
+  background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+  padding: 60px 0;
+  color: var(--text-color);
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center; /* Center content vertically if disclaimer is shown */
+  justify-content: center; /* Center content horizontally */
+}
+
+.bn-container { /* Inner container for max width and centering */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Disclaimer Modal/Overlay Styling */
+.bn-disclaimer-overlay { /* Full screen overlay */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background */
+    display: flex;
+    align-items: center; /* Center modal vertically */
+    justify-content: center; /* Center modal horizontally */
+    z-index: 1000; /* High z-index to be on top */
+    padding: 20px;
+    overflow-y: auto; /* Allow scrolling if modal content overflows */
+}
+
+.bn-disclaimer-modal { /* Modal content box */
+    background-color: var(--white-card-bg);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    max-width: 700px; /* Limit modal width */
+    width: 100%; /* Take full width up to max-width */
+    text-align: left; /* Align text inside modal */
+    max-height: 90vh; /* Limit modal height */
+    overflow-y: auto; /* Allow scrolling inside the modal body */
+}
+
+.bn-disclaimer-heading { /* Heading inside modal */
+    font-size: 1.8em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--secondary-color); /* Separator line */
+    padding-bottom: 10px;
+}
+
+.bn-disclaimer-content p { /* Paragraphs in modal content */
+    font-size: 1em;
+    color: var(--text-color);
+    margin-bottom: 15px;
+    line-height: 1.5; /* Improved readability */
+}
+
+.bn-disclaimer-buttons { /* Container for modal buttons */
+    margin-top: 30px;
+    text-align: center; /* Center buttons */
+}
+
+/* Base Button styling */
+.bn-button { /* Common styles for all buttons */
+  display: inline-block;
+  padding: 10px 25px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: var(--button-text-color); /* White text */
+  border: none;
+  text-align: center;
+  margin: 0 10px; /* Space between buttons */
+}
+
+.bn-agree-button { /* Specific style for Agree button */
+    background-color: #4CAF50; /* Green color */
+}
+
+.bn-agree-button:hover {
+    background-color: darken(#4CAF50, 10%); /* Darken on hover */
+}
+
+.bn-close-button { /* Specific style for Close button */
+    background-color: #f44360; /* Red color */
+}
+
+.bn-close-button:hover {
+     background-color: darken(#f44360, 10%); /* Darken on hover */
+}
+
+
+/* Main Booking Content (after disclaimer) */
+.bn-main-content-block { /* White card wrapper for the entire booking view */
+  min-height: 60vh;
+  min-width: 80vw; /* Base min-width on larger screens */
+  max-width: 1000px; /* Max width limit */
+
+  background-color: var(--white-card-bg);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column; /* Stack header and list area vertically */
+  align-items: center; /* Center content horizontally within the card */
+  width: 100%;
+  margin: 40px auto; /* Space above/below the card */
+  text-align: left; /* Default text alignment */
+}
+
+/* Header area with heading and New Booking button */
+.bn-main-header { /* Container for heading and New Booking button */
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Space out heading and button */
+    align-items: center; /* Align items vertically */
+    margin-bottom: 20px; /* Space below the header */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.bn-section-heading { /* Section Heading (now inside the main header) */
+    font-size: 2em; /* Adjusted size as it's a sub-heading now */
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0; /* Remove default margin */
+    padding: 0;
+    /* Remove ::after underline from the main section heading */
+    &::after {
+        content: none;
+    }
+}
+
+.bn-new-booking-button { /* New Booking button */
+    background-color: var(--primary-color); /* Maroon color */
+    margin: 0; /* Remove margin if using gap/space-between */
+    padding: 10px 20px; /* Adjust padding slightly */
+    font-size: 1em; /* Adjust font size */
+}
+
+.bn-new-booking-button:hover {
+    background-color: darken(var(--primary-color), 10%);
+}
+
+/* Bookings List Area (Table) */
+.bn-bookings-list-area { /* Container for the bookings table */
+    width: 100%; /* Take full width of parent */
+    margin-top: 20px; /* Space above the table area */
+}
+
+.bn-bookings-list-area h4 { /* Heading for the list */
+    font-size: 1.5em;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--table-border-color); /* Separator */
+    padding-bottom: 8px;
+    text-align: left; /* Align heading left */
+}
+
+.bn-message { /* Message for no bookings */
+    font-size: 1.1em;
+    color: var(--primary-color);
+    text-align: center;
+    margin-top: 20px;
+}
+
+.bn-table-container { /* Wrapper for horizontal scrolling on smaller screens */
+     width: 100%;
+     overflow-x: auto; /* Add horizontal scroll if table overflows */
+}
+
+.bn-bookings-table { /* Table to display bookings */
+    width: 100%; /* Ensure table takes full width of its container */
+    border-collapse: collapse; /* Collapse borders */
+    margin-top: 10px; /* Space above table */
+    min-width: 600px; /* Ensure table is wide enough to demonstrate scroll if needed */
+}
+
+.bn-bookings-table th,
+.bn-bookings-table td { /* Table header and cell styles */
+    border: 1px solid var(--table-border-color); /* Cell borders */
+    padding: 12px 10px; /* Padding inside cells */
+    text-align: left; /* Align text left */
+    color: var(--text-color);
+    white-space: nowrap; /* Prevent text wrapping in cells */
+}
+
+.bn-bookings-table th { /* Table header specific styles */
+    background-color: var(--table-header-bg); /* Header background */
+    font-weight: 600;
+    color: var(--primary-color); /* Header text color */
+}
+
+.bn-bookings-table tbody tr:nth-child(odd) {
+    background-color: var(--hover-bg); /* Zebra striping for rows */
+}
+
+.bn-delete-button { /* Style for the delete button/link in the table */
+    background: none; /* No background */
+    border: none; /* No border */
+    color: var(--delete-button-color); /* Red color */
+    cursor: pointer; /* Indicate clickable */
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    padding: 0; /* Remove padding */
+    text-decoration: underline; /* Make it look like a link */
+}
+
+.bn-delete-button:hover {
+    color: darken(var(--delete-button-color), 15%); /* Darken on hover */
+    text-decoration: none; /* Remove underline on hover */
+}
+
+
+/* Booking Type Selection Modal Styling */
+.bn-modal-overlay { /* Full screen overlay for the modal */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background */
+    display: flex;
+    align-items: center; /* Center modal vertically */
+    justify-content: center; /* Center modal horizontally */
+    z-index: 1010; /* Higher z-index than disclaimer overlay */
+    padding: 20px;
+    overflow-y: auto; /* Allow scrolling if modal content overflows */
+}
+
+.bn-modal-content { /* Modal content box */
+    background-color: var(--white-card-bg);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    max-width: 500px; /* Limit modal width */
+    width: 100%; /* Take full width up to max-width */
+    text-align: left; /* Align text inside modal */
+    max-height: 90vh; /* Limit modal height */
+    overflow-y: auto; /* Allow scrolling inside the modal body */
+    display: flex;
+    flex-direction: column; /* Stack header, body, footer */
+}
+
+.bn-modal-header { /* Modal header */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--table-border-color); /* Separator */
+    padding-bottom: 10px;
+}
+
+.bn-modal-header h3 { /* Modal header heading */
+    font-size: 1.5em;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.bn-modal-close-button { /* Modal close button */
+    background: none;
+    border: none;
+    font-size: 1.8em;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.3s ease;
+}
+.bn-modal-close-button:hover {
+    color: var(--text-color);
+}
+
+.bn-modal-body { /* Modal body */
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    /* Removed border-bottom here, moved to footer margin-top */
+}
+
+.bn-booking-type-radios { /* Radio options wrapper */
+    /* No specific styles needed here */
+}
+
+.bn-radio-group { /* Container for each radio button and label */
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.bn-radio-group input[type="radio"] {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.bn-radio-group label {
+    font-size: 1em;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.bn-modal-footer { /* Modal footer */
+    margin-top: auto; /* Push footer to the bottom */
+    padding-top: 20px;
+    border-top: 1px solid var(--table-border-color); /* Separator */
+    text-align: right; /* Align footer content right */
+}
+
+.bn-proceed-button { /* Proceed button in modal */
+    background-color: #4CAF50; /* Green */
+    width: auto; /* Auto width */
+    margin: 0; /* Remove margin */
+}
+.bn-proceed-button:hover {
+     background-color: darken(#4CAF50, 10%);
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .bn-main-content-block {
+        min-width: 90vw;
+        padding: 25px;
+    }
+    .bn-main-header {
+        flex-direction: column; /* Stack heading and button */
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .bn-section-heading {
+        font-size: 1.8em;
+    }
+    .bn-new-booking-button {
+        font-size: 0.95em;
+        padding: 8px 18px;
+    }
+    .bn-bookings-list-area h4 {
+        font-size: 1.3em;
+        margin-bottom: 10px;
+    }
+    .bn-bookings-table th,
+    .bn-bookings-table td {
+        padding: 10px 8px;
+        font-size: 0.95em;
+    }
+    .bn-delete-button {
+        font-size: 0.9em;
+    }
+     .bn-modal-content {
+         padding: 25px;
+         max-width: 90%;
+     }
+      .bn-modal-header h3 {
+          font-size: 1.3em;
+      }
+       .bn-radio-group label {
+           font-size: 0.95em;
+       }
+        .bn-modal-footer {
+            padding-top: 15px;
+        }
+        .bn-proceed-button {
+            padding: 8px 20px;
+            font-size: 1em;
+        }
+}
+
+
+@media (max-width: 768px) {
+  .bn-section {
+      padding: 40px 0;
+  }
+  .bn-disclaimer-modal {
+      padding: 20px;
+      max-width: 95%;
+  }
+  .bn-disclaimer-heading {
+      font-size: 1.5em;
+  }
+   .bn-disclaimer-content p {
+       font-size: 0.9em;
+       margin-bottom: 10px;
+   }
+   .bn-button {
+       padding: 8px 15px;
+       font-size: 1em;
+       margin: 0 8px;
+   }
+   .bn-main-content-block {
+    min-height: 50vh;
+    min-width: 95vw;
+    max-width: 95%;
+    padding: 20px;
+    margin: 20px auto;
+  }
+   .bn-main-header {
+       gap: 10px;
+       margin-bottom: 10px;
+   }
+   .bn-section-heading {
+       font-size: 1.5em;
+   }
+    .bn-new-booking-button {
+        font-size: 0.9em;
+         padding: 8px 15px;
+    }
+    .bn-bookings-list-area h4 {
+        font-size: 1.1em;
+         margin-bottom: 8px;
+         padding-bottom: 5px;
+    }
+    .bn-bookings-table th,
+    .bn-bookings-table td {
+        padding: 8px 6px;
+        font-size: 0.9em;
+    }
+    .bn-delete-button {
+        font-size: 0.85em;
+    }
+     .bn-modal-content {
+         padding: 20px;
+         max-width: 95%;
+     }
+      .bn-modal-header h3 {
+          font-size: 1.1em;
+      }
+       .bn-modal-header {
+           margin-bottom: 15px;
+            padding-bottom: 8px;
+       }
+       .bn-modal-body {
+           margin-bottom: 15px;
+            padding-bottom: 15px;
+       }
+       .bn-radio-group {
+           margin-bottom: 10px;
+       }
+       .bn-radio-group label {
+           font-size: 0.9em;
+       }
+        .bn-modal-footer {
+            padding-top: 15px;
+        }
+         .bn-proceed-button {
+             padding: 8px 15px;
+             font-size: 0.9em;
+         }
+}
+
+@media (max-width: 480px) {
+    .bn-section {
+        padding: 30px 0;
+    }
+     .bn-disclaimer-modal {
+         padding: 15px;
+     }
+      .bn-disclaimer-heading {
+          font-size: 1.3em;
+      }
+      .bn-disclaimer-content p {
+          font-size: 0.8em;
+          margin-bottom: 8px;
+      }
+      .bn-button {
+          padding: 6px 10px;
+          font-size: 0.85em;
+          margin: 0 4px;
+      }
+       .bn-disclaimer-buttons {
+           margin-top: 15px;
+       }
+       .bn-main-content-block {
+           padding: 15px;
+            margin: 15px auto;
+       }
+        .bn-main-header {
+            gap: 8px;
+             margin-bottom: 8px;
+        }
+        .bn-section-heading {
+            font-size: 1.3em;
+        }
+         .bn-new-booking-button {
+             font-size: 0.8em;
+             padding: 6px 12px;
+         }
+         .bn-bookings-list-area h4 {
+             font-size: 1em;
+             margin-bottom: 6px;
+             padding-bottom: 4px;
+         }
+         .bn-bookings-table th,
+         .bn-bookings-table td {
+             padding: 6px 4px;
+             font-size: 0.8em;
+         }
+         .bn-delete-button {
+             font-size: 0.8em;
+         }
+          .bn-modal-content {
+              padding: 15px;
+              max-width: 100%;
+          }
+           .bn-modal-header h3 {
+               font-size: 1em;
+           }
+            .bn-modal-header {
+                margin-bottom: 10px;
+                 padding-bottom: 5px;
+            }
+            .bn-modal-body {
+                margin-bottom: 10px;
+                 padding-bottom: 10px;
+            }
+            .bn-radio-group {
+                margin-bottom: 8px;
+            }
+            .bn-radio-group label {
+                font-size: 0.8em;
+            }
+             .bn-modal-footer {
+                 padding-top: 10px;
+             }
+              .bn-proceed-button {
+                 padding: 6px 10px;
+                 font-size: 0.85em;
+              }
+}

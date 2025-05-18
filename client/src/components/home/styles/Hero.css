@@ -128,9 +128,7 @@
     max-width: 100%;
   }
 
-  .hero-text p {
-      text-align: center; /* Center text on mobile */
-  }
+  
 
    .hero-image {
       padding-left: 0; /* Remove padding on mobile */

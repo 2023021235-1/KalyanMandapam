@@ -1,0 +1,249 @@
+/* CheckRefundStatus.css - Styling for Check Refund Status Section */
+
+:root {
+  --base-color: #ffd7ac;
+  --white-card-bg: #FFFFFF;
+  --primary-color: #800000;
+  --secondary-color: #ff9900;
+  --text-color: #000000;
+  --hover-bg: rgba(0, 0, 0, 0.05);
+  --button-text-color: var(--white-card-bg);
+  --form-input-border: #ccc;
+  --form-input-focus-border: var(--secondary-color);
+  --secondary-color-rgb: 255, 153, 0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --error-color: #F44336;
+}
+
+.crs-section {
+  background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+  padding: 60px 0;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.crs-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.crs-section-heading {
+  font-size: 3em;
+  margin-bottom: 40px;
+  font-weight: 700;
+  color: var(--primary-color);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.crs-section-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background-color: var(--secondary-color);
+  border-radius: 1px;
+}
+
+.crs-main-content-block {
+  min-height: 40vh;
+  min-width: 60vw;
+  max-width: 600px;
+
+  background-color: var(--white-card-bg);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.crs-form-controls {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.crs-form-group {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.crs-form-group label {
+  display: block;
+  font-size: 1em;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.crs-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--form-input-border);
+  border-radius: 4px;
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--white-card-bg);
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.crs-input::placeholder {
+    color: #999;
+}
+
+.crs-input:focus {
+  outline: none;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 0 5px rgba(var(--secondary-color-rgb, 255, 153, 0), 0.5);
+}
+
+.crs-check-button {
+  display: inline-block;
+  width: auto;
+  padding: 10px 25px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
+  border: none;
+  text-align: center;
+}
+
+.crs-check-button:hover {
+    background-color: darken(var(--primary-color), 10%);
+}
+
+.crs-results-area {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
+    padding-top: 20px;
+    border-top: 1px solid var(--hover-bg);
+}
+
+.crs-message {
+    font-size: 1.1em;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.crs-not-found-message {
+    color: var(--error-color);
+    font-weight: 600;
+}
+
+.crs-status-details p {
+    font-size: 1em;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.crs-status-details p:last-child {
+    margin-bottom: 0;
+}
+
+.crs-status-details strong {
+    color: var(--primary-color);
+    margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+  .crs-main-content-block {
+    min-height: 30vh;
+    min-width: 90vw;
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  .crs-section-heading {
+      font-size: 2em;
+  }
+
+   .crs-form-controls {
+       max-width: 95%;
+       margin-bottom: 20px;
+   }
+
+   .crs-form-group label {
+       font-size: 0.9em;
+   }
+   .crs-input {
+       padding: 8px;
+       font-size: 0.9em;
+   }
+
+   .crs-check-button {
+       padding: 8px 20px;
+       font-size: 1em;
+   }
+
+    .crs-results-area {
+        max-width: 95%;
+         margin-top: 15px;
+         padding-top: 15px;
+    }
+    .crs-message, .crs-status-details p {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .crs-section-heading {
+        font-size: 1.8em;
+    }
+
+     .crs-main-content-block {
+         min-height: 25vh;
+         padding: 15px;
+     }
+      .crs-form-controls {
+          max-width: 100%;
+          margin-bottom: 15px;
+      }
+       .crs-form-group {
+           margin-bottom: 15px;
+       }
+
+      .crs-input {
+          padding: 6px;
+          font-size: 0.85em;
+      }
+
+      .crs-check-button {
+          padding: 6px 15px;
+          font-size: 0.9em;
+      }
+
+      .crs-results-area {
+          max-width: 100%;
+          margin-top: 10px;
+          padding-top: 10px;
+      }
+       .crs-message, .crs-status-details p {
+          font-size: 0.9em;
+       }
+        .crs-status-details p {
+            margin-bottom: 8px;
+        }
+}

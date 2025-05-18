@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "./LoginPage.css";
+import "./styles/LoginPage.css";
 import { useNavigate } from "react-router-dom";
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

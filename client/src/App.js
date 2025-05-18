@@ -11,6 +11,12 @@ import Navbar from './components/Navbar';
 import HomePage from "./components/home/HomeSection";
 import LoginPage from './components/LoginPage';
 import Footer from './components/Footer';
+import ContactUsSection from "./components/Contact";
+import QueryFeedbackSection from "./components/QueryFeedbackSection";
+import CheckRentSection from "./components/CheckRentSection";
+import CheckAvailabilitySection from "./components/CheckAvailabilitySection";
+import CheckRefundStatusSection from "./components/CheckRefundStatusSection";
+import BookNowSection from "./components/Book";
 function App() {
   const [languageType, setLanguageType] = useState("en");
   const [user, setUser] = useState(null);
@@ -87,6 +93,12 @@ function App() {
         />
         <Route path="/" element={<HomePage languageType={languageType}/>} />
         <Route path="/home" element={<HomePage languageType={languageType}/>} />
+        <Route path="/book" element={<BookNowSection languageType={languageType}/>} />
+        <Route path="/contact" element={<ContactUsSection languageType={languageType}/>} />
+        <Route path="/feedback" element={<QueryFeedbackSection languageType={languageType}/>} />
+         <Route path="/check-rent" element={<CheckRentSection languageType={languageType}/>} />
+         <Route path="/availability" element={<CheckAvailabilitySection languageType={languageType}/>} />
+         <Route path="/refund-status" element={<CheckRefundStatusSection languageType={languageType}/>} />
       </Routes>
 
     <Footer languageType={languageType}/>

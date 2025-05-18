@@ -1,0 +1,588 @@
+/* CheckAvailability.css - Styling for Check Availability Section (with Calendar) - Unique Names */
+
+:root {
+  --base-color: #ffd7ac;
+  --white-card-bg: #FFFFFF;
+  --primary-color: #800000;
+  --secondary-color: #ff9900;
+  --text-color: #000000;
+  --hover-bg: rgba(0, 0, 0, 0.05);
+  --button-text-color: var(--white-card-bg);
+  --form-input-border: #ccc;
+  --form-input-focus-border: var(--secondary-color);
+  --secondary-color-rgb: 255, 153, 0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --table-border-color: #ddd;
+  --table-header-bg: var(--hover-bg);
+
+  --status-available-color: #2ec310; /* Light grey */
+  --status-preliminary-color: #FFC107;
+  --status-booked-color: #2196F3;
+  --status-blocked-color: #e40228;
+  --status-special-color: #9C27B0;
+
+   --calendar-border-color: #eee;
+   --calendar-weekday-color: var(--primary-color);
+   --calendar-day-number-color: var(--text-color);
+   --calendar-nav-button-color: var(--primary-color);
+}
+
+.ca-section {
+  background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+  padding: 60px 0;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.ca-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ca-section-heading {
+  font-size: 3em;
+  margin-bottom: 40px;
+  font-weight: 700;
+  color: var(--primary-color);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.ca-section-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background-color: var(--secondary-color);
+  border-radius: 1px;
+}
+
+.ca-main-content-block {
+  min-height: 60vh;
+  min-width: 80vw;
+  max-width: 1000px;
+
+  background-color: var(--white-card-bg);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+}
+
+.ca-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.ca-dropdowns-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.ca-form-group {
+  margin-bottom: 0;
+  width: auto;
+}
+
+.ca-form-group label {
+  display: block;
+  font-size: 1em;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.ca-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--form-input-border);
+  border-radius: 4px;
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--white-card-bg);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2C114.7L159.2%2C7C154.2%2C1.8%2C146.5%2C0%2C138.7%2C0s-15.5%2C1.8-20.5%2C7L5.4%2C114.7c-7.1%2C7.1-7.1%2C18.6%2C0%2C25.7l21.1%2C21.1c7.1%2C7.1%2C18.6%2C7.1%2C25.7%2C0L138.7%2C84.8l86.2%2C86.2c7.1%2C7.1%2C18.6%2C7.1%2C25.7%2C0l21.1-21.1C294.2%2C133.4%2C294.2%2C121.8%2C287%2C114.7z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 12px auto;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.ca-select:focus {
+  outline: none;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 0 5px rgba(var(--secondary-color-rgb, 255, 153, 0), 0.5);
+}
+
+.ca-show-button {
+  display: inline-block;
+  width: auto;
+  padding: 10px 25px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
+  border: none;
+  text-align: center;
+  margin-top: 0;
+}
+
+.ca-show-button:hover {
+    background-color: darken(var(--primary-color), 10%);
+}
+
+.ca-availability-legend {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    width: 100%;
+}
+
+.ca-availability-legend h4 {
+    font-size: 1.2em;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.ca-legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.ca-legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 1em;
+    color: var(--text-color);
+}
+
+/* Styles for the specific color boxes in the legend */
+.ca-legend-color-box-available,
+.ca-legend-color-box-preliminary,
+.ca-legend-color-box-booked,
+.ca-legend-color-box-blocked,
+.ca-legend-color-box-special {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    /* Background color is set individually below */
+}
+
+.ca-legend-color-box-available { background-color: var(--status-available-color); }
+.ca-legend-color-box-preliminary { background-color: var(--status-preliminary-color); }
+.ca-legend-color-box-booked { background-color: var(--status-booked-color); }
+.ca-legend-color-box-blocked { background-color: var(--status-blocked-color); }
+.ca-legend-color-box-special { background-color: var(--status-special-color); }
+
+
+/* These classes are now only needed for table rows and calendar days */
+.status-available-color { /* background-color handled by .ca-day-cell / tr.status-available */ }
+.status-preliminary-color { background-color: var(--status-preliminary-color); }
+.status-booked-color { background-color: var(--status-booked-color); }
+.status-blocked-color { background-color: var(--status-blocked-color); }
+.status-special-color { background-color: var(--status-special-color); }
+
+
+.ca-availability-message {
+    font-size: 1.1em;
+    color: var(--primary-color);
+    margin-top: 20px;
+    text-align: center;
+}
+
+.ca-view-toggle-buttons {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.ca-toggle-button {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 8px 15px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ca-toggle-button:hover {
+    background-color: var(--hover-bg);
+}
+
+.ca-toggle-button.active {
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+}
+
+.ca-availability-table-container {
+    margin-top: 0;
+    width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+}
+
+.ca-availability-table-month-year {
+    font-size: 1.5em;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.ca-availability-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.ca-availability-table th,
+.ca-availability-table td {
+    border: 1px solid var(--table-border-color);
+    padding: 10px;
+    text-align: left;
+    color: var(--text-color);
+}
+
+.ca-availability-table th {
+    background-color: var(--table-header-bg);
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.ca-availability-table tbody tr:nth-child(odd) {
+    background-color: var(--hover-bg);
+}
+
+.ca-availability-table tr.status-available td { background-color: var(--status-available-color); color: var(--text-color); }
+.ca-availability-table tr.status-preliminary td { background-color: var(--status-preliminary-color); color: var(--text-color); }
+.ca-availability-table tr.status-booked td { background-color: var(--status-booked-color); color: #fff; }
+.ca-availability-table tr.status-blocked td { background-color: var(--status-blocked-color); color: #fff; }
+.ca-availability-table tr.status-special td { background-color: var(--status-special-color); color: #fff; }
+
+
+.ca-availability-calendar {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ca-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ca-calendar-header h3 {
+    font-size: 1.5em;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.ca-nav-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--calendar-nav-button-color);
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.ca-nav-button:hover {
+    color: var(--secondary-color);
+}
+
+.ca-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 600;
+    color: var(--calendar-weekday-color);
+    margin-bottom: 10px;
+}
+
+.ca-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.ca-calendar-day {
+    border: 1px solid var(--calendar-border-color);
+    padding: 10px 5px;
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    font-size: 0.9em;
+    color: var(--calendar-day-number-color);
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #f9f9f9; /* Default background for empty cells */
+}
+
+.ca-empty-cell {
+    border-color: #eee;
+    cursor: default;
+}
+
+.ca-day-cell {
+    cursor: pointer;
+    position: relative;
+    /* Background color for day cells (including Available) is applied by status classes */
+}
+
+.ca-calendar-day.status-available { background-color: var(--status-available-color); color: var(--text-color); }
+.ca-calendar-day.status-preliminary { background-color: var(--status-preliminary-color); color: var(--text-color); }
+.ca-calendar-day.status-booked { background-color: var(--status-booked-color); color: #fff; }
+.ca-calendar-day.status-blocked { background-color: var(--status-blocked-color); color: #fff; }
+.ca-calendar-day.status-special { background-color: var(--status-special-color); color: #fff; }
+
+.ca-status-label {
+    font-size: 0.7em;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.8);
+}
+.ca-calendar-day.status-preliminary .ca-status-label {
+     color: rgba(0, 0, 0, 0.7);
+}
+
+@media (min-width: 769px) {
+    .ca-dropdowns-inline {
+        flex-direction: row;
+        align-items: flex-end;
+        margin-bottom: 0;
+    }
+    .ca-form-group {
+        flex-basis: 0;
+        flex-grow: 1;
+        min-width: 120px;
+        margin-bottom: 0 !important;
+    }
+    .ca-show-button {
+         margin-left: 20px;
+         margin-bottom: 0;
+    }
+    .ca-controls {
+         flex-direction: row;
+         justify-content: center;
+         align-items: flex-end;
+    }
+     .ca-main-content-block {
+        min-width: 80vw;
+     }
+}
+
+@media (max-width: 992px) {
+    .ca-main-content-block {
+        min-width: 90vw;
+        max-width: 800px;
+    }
+     .ca-dropdowns-inline {
+        gap: 15px;
+     }
+
+     .ca-availability-table-container {
+         max-width: 450px;
+     }
+      .ca-availability-calendar {
+          max-width: 500px;
+      }
+       .ca-calendar-day {
+           min-height: 50px;
+           font-size: 0.85em;
+       }
+}
+
+@media (max-width: 768px) {
+  .ca-main-content-block {
+    min-height: 50vh;
+    min-width: 95vw;
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  .ca-section-heading {
+      font-size: 2em;
+  }
+
+  .ca-controls-block {
+      padding: 20px;
+  }
+
+  .ca-dropdowns-inline {
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+  }
+
+  .ca-form-group {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 0;
+  }
+
+  .ca-legend-items {
+      gap: 10px;
+  }
+
+  .ca-legend-item {
+      font-size: 0.9em;
+  }
+
+   .ca-view-toggle-buttons {
+       margin-top: 15px;
+       margin-bottom: 15px;
+   }
+    .ca-toggle-button {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+
+  .ca-availability-table-container {
+      max-width: 100%;
+      padding: 15px;
+  }
+
+   .ca-availability-table-month-year {
+       font-size: 1.3em;
+   }
+
+   .ca-availability-table th,
+   .ca-availability-table td {
+       padding: 8px;
+       font-size: 0.9em;
+   }
+
+    .ca-availability-calendar {
+        max-width: 100%;
+        padding: 0 5px;
+    }
+     .ca-calendar-day {
+         min-height: 45px;
+         font-size: 0.8em;
+         padding: 8px 4px;
+     }
+      .ca-calendar-header h3 {
+          font-size: 1.3em;
+      }
+       .ca-nav-button svg {
+          width: 20px;
+          height: 20px;
+       }
+}
+
+@media (max-width: 480px) {
+    .ca-section-heading {
+        font-size: 1.8em;
+    }
+
+     .ca-main-content-block {
+         min-height: 40vh;
+         padding: 15px;
+     }
+
+     .ca-dropdowns-inline {
+         gap: 10px;
+     }
+
+     .ca-form-group label {
+         font-size: 0.9em;
+     }
+
+     .ca-select {
+         padding: 8px;
+         font-size: 0.9em;
+     }
+
+      .ca-show-button {
+          padding: 8px 20px;
+          font-size: 1em;
+           margin-top: 8px;
+      }
+
+      .ca-availability-legend h4 {
+          font-size: 1em;
+      }
+      .ca-legend-items {
+          gap: 8px;
+      }
+      .ca-legend-item {
+          font-size: 0.85em;
+      }
+
+      .ca-view-toggle-buttons {
+          margin-top: 10px;
+          margin-bottom: 10px;
+      }
+       .ca-toggle-button {
+           padding: 5px 10px;
+           font-size: 0.8em;
+       }
+
+      .ca-availability-table-container {
+          padding: 10px;
+      }
+
+       .ca-availability-table-month-year {
+           font-size: 1.1em;
+       }
+
+        .ca-availability-calendar {
+            padding: 0 2px;
+        }
+         .ca-calendar-day {
+             min-height: 40px;
+             font-size: 0.75em;
+             padding: 6px 3px;
+         }
+          .ca-calendar-header h3 {
+              font-size: 1.1em;
+          }
+           .ca-nav-button svg {
+               width: 18px;
+               height: 18px;
+           }
+}

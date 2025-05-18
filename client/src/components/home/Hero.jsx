@@ -34,7 +34,7 @@ const Hero = ({ languageType = 'en' }) => {
               {currentContent.paragraph}
             </p>
             {/* Navigate to booking/availability page */}
-            <button className="btn btn-primary hero-button" onClick={() => navigate('/booking')}>{currentContent.buttonText}</button>
+            <button className="btn btn-primary hero-button" onClick={() => navigate('/book')}>{currentContent.buttonText}</button>
           </div>
           <div className="hero-image">
             <div className="venue-circle"> {/* Changed class name */}

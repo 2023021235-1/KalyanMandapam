@@ -3,26 +3,27 @@ import './styles/Navbar.css';
 import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Updated Navigation items with new order and items
 const navItems = [
   { hi: 'होम',               en: 'Home'             },
-  { hi: 'हमारे बारे में',     en: 'About Us'         },
-  { hi: 'सुविधाएं',           en: 'Facilities'       },
-  { hi: 'सेवाएं',             en: 'Services'         },
-  { hi: 'गैलरी',              en: 'Gallery'          },
-  { hi: 'उपलब्धता और बुकिंग', en: 'Availability & Booking' },
+  { hi: 'अभी बुक करें',       en: 'Book Now'         },
+  { hi: 'किराया जांचें',      en: 'Check Rent'       }, // Added Check Rent
+  { hi: 'उपलब्धता जांचें',  en: 'Check Availability' },
+  { hi: 'रिफंड स्थिति',     en: 'Refund Status'    }, // Added Refund Status
   { hi: 'संपर्क करें',       en: 'Contact Us'       },
+  { hi: 'प्रश्न और प्रतिक्रिया', en: 'Query & Feedback' },
 ];
 
-// Text content for other parts of the navbar - Reverted logo text
+// Text content for other parts of the navbar - Remains the same
 const textContent = {
   en: {
-    logoText: 'Nagar Nigam Gorakhpur', // Reverted logo text
+    logoText: 'Nagar Nigam Gorakhpur',
     login: 'Login',
     logout: 'Logout',
     noNotifications: 'No notifications',
   },
   hi: {
-    logoText: 'नगर निगम गोरखपुर', // Reverted logo text
+    logoText: 'नगर निगम गोरखपुर',
     login: 'लॉग इन करें',
     logout: 'लॉग आउट करें',
     noNotifications: 'कोई सूचना नहीं',
@@ -62,28 +63,29 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
   }, [showMenu, showNotif]);
 
 
+  // Function to handle navigation item clicks - Updated for new menu items and order
   const handleNavItemClick = (englishLabel) => {
     switch (englishLabel) {
       case 'Home':
         navigate('/');
         break;
-      case 'About Us':
-        navigate('/about');
+      case 'Book Now':
+        navigate('/book');
         break;
-      case 'Facilities':
-         navigate('/facilities');
+      case 'Check Rent': // Added Case for 'Check Rent'
+        navigate('/check-rent'); // Navigate to check rent route
         break;
-      case 'Services':
-        navigate('/services');
+      case 'Check Availability':
+         navigate('/availability');
         break;
-      case 'Gallery':
-        navigate('/gallery');
-        break;
-      case 'Availability & Booking':
-        navigate('/booking');
+      case 'Refund Status': // Added Case for 'Refund Status'
+        navigate('/refund-status'); // Navigate to refund status route
         break;
        case 'Contact Us':
         navigate('/contact');
+        break;
+      case 'Query & Feedback':
+        navigate('/feedback');
         break;
       default:
         console.warn('Unhandled nav item:', englishLabel);
@@ -113,7 +115,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
 
           <div className="navbar__logo">
             <img src="./logo.webp" alt="Logo" className="navbar__logo-img" />
-            <span className="gov-logo">{currentText.logoText}</span> {/* This will now display Nagar Nigam Gorakhpur */}
+            <span className="gov-logo">{currentText.logoText}</span>
           </div>
 
           <div className="navbar__actions">
