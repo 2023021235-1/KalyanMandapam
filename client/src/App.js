@@ -93,12 +93,12 @@ function App() {
         />
         <Route path="/" element={<HomePage languageType={languageType}/>} />
         <Route path="/home" element={<HomePage languageType={languageType}/>} />
-        <Route path="/book" element={<BookNowSection languageType={languageType}/>} />
+        <Route path="/book" element={<BookNowSection user={user} languageType={languageType}/>} />
         <Route path="/contact" element={<ContactUsSection languageType={languageType}/>} />
         <Route path="/feedback" element={<QueryFeedbackSection languageType={languageType}/>} />
          <Route path="/check-rent" element={<CheckRentSection languageType={languageType}/>} />
          <Route path="/availability" element={<CheckAvailabilitySection languageType={languageType}/>} />
-         <Route path="/refund-status" element={<CheckRefundStatusSection languageType={languageType}/>} />
+         <Route path="/refund-status" element={<CheckRefundStatusSection user={user} languageType={languageType}/>} />
       </Routes>
 
     <Footer languageType={languageType}/>

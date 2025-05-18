@@ -14,6 +14,8 @@ mongoose.connect(process.env.URI)
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/otp', require('./routes/otpRoutes'));
-
+app.get('/health-check-polling', (req, res) => {
+  res.status(200).send('OK');
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

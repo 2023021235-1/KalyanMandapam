@@ -1,22 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import './styles/BookNow.css';
-// No Lucide icons needed for this specific version
+import { useNavigate } from 'react-router-dom';
+import './styles/BookNow.css'; // Assuming this is the style file for Book.jsx
 
-const BookNowSection = ({ languageType = 'en' }) => {
-  // State to manage disclaimer acceptance
+const BookNowSection = ({ languageType = 'en', user }) => {
+  // --- All Hooks must be called at the top level ---
+  const navigate = useNavigate();
+
+  // State hooks are now before any conditional returns
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  // State to manage showing the booking type modal
   const [showBookingTypeModal, setShowBookingTypeModal] = useState(false);
-  // State for sample booking data (replace with actual data fetch)
   const [bookings, setBookings] = useState([
-      // Sample booking data
-      { id: 'BOOK101', baratGhar: 'BaratGhar Name 1', floor: 'Ground', function: 'Marriage', amount: 'Rs. 50,000', status: 'Confirmed', addOn: 'No', date: '2024-07-15' },
-      { id: 'BOOK102', baratGhar: 'BaratGhar Name 2', floor: 'First', function: 'Engagement', amount: 'Rs. 30,000', status: 'Pending', addOn: 'Yes', date: '2024-08-20' },
-      { id: 'BOOK103', baratGhar: 'BaratGhar Name 1', floor: 'Ground', function: 'Birthday Party', amount: 'Rs. 25,000', status: 'Cancelled', addOn: 'No', date: '2024-09-10' },
-      // Add more sample bookings as needed
+    { id: 'BOOK101', baratGhar: 'BaratGhar Name 1', floor: 'Ground', function: 'Marriage', amount: 'Rs. 50,000', status: 'Confirmed', addOn: 'No', date: '2024-07-15' },
+    { id: 'BOOK102', baratGhar: 'BaratGhar Name 2', floor: 'First', function: 'Engagement', amount: 'Rs. 30,000', status: 'Pending', addOn: 'Yes', date: '2024-08-20' },
+    { id: 'BOOK103', baratGhar: 'BaratGhar Name 1', floor: 'Ground', function: 'Birthday Party', amount: 'Rs. 25,000', status: 'Cancelled', addOn: 'No', date: '2024-09-10' },
   ]);
 
-  // Content for the section
+  // useEffect for redirection
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]); // Dependencies: user and navigate
+
+  // --- Conditional return (Guard Clause) is now AFTER all Hook calls ---
+  if (!user) {
+    // If user is not logged in, the useEffect above will handle the redirection.
+    // Returning null here prevents rendering the rest of the component.
+    return null; // Or a loading spinner, e.g., <div>Redirecting to login...</div>
+  }
+
+  // --- Component logic and JSX (only runs if user is logged in) ---
   const content = {
     en: {
       sectionHeading: 'Book BaratGhar',
@@ -33,8 +46,8 @@ const BookNowSection = ({ languageType = 'en' }) => {
       disclaimerAgreeButton: 'Agree',
       disclaimerCloseButton: 'Close',
       newBookingButton: 'New Booking',
-      previousBookingsHeading: 'All Bookings', // Updated heading
-      tableHeaders: ['S.No.', 'Booking Id', 'BaratGhar Name', 'Floor Name', 'Function', 'Total Amount', 'Status', 'Add-On AC/Heating', 'Booking Date', 'Action'], // Updated headers
+      previousBookingsHeading: 'All Bookings',
+      tableHeaders: ['S.No.', 'Booking Id', 'BaratGhar Name', 'Floor Name', 'Function', 'Total Amount', 'Status', 'Add-On AC/Heating', 'Booking Date', 'Action'],
       deleteButton: 'Delete',
       noBookingsMessage: 'No bookings found.',
       bookingTypeHeading: 'Select Booking Type:',
@@ -68,7 +81,7 @@ const BookNowSection = ({ languageType = 'en' }) => {
       deleteButton: 'हटाएँ',
       noBookingsMessage: 'कोई बुकिंग नहीं मिली।',
       bookingTypeHeading: 'बुकिंग प्रकार चुनें:',
-       bookingTypeOptions: [
+        bookingTypeOptions: [
           { value: 'employee', label: 'एनडीएमसी का कर्मचारी' },
           { value: 'ex-employee', label: 'एनडीएमसी का पूर्व कर्मचारी' },
           { value: 'ndmc-resident', label: 'एनडीएमसी क्षेत्र निवासी' },
@@ -82,70 +95,50 @@ const BookNowSection = ({ languageType = 'en' }) => {
 
   const currentContent = content[languageType] || content.en;
 
-  // Handler for agreeing to disclaimer
   const handleAgreeDisclaimer = () => {
     setDisclaimerAccepted(true);
-    // Optionally save preference in local storage for persistence
-    // localStorage.setItem('disclaimerAccepted', 'true');
   };
 
-   // Handler for closing disclaimer without agreeing
-   const handleCloseDisclaimer = () => {
-        alert(languageType === 'hi' ? 'बुकिंग जारी रखने के लिए आपको अस्वीकरण स्वीकार करना होगा।' : 'You must accept the disclaimer to proceed with booking.');
-   }
+  const handleCloseDisclaimer = () => {
+    alert(languageType === 'hi' ? 'बुकिंग जारी रखने के लिए आपको अस्वीकरण स्वीकार करना होगा।' : 'You must accept the disclaimer to proceed with booking.');
+  };
 
-  // Handler for clicking "New Booking" button
   const handleNewBookingClick = () => {
-    setShowBookingTypeModal(true); // Show the booking type modal
+    setShowBookingTypeModal(true);
   };
 
-  // Handler for closing the booking type modal
   const handleCloseBookingTypeModal = () => {
-      setShowBookingTypeModal(false);
+    setShowBookingTypeModal(false);
   };
 
-  // Handler for deleting a booking
   const handleDeleteBooking = (bookingIdToDelete) => {
-      if (window.confirm(currentContent.confirmDeleteMessage)) {
-          setBookings(bookings.filter(booking => booking.id !== bookingIdToDelete));
-      }
+    if (window.confirm(currentContent.confirmDeleteMessage)) {
+        setBookings(bookings.filter(booking => booking.id !== bookingIdToDelete));
+    }
   };
 
-  // Handler for proceeding after selecting booking type (placeholder)
   const handleProceedBookingType = () => {
-      // In a real application, this would navigate to the next step of the booking form
-      alert('Proceeding with booking type selection (placeholder)');
-      setShowBookingTypeModal(false); // Close modal after proceeding
-      // Implement navigation or next form step here
+    alert('Proceeding with booking type selection (placeholder)');
+    setShowBookingTypeModal(false);
   };
-
-
-  // Check local storage on component mount for disclaimer acceptance (optional persistence)
-  // useEffect(() => {
-  //   const accepted = localStorage.getItem('disclaimerAccepted');
-  //   if (accepted === 'true') {
-  //     setDisclaimerAccepted(true);
-  //   }
-  // }, []);
 
   return (
-    <section className="bn-section"> {/* Main section container */}
+    <section className="bn-section">
 
-      {/* Disclaimer Modal/Overlay */}
       {!disclaimerAccepted && (
-        <div className="bn-disclaimer-overlay"> {/* Overlay background */}
-          <div className="bn-disclaimer-modal"> {/* Modal content container */}
+        <div className="bn-disclaimer-overlay">
+          <div className="bn-disclaimer-modal">
             <h3 className="bn-disclaimer-heading">{currentContent.disclaimerHeading}</h3>
             <div className="bn-disclaimer-content">
               {currentContent.disclaimerPoints.map((point, index) => (
                 <p key={index}>{`(${index + 1}). ${point}`}</p>
               ))}
             </div>
-            <div className="bn-disclaimer-buttons"> {/* Button container */}
+            <div className="bn-disclaimer-buttons">
               <button className="bn-button bn-agree-button" onClick={handleAgreeDisclaimer}>
                 {currentContent.disclaimerAgreeButton}
               </button>
-               <button className="bn-button bn-close-button" onClick={handleCloseDisclaimer}>
+              <button className="bn-button bn-close-button" onClick={handleCloseDisclaimer}>
                 {currentContent.disclaimerCloseButton}
               </button>
             </div>
@@ -153,103 +146,92 @@ const BookNowSection = ({ languageType = 'en' }) => {
         </div>
       )}
 
-      {/* Main Booking Content (after disclaimer is accepted) */}
       {disclaimerAccepted && (
-        <div className="bn-main-content-block"> {/* White card wrapper for main content */}
-
-             {/* Header area with heading and New Booking button */}
-            <div className="bn-main-header"> {/* Container for heading and button */}
-                 <h2 className="bn-section-heading">{currentContent.sectionHeading}</h2> {/* Section Heading */}
-                 <button className="bn-button bn-new-booking-button" onClick={handleNewBookingClick}>
-                     {currentContent.newBookingButton}
-                 </button>
+        <div className="bn-main-content-block">
+            <div className="bn-main-header">
+                <h2 className="bn-section-heading">{currentContent.sectionHeading}</h2>
+                <button className="bn-button bn-new-booking-button" onClick={handleNewBookingClick}>
+                    {currentContent.newBookingButton}
+                </button>
             </div>
 
-
-             {/* Bookings List Area */}
-             <div className="bn-bookings-list-area"> {/* Container for the bookings table */}
-                 <h4>{currentContent.previousBookingsHeading}</h4> {/* Heading for the list */}
-
-                 {bookings.length === 0 ? (
-                     <p className="bn-message">{currentContent.noBookingsMessage}</p> /* Message if no bookings */
-                 ) : (
-                      <div className="bn-table-container"> {/* Wrapper for horizontal scrolling */}
-                         <table className="bn-bookings-table"> {/* Table to display bookings */}
-                             <thead>
-                                 <tr>
-                                     {currentContent.tableHeaders.map((header, index) => (
-                                         <th key={index}>{header}</th>
-                                     ))}
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                 {bookings.map((booking, index) => (
-                                     <tr key={booking.id}> {/* Table row for each booking */}
-                                         <td>{index + 1}</td>
-                                         <td>{booking.id}</td>
-                                         <td>{booking.baratGhar}</td>
-                                         <td>{booking.floor}</td>
-                                         <td>{booking.function}</td>
-                                         <td>{booking.amount}</td>
-                                         <td>{booking.status}</td>
-                                         <td>{booking.addOn}</td>
-                                          <td>{booking.date}</td> {/* Display booking date */}
-                                         <td>
-                                             {/* Delete button/link */}
-                                             <button
-                                                 className="bn-delete-button"
-                                                 onClick={() => handleDeleteBooking(booking.id)}
-                                                 aria-label={`Delete booking ${booking.id}`}
-                                             >
-                                                 {currentContent.deleteButton}
-                                             </button>
-                                         </td>
-                                     </tr>
-                                 ))}
-                             </tbody>
-                         </table>
-                      </div>
-                 )}
-             </div> {/* End bn-bookings-list-area */}
-
-        </div> 
+            <div className="bn-bookings-list-area">
+                <h4>{currentContent.previousBookingsHeading}</h4>
+                {bookings.length === 0 ? (
+                    <p className="bn-message">{currentContent.noBookingsMessage}</p>
+                ) : (
+                    <div className="bn-table-container">
+                        <table className="bn-bookings-table">
+                            <thead>
+                                <tr>
+                                    {currentContent.tableHeaders.map((header, index) => (
+                                        <th key={index}>{header}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bookings.map((booking, index) => (
+                                    <tr key={booking.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{booking.id}</td>
+                                        <td>{booking.baratGhar}</td>
+                                        <td>{booking.floor}</td>
+                                        <td>{booking.function}</td>
+                                        <td>{booking.amount}</td>
+                                        <td>{booking.status}</td>
+                                        <td>{booking.addOn}</td>
+                                        <td>{booking.date}</td>
+                                        <td>
+                                            <button
+                                                className="bn-delete-button"
+                                                onClick={() => handleDeleteBooking(booking.id)}
+                                                aria-label={`Delete booking ${booking.id}`}
+                                            >
+                                                {currentContent.deleteButton}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+        </div>
       )}
 
-      {/* Booking Type Selection Modal */}
       {showBookingTypeModal && (
-          <div className="bn-modal-overlay"> {/* Overlay for the modal */}
-            <div className="bn-modal-content"> {/* Modal content */}
-                 <div className="bn-modal-header"> {/* Modal header */}
-                     <h3>{currentContent.bookingTypeHeading}</h3>
-                     <button className="bn-modal-close-button" onClick={handleCloseBookingTypeModal} aria-label={currentContent.closeModalButton}>
-                         &times; {/* Close icon */}
-                     </button>
-                 </div>
-                 <div className="bn-modal-body"> {/* Modal body */}
-                    <div className="bn-booking-type-radios"> {/* Radio options */}
-                        {currentContent.bookingTypeOptions.map((option) => (
-                            <div className="bn-radio-group" key={option.value}>
-                                <input
-                                    type="radio"
-                                    id={`booking-type-${option.value}`}
-                                    name="bookingType"
-                                    value={option.value}
-                                    // Add state and onChange handler here to track selected type
-                                />
-                                <label htmlFor={`booking-type-${option.value}`}>{option.label}</label>
-                            </div>
-                        ))}
-                    </div>
-                 </div>
-                 <div className="bn-modal-footer"> {/* Modal footer */}
-                     <button className="bn-button bn-proceed-button" onClick={handleProceedBookingType}>
-                         {currentContent.proceedButton}
-                     </button>
-                 </div>
+          <div className="bn-modal-overlay">
+            <div className="bn-modal-content">
+                <div className="bn-modal-header">
+                    <h3>{currentContent.bookingTypeHeading}</h3>
+                    <button className="bn-modal-close-button" onClick={handleCloseBookingTypeModal} aria-label={currentContent.closeModalButton}>
+                        &times;
+                    </button>
+                </div>
+                <div className="bn-modal-body">
+                  <div className="bn-booking-type-radios">
+                      {currentContent.bookingTypeOptions.map((option) => (
+                          <div className="bn-radio-group" key={option.value}>
+                              <input
+                                  type="radio"
+                                  id={`booking-type-${option.value}`}
+                                  name="bookingType"
+                                  value={option.value}
+                              />
+                              <label htmlFor={`booking-type-${option.value}`}>{option.label}</label>
+                          </div>
+                      ))}
+                  </div>
+                </div>
+                <div className="bn-modal-footer">
+                    <button className="bn-button bn-proceed-button" onClick={handleProceedBookingType}>
+                        {currentContent.proceedButton}
+                    </button>
+                </div>
             </div>
           </div>
       )}
-
     </section>
   );
 };

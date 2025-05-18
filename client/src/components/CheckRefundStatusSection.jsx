@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Import useEffect
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './styles/CheckRefundStatus.css';
 
-const CheckRefundStatusSection = ({ languageType = 'en' }) => {
+const CheckRefundStatusSection = ({ languageType = 'en', user }) => {
+  const navigate = useNavigate(); // Initialize useNavigate
   const [bookingId, setBookingId] = useState('');
   const [refundResult, setRefundResult] = useState(null);
+
+  // useEffect to handle redirection if user is not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]); // Dependencies: user and navigate
+
+  // If user is not logged in, don't render the component content
+  if (!user) {
+    return null; // Or a loading spinner
+  }
 
   const sampleRefundData = {
     'BOOK12345': { status: 'Processed', amount: 'Rs. 15,000', date: '2023-10-26' },
@@ -84,16 +98,16 @@ const CheckRefundStatusSection = ({ languageType = 'en' }) => {
         <div className="crs-main-content-block">
 
             <div className="crs-form-controls">
-                 <div className="crs-form-group">
-                    <label htmlFor="crs-booking-id">{currentContent.bookingIdLabel}</label>
-                    <input
-                        type="text"
-                        id="crs-booking-id"
-                        value={bookingId}
-                        onChange={handleInputChange}
-                        placeholder={currentContent.placeholder}
-                        className="crs-input"
-                    />
+                <div className="crs-form-group">
+                  <label htmlFor="crs-booking-id">{currentContent.bookingIdLabel}</label>
+                  <input
+                      type="text"
+                      id="crs-booking-id"
+                      value={bookingId}
+                      onChange={handleInputChange}
+                      placeholder={currentContent.placeholder}
+                      className="crs-input"
+                  />
                 </div>
 
                 <button
@@ -118,7 +132,7 @@ const CheckRefundStatusSection = ({ languageType = 'en' }) => {
                         <p><strong>{currentContent.statusLabel}</strong> {getLocalizedStatus(refundResult.status)}</p>
                         <p><strong>{currentContent.amountLabel}</strong> {refundResult.amount}</p>
                         {refundResult.status === 'Processed' && (
-                             <p><strong>{currentContent.dateLabel}</strong> {refundResult.date}</p>
+                            <p><strong>{currentContent.dateLabel}</strong> {refundResult.date}</p>
                         )}
                     </div>
                 )}

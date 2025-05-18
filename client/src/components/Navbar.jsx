@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './styles/Navbar.css';
+import './styles/Navbar.css'; // Make sure this path is correct
 import { Bell } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
-  { hi: 'होम',               en: 'Home', path: '/' }, // Added path
-  { hi: 'अभी बुक करें',       en: 'Book Now', path: '/book' }, // Added path
-  { hi: 'किराया जांचें',      en: 'Check Rent', path: '/check-rent' }, // Added path
-  { hi: 'उपलब्धता जांचें',  en: 'Check Availability', path: '/availability' }, // Added path
-  { hi: 'रिफंड स्थिति',     en: 'Refund Status', path: '/refund-status' }, // Added path
-  { hi: 'संपर्क करें',       en: 'Contact Us', path: '/contact' }, // Added path
-  { hi: 'प्रश्न और प्रतिक्रिया', en: 'Query & Feedback', path: '/feedback' }, // Added path
+  { hi: 'होम',             en: 'Home', path: '/' },
+  { hi: 'अभी बुक करें',    en: 'Book Now', path: '/book' },
+  { hi: 'किराया जांचें',    en: 'Check Rent', path: '/check-rent' },
+  { hi: 'उपलब्धता जांचें',  en: 'Check Availability', path: '/availability' },
+  { hi: 'रिफंड स्थिति',    en: 'Refund Status', path: '/refund-status' },
+  { hi: 'संपर्क करें',      en: 'Contact Us', path: '/contact' },
+  { hi: 'प्रश्न और प्रतिक्रिया', en: 'Query & Feedback', path: '/feedback' },
 ];
 
 const textContent = {
@@ -30,11 +30,14 @@ const textContent = {
   }
 };
 
+// Define paths to hide when not logged in
+const pathsToHideWhenLoggedOut = ['/book', '/refund-status'];
+
 function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
   const notifRef = useRef(null);
   const menuRef = useRef(null);
   const hamburgerRef = useRef(null);
@@ -72,6 +75,11 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
     setShowNotif(false);
   };
 
+  // Filter navItems based on user prop
+  const displayedNavItems = user
+    ? navItems
+    : navItems.filter(item => !pathsToHideWhenLoggedOut.includes(item.path));
+
   return (
     <nav className="navbar navbar--gov">
       <div className="navbar__container">
@@ -88,7 +96,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
           </button>
 
           <div className="navbar__logo">
-            <img src="./logo.webp" alt="Logo" className="navbar__logo-img" />
+            <img src="./logo.webp" alt="Logo" className="navbar__logo-img" /> {/* Ensure logo.webp is in the correct path, often public folder */}
             <div className="navbar__logo-text-container">
               <span className="gov-logo">{currentText.logoTopText}</span>
               <span className="kalyan-mandapam-heading">{currentText.logoBottomText}</span>
@@ -148,10 +156,11 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
 
         <div className={`navbar__mobile-menu ${showMenu ? 'show' : ''}`} ref={menuRef}>
           <ul className="navbar__menu">
-            {navItems.map((item, idx) => (
+            {/* Use displayedNavItems for mobile menu */}
+            {displayedNavItems.map((item, idx) => (
               <li
                 key={idx}
-                className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`} // Add active class
+                className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`}
                 onClick={() => handleNavItemClick(item.path)}
               >
                 {label(item)}
@@ -166,23 +175,27 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
             </li>
           </ul>
         </div>
-          <div className='navbar__desktop-only'>
-           {(true || user) && (
-           <div className="navbar__bottom-row">
-             <ul className="navbar__menu">
-               {navItems.map((item, idx) => (
-                 <li
-                   key={idx}
-                   className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`} // Add active class
-                   onClick={() => handleNavItemClick(item.path)}
-                 >
-                   {label(item)}
-                 </li>
-               ))}
-             </ul>
-           </div>
-           )}
-           </div>
+
+        <div className='navbar__desktop-only'>
+          {/* This condition (true || user) effectively means the bottom row always renders if items exist.
+              The filtering of displayedNavItems will handle which items are shown. */}
+          {(true || user) && (
+            <div className="navbar__bottom-row">
+              <ul className="navbar__menu">
+                {/* Use displayedNavItems for desktop menu */}
+                {displayedNavItems.map((item, idx) => (
+                  <li
+                    key={idx}
+                    className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`}
+                    onClick={() => handleNavItemClick(item.path)}
+                  >
+                    {label(item)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
