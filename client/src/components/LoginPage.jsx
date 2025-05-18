@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const API = "https://kalyanmandapam.onrender.com/api";
 
-function LoginPage({ setUser, languageType }) {
+function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleLanguage prop
   const [view, setView] = useState("login");
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ function LoginPage({ setUser, languageType }) {
       setUser(user);
       navigate("/home");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || (languageType === 'en' ? "Login failed" : "लॉगिन असफल"));
     } finally {
       setLoading(false);
     }
@@ -50,17 +50,17 @@ function LoginPage({ setUser, languageType }) {
     setError(""); setSuccess(""); setLoading(true);
 
     if (!name || !email || !password) {
-      setError("Name, email & password are required");
+      setError(languageType === 'en' ? "Name, email & password are required" : "नाम, ईमेल और पासवर्ड आवश्यक हैं");
       setLoading(false);
       return;
     }
 
     try {
       await axios.post(`${API}/otp/send-otp`, { email });
-      setSuccess("OTP sent to your email");
+      setSuccess(languageType === 'en' ? "OTP sent to your email" : "ओटीपी आपके ईमेल पर भेजा गया है");
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send OTP");
+      setError(err.response?.data?.message || (languageType === 'en' ? "Failed to send OTP" : "ओटीपी भेजने में विफल"));
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ function LoginPage({ setUser, languageType }) {
     setError(""); setSuccess(""); setLoading(true);
 
     if (!otp) {
-      setError("Please enter the OTP");
+      setError(languageType === 'en' ? "Please enter the OTP" : "कृपया ओटीपी दर्ज करें");
       setLoading(false);
       return;
     }
@@ -84,14 +84,14 @@ function LoginPage({ setUser, languageType }) {
         password,
         otp
       });
-      setSuccess("Signup successful! You can now log in.");
+      setSuccess(languageType === 'en' ? "Signup successful! You can now log in." : "साइनअप सफल! अब आप लॉग इन कर सकते हैं।");
       setTimeout(() => {
         // reset state & switch to login
         setName(""); setEmail(""); setPassword(""); setOtp("");
         setView("login"); setStep(1); setError(""); setSuccess("");
       }, 1500);
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid OTP or signup failed");
+      setError(err.response?.data?.message || (languageType === 'en' ? "Invalid OTP or signup failed" : "अवैध ओटीपी या साइनअप विफल"));
     } finally {
       setLoading(false);
     }
@@ -106,35 +106,44 @@ function LoginPage({ setUser, languageType }) {
       <div className="login-right">
         <div className="login-box">
           <button onClick={() => navigate("/")} className="back-button">
-            <FontAwesomeIcon icon={faArrowLeft} /> Back
+            <FontAwesomeIcon icon={faArrowLeft} /> {languageType === 'en' ? 'Back' : 'पीछे'}
           </button>
+          {/* Language Toggle */}
+          {toggleLanguage && (
+            <div className="language-toggle">
+              <button onClick={toggleLanguage}>
+                {languageType === 'en' ? 'हिन्दी' : 'English'}
+              </button>
+            </div>
+          )}
+
           <img src="./logo.webp" alt="Logo" className="logo" />
-          <h2>Municipal Corporation Gorakhpur</h2>
-          <h3>Kalyan-Mandapam Registration Portal</h3>
+          <h2>{languageType === 'en' ? 'Municipal Corporation Gorakhpur' : 'नगर निगम गोरखपुर'}</h2>
+          <h3>{languageType === 'en' ? 'Kalyan-Mandapam Registration Portal' : 'कल्याण मंडप पंजीकरण पोर्टल'}</h3>
 
           <div className="tab-buttons">
             <button
               className={view === "login" ? "active-tab" : ""}
               onClick={() => { setView("login"); setStep(1); setError(""); setSuccess(""); }}
-            >Login</button>
+            >{languageType === 'en' ? 'Login' : 'लॉगिन'}</button>
             <button
               className={view === "signup" ? "active-tab" : ""}
               onClick={() => { setView("signup"); setStep(1); setError(""); setSuccess(""); }}
-            >Signup</button>
+            >{languageType === 'en' ? 'Signup' : 'साइनअप'}</button>
           </div>
 
           {view === "login" && (
             <form onSubmit={handleLogin} className="login-form">
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={languageType === 'en' ? "Email" : "ईमेल"}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
               />
               <input
                 type="password"
-                placeholder="Password"
+                placeholder={languageType === 'en' ? "Password" : "पासवर्ड"}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
@@ -144,7 +153,7 @@ function LoginPage({ setUser, languageType }) {
               {success && <div className="success-message">{success}</div>}
 
               <button type="submit" disabled={loading}>
-                {loading ? "Logging in..." : "Login"}
+                {loading ? (languageType === 'en' ? "Logging in..." : "लॉग इन हो रहा है...") : (languageType === 'en' ? "Login" : "लॉगिन करें")}
               </button>
             </form>
           )}
@@ -155,21 +164,21 @@ function LoginPage({ setUser, languageType }) {
                 <form onSubmit={sendOtp}>
                   <input
                     type="text"
-                    placeholder="Name"
+                    placeholder={languageType === 'en' ? "Name" : "नाम"}
                     value={name}
                     onChange={e => setName(e.target.value)}
                     required
                   />
                   <input
                     type="email"
-                    placeholder="Email"
+                    placeholder={languageType === 'en' ? "Email" : "ईमेल"}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
                   />
                   <input
                     type="password"
-                    placeholder="Password"
+                    placeholder={languageType === 'en' ? "Password" : "पासवर्ड"}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
@@ -179,14 +188,14 @@ function LoginPage({ setUser, languageType }) {
                   {success && <div className="success-message">{success}</div>}
 
                   <button type="submit" disabled={loading}>
-                    {loading ? "Sending OTP..." : "Send OTP"}
+                    {loading ? (languageType === 'en' ? "Sending OTP..." : "ओटीपी भेज रहा है...") : (languageType === 'en' ? "Send OTP" : "ओटीपी भेजें")}
                   </button>
                 </form>
               ) : (
                 <form onSubmit={verifyAndSignup}>
                   <input
                     type="text"
-                    placeholder="Enter OTP"
+                    placeholder={languageType === 'en' ? "Enter OTP" : "ओटीपी दर्ज करें"}
                     value={otp}
                     onChange={e => setOtp(e.target.value)}
                     required
@@ -196,11 +205,11 @@ function LoginPage({ setUser, languageType }) {
                   {success && <div className="success-message">{success}</div>}
 
                   <button type="submit" disabled={loading}>
-                    {loading ? "Verifying..." : "Verify & Signup"}
+                    {loading ? (languageType === 'en' ? "Verifying..." : "सत्यापित कर रहा है...") : (languageType === 'en' ? "Verify & Signup" : "सत्यापित करें और साइनअप करें")}
                   </button>
                   <p>
                     <a href="#" onClick={e => { e.preventDefault(); setStep(1); setError(""); setSuccess(""); }}>
-                      ← Back
+                      ← {languageType === 'en' ? 'Back' : 'पीछे'}
                     </a>
                   </p>
                 </form>

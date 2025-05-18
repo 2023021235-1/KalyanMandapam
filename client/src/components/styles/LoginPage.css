@@ -33,13 +33,13 @@
   border-radius: 16px;
 }
 
-    /* Right Side - 60% on Desktop with Radial Gradient */
+    /* Right Side - 60% on Desktop with Linear Gradient */
     .login-right {
       flex: 0.6; /* Adjusted flex for desktop to accommodate the left side */
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at center, #ffffff 0%, #eff1f4 50%, #ffd7ac 100%); /* Radial gradient */
+      background: linear-gradient(to right, #ffffff 0%, #eff1f4 50%, #ffd7ac 100%); /* Linear gradient */
       padding: 20px;
     }
 /* for login box */
@@ -263,15 +263,15 @@
       text-decoration: underline;
     }
 
-    /* Mobile Responsive (Tablet and Phone) */
-    @media (max-width: 768px) {
+    /* Tablet and Phone Responsive */
+    @media (max-width: 1024px) { /* Increased tablet width */
       .login-wrapper {
         flex-direction: column; /* Stack elements vertically */
         background-image: none; /* Ensure no background image */
         height: 100vh;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+     
       }
 
       .login-left {
@@ -283,7 +283,7 @@
         width: 100%;
         height: auto;
         min-height: auto;
-        /* Background is already handled by the general rule */
+        background: linear-gradient(to right, #ffffff 0%, #eff1f4 50%, #ffd7ac 100%); /* Linear gradient for tablet */
         display: flex;
         justify-content: center;
         align-items: center;
@@ -342,7 +342,26 @@
         font-size: 1rem;
       }
     }
-    /* ... other CSS ... */
+    /* Language Toggle Styling */
+    .language-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .language-toggle button {
+      background-color: #660033;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .language-toggle button:hover {
+      background-color: #001f3f;
+    }
 
 .back-button {
   background: none;
