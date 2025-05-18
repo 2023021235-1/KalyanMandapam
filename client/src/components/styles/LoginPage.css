@@ -14,32 +14,32 @@
   overflow: hidden;
 }
 
-/* Left Side - 40% */
+/* Left Side - Visible on Desktop, Hidden on Tablet/Phone */
 .login-left {
-  flex: 0.4;
+  flex: 0.4; /* Restore flex for desktop */
   background-color: #ebeff3;
-  display: flex;
+  display: flex; /* Restore display for desktop */
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
-/* doggy image  */
+/* doggy image */
 .doggy {
   width: 100%;
   max-width: 750px;
-  height: 900px; 
+  height: 900px;
   object-fit: cover;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   border-radius: 16px;
 }
 
-    /* Right Side - 60% (Desktop) */
+    /* Right Side - 60% on Desktop with Radial Gradient */
     .login-right {
-      flex: 0.7;
+      flex: 0.6; /* Adjusted flex for desktop to accommodate the left side */
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #eff1f4, #ffd7ac);
+      background: radial-gradient(circle at center, #ffffff 0%, #eff1f4 50%, #ffd7ac 100%); /* Radial gradient */
       padding: 20px;
     }
 /* for login box */
@@ -263,45 +263,38 @@
       text-decoration: underline;
     }
 
-    /* Mobile Responsive */
+    /* Mobile Responsive (Tablet and Phone) */
     @media (max-width: 768px) {
       .login-wrapper {
-        flex-direction: column;
-        /* New background image for smaller screens */
-        background-image: url('./bg.webp'); /* Replace with your mobile image path */
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        height: 100vh; /* Ensure full height */
-        align-items: center; /* Center the content vertically */
-        justify-content: center; /* Center the content horizontally */
-        padding: 20px; /* Add some padding around the edges */
+        flex-direction: column; /* Stack elements vertically */
+        background-image: none; /* Ensure no background image */
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
       }
 
       .login-left {
-        display: none; /* Hide the left side on smaller screens */
+        display: none; /* Hide the left side */
       }
 
       .login-right {
-        flex: none;
+        flex: 1; /* Make right side take full width */
         width: 100%;
         height: auto;
         min-height: auto;
-        background: none; /* Remove the gradient background */
-        display: flex; /* Enable flexbox for centering */
-        justify-content: center; /* Center the login box horizontally */
-        align-items: center; /* Center the login box vertically */
+        /* Background is already handled by the general rule */
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       .login-box {
-        /* Keep all the desktop styling */
-        width: 90%; /* Adjust width as needed for smaller screens */
-        margin: 20px 0; /* Adjust vertical margin */
-        /* Remove or adjust background if needed, but keeping it white as per desktop */
-        /* background-color: rgba(255, 255, 255, 0.9); */
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Keep the shadow */
-        border-radius: 16px; /* Keep the border-radius */
-        padding: 40px; /* Keep the padding */
+        width: 90%;
+        margin: 20px 0;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        padding: 40px;
       }
 
       .tab-buttons button {
@@ -333,7 +326,7 @@
     /* Responsive Adjustments for Small Screens (further refine if needed) */
     @media (max-width: 480px) {
       .login-box {
-        padding: 20px; /* Adjust padding for very small screens */
+        padding: 20px;
         width: 95%;
       }
 
@@ -358,7 +351,7 @@
   cursor: pointer;
   font-size: 16px;
   margin-bottom: 15px;
-  align-self: flex-start; /* Align to the start of the login-box */
+  align-self: flex-start;
   display: flex;
   align-items: center;
   transition: opacity 0.3s ease;
@@ -370,17 +363,4 @@
 
 .back-button svg {
   margin-right: 8px;
-}
-
-/* ... rest of your CSS ... */
-
-/* Mobile Responsive Adjustments (ensure back button is positioned correctly) */
-@media (max-width: 768px) {
-  /* ... other mobile styles ... */
-  .login-box {
-    /* ... other mobile login-box styles ... */
-    display: flex;
-    flex-direction: column; /* Ensure elements stack vertically */
-    align-items: center; /* Center items horizontally */
-  }
 }
