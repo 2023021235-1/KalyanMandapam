@@ -9,61 +9,73 @@ const QueryFeedbackSection = ({ languageType = 'en' }) => {
    // Content only for the Query & Feedback part
    const content = {
      en: {
-       sectionHeading: 'Query & Feedback', // New section heading
-       subHeadingForm: 'Send us a Message',
-       formNameLabel: 'Your Name',
-       formEmailLabel: 'Your Email',
-       formMessageLabel: 'Your Message',
-       formSubmitButton: 'Send Message',
+       sectionHeading: 'Query & Feedback', // Section heading
+       subHeadingForm: 'Send us a Message', // Form sub-heading
+       formNameLabel: 'Your Name', // Label for Name input
+       formEmailLabel: 'Your Email', // Label for Email input
+       formMessageLabel: 'Your Message', // Label for Message textarea
+       formSubmitButton: 'Send Message', // Submit button text
      },
      hi: {
-       sectionHeading: 'प्रश्न और प्रतिक्रिया', // New section heading (Hindi)
-       subHeadingForm: 'हमें संदेश भेजें',
-       formNameLabel: 'आपका नाम',
-       formEmailLabel: 'आपका ईमेल',
-       formMessageLabel: 'आपका संदेश',
-       formSubmitButton: 'संदेश भेजें',
+       sectionHeading: 'प्रश्न और प्रतिक्रिया', // Section heading (Hindi)
+       subHeadingForm: 'हमें संदेश भेजें', // Form sub-heading (Hindi)
+       formNameLabel: 'आपका नाम', // Label for Name input (Hindi)
+       formEmailLabel: 'आपका ईमेल', // Label for Email input (Hindi)
+       formMessageLabel: 'आपका संदेश', // Label for Message textarea (Hindi)
+       formSubmitButton: 'संदेश भेजें', // Submit button text (Hindi)
      }
    };
 
+   // Get current content based on language
    const currentContent = content[languageType] || content.en;
 
    // Basic form submission handler (can be shared or separate)
    const handleFormSubmit = (e) => {
-       e.preventDefault();
-       alert('Message Sent! (This is a placeholder)');
-       // Add your form submission logic here
+       e.preventDefault(); // Prevent default form refresh
+       alert('Message Sent! (This is a placeholder)'); // Placeholder alert
+       // Add your actual form submission logic here (e.g., sending data to a backend)
    };
 
   return (
-    <section className="query-feedback-section"> {/* New section class */}
-      <div className="container"> {/* Use the general container class */}
-        <h2 className="query-feedback-section-heading">{currentContent.sectionHeading}</h2> {/* New heading class */}
+    <section className="query-feedback-section"> {/* Main section container */}
+      {/* Use the general container class for max width and centering */}
+      <div className="container">
+        <h2 className="query-feedback-section-heading">{currentContent.sectionHeading}</h2> {/* Section heading */}
 
-        <div className="query-feedback-content"> {/* New content wrapper */}
-             {/* Contact Form Block */}
-            <div className="query-feedback-form-block"> {/* New class for the form card */}
-              <h3 className="contact-subheading">{currentContent.subHeadingForm}</h3> {/* Reuse subheading class if desired */}
-              <form onSubmit={handleFormSubmit}>
-                <div className="form-group"> {/* Reuse form-group class */}
-                  <label htmlFor="name">{currentContent.formNameLabel}</label>
-                  <input type="text" id="name" name="name" required />
-                </div>
+        {/* Wrapper for the content (form block) */}
+        <div className="query-feedback-content">
+             {/* Contact Form Block (the white card) */}
+            <div className="query-feedback-form-block">
+              {/* Form sub-heading */}
+              <h3 className="contact-subheading">{currentContent.subHeadingForm}</h3>
+              <form onSubmit={handleFormSubmit}> {/* Form element */}
+                {/* Form group for Name input */}
                 <div className="form-group">
-                  <label htmlFor="email">{currentContent.formEmailLabel}</label>
-                  <input type="email" id="email" name="email" required />
+                  <label htmlFor="name">{currentContent.formNameLabel}</label> {/* Label */}
+                  <input type="text" id="name" name="name" required /> {/* Input field */}
                 </div>
+                 {/* Form group for Email input */}
                 <div className="form-group">
-                  <label htmlFor="message">{currentContent.formMessageLabel}</label>
-                  <textarea id="message" name="message" rows="5" required></textarea>
+                  <label htmlFor="email">{currentContent.formEmailLabel}</label> {/* Label */}
+                  <input type="email" id="email" name="email" required /> {/* Input field */}
                 </div>
-                <button type="submit" className="btn btn-primary query-feedback-submit-btn"> {/* New button class */}
-                   <Send size={18} style={{marginRight: '8px'}}/> {currentContent.formSubmitButton}
-                </button>
+                 {/* Form group for Message textarea */}
+                <div className="form-group">
+                  <label htmlFor="message">{currentContent.formMessageLabel}</label> {/* Label */}
+                  <textarea id="message" name="message" rows="5" required></textarea> {/* Textarea */}
+                </div>
+                {/* Container for the submit button to help with centering */}
+                <div className="query-feedback-button-container"> {/* New class for button wrapper */}
+                    {/* Submit button */}
+                    <button type="submit" className="btn btn-primary query-feedback-submit-btn"> {/* Button */}
+                       {/* Icon next to button text */}
+                       <Send size={18} style={{marginRight: '8px'}}/> {currentContent.formSubmitButton}
+                    </button>
+                </div> {/* End query-feedback-button-container */}
               </form>
-            </div>
-        </div>
-      </div>
+            </div> {/* End query-feedback-form-block */}
+        </div> {/* End query-feedback-content */}
+      </div> {/* End container */}
     </section>
   );
 };

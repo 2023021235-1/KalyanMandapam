@@ -1,23 +1,21 @@
 /* QueryFeedback.css - Styling for Query & Feedback Section */
 
-/* --- Color Variables --- */
 :root {
-  --base-color: #ffd7ac; /* Light peach (main theme base) */
-  --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
-  --primary-color: #800000; /* Maroon */
-  --secondary-color: #ff9900; /* #f90 Orange */
-  --text-color: #000000; /* Black */
-  --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
-  --button-text-color: var(--white-card-bg); /* White text on primary/secondary buttons */
-  --form-input-border: #ccc; /* Light grey border for form inputs */
-  --form-input-focus-border: var(--secondary-color); /* Orange border on focus */
-  --secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
+  --base-color: #ffd7ac;
+  --white-card-bg: #FFFFFF;
+  --primary-color: #660033;
+  --secondary-color: #ff9900;
+  --text-color: #000000;
+  --hover-bg: rgba(0, 0, 0, 0.05);
+  --button-text-color: var(--white-card-bg);
+  --form-input-border: #ccc;
+  --form-input-focus-border: var(--secondary-color);
+  --secondary-color-rgb: 255, 153, 0;
   --shadow-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Overall Query & Feedback Section Background */
-.query-feedback-section { /* New section class */
-  background: linear-gradient(to bottom, #ffe6d8, #f0f0f0); /* Subtle light grey to white gradient (can vary from contact section) */
+.query-feedback-section {
+  background: linear-gradient(to bottom, #ffe6d8, #f0f0f0);
   padding: 60px 0;
   color: var(--text-color);
   text-align: center;
@@ -28,10 +26,10 @@
     margin: 0 auto;
     padding: 0 20px;
     height: fit-content;
+    box-sizing: border-box;
 }
 
-/* Section Heading */
-.query-feedback-section-heading { /* New heading class */
+.query-feedback-section-heading {
   font-size: 3em;
   margin-bottom: 40px;
   font-weight: 700;
@@ -40,7 +38,7 @@
   padding-bottom: 10px;
 }
 
-.query-feedback-section-heading::after { /* New heading after class */
+.query-feedback-section-heading::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -52,30 +50,25 @@
   border-radius: 1px;
 }
 
-/* Container for the Form */
-.query-feedback-content { /* New content wrapper (flexbox if needed, but form is likely the only item) */
-  display: flex; /* Use flex to center the form block */
+.query-feedback-content {
+  display: flex;
   justify-content: center;
-  /* gap: 40px; Not needed if only one block */
-  /* margin-bottom: 40px; Not needed */
 }
 
-/* Style for the Form Block (the white card) */
-.query-feedback-form-block { /* New class for the form card */
-  /* flex: 1; Not needed if not side-by-side */
+.query-feedback-form-block {
   min-width: 300px;
-  max-width: 800px; /* Control the form card width */
-  background-color: var(--white-card-bg); /* White background */
+  max-width: 500px;
+  background-color: var(--white-card-bg);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 5px 15px var(--shadow-color);
   display: flex;
   flex-direction: column;
-   width: 100%; /* Make it take full width up to max-width */
-   margin: 0 auto; /* Center the block */
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* Reuse subheading style from contact section */
 .contact-subheading {
     font-size: 1.8em;
     color: var(--primary-color);
@@ -83,36 +76,44 @@
     text-align: center;
 }
 
-
-/* Form Styling (Copied from Contact.css) */
 .form-group {
   margin-bottom: 20px;
   display: flex;
-  
+  align-items: center;
+  gap: 15px;
 }
 
 .form-group label {
-  display: block;
+  display: inline-block;
   font-size: 1em;
   color: var(--primary-color);
-  margin-bottom: 8px;
-  text-align: justify;
+  margin-bottom: 0;
+  flex: 0 0 120px; /* Fixed width for label */
   font-weight: 600;
+  text-align: right;
 }
 
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group textarea {
-  width: 100%;
+  flex-grow: 1; /* Allow inputs to grow and fill remaining space */
+  /* Removed width: 100%; */
   padding: 10px;
   border: 1px solid var(--form-input-border);
   border-radius: 4px;
   font-size: 1em;
   color: var(--text-color);
-  background-color: var(--white-card-bg); /* Input background White */
+  background-color: var(--white-card-bg);
   transition: border-color 0.3s ease;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Include padding and border in element's size */
+  display: inline-block;
 }
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical; /* Keep vertical resize unless specifically asked to remove */
+}
+
 
 .form-group input[type="text"]:focus,
 .form-group input[type="email"]:focus,
@@ -122,11 +123,15 @@
   box-shadow: 0 0 5px rgba(var(--secondary-color-rgb, 255, 153, 0), 0.5);
 }
 
-/* Submit Button Styling (Copied and potentially renamed/styled) */
-.query-feedback-submit-btn { /* New button class */
+.query-feedback-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.query-feedback-submit-btn {
   display: flex;
   align-items: center;
-  margin-left:40%;
   justify-content: center;
   width: auto;
   padding: 10px 25px;
@@ -135,9 +140,9 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  /* Using primary button theme */
   background-color: var(--primary-color);
   color: var(--button-text-color);
+  border: none;
 }
 
 .query-feedback-submit-btn:hover {
@@ -147,27 +152,51 @@
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-  .query-feedback-form-block { /* Apply mobile width to the form block */
+  .query-feedback-form-block {
     min-width: 90%;
     max-width: 95%;
     width: 100%;
-    padding: 20px; /* Adjust padding */
+    padding: 20px;
   }
 
-  .contact-subheading { /* Reuse subheading class */
+  .contact-subheading {
       font-size: 1.5em;
   }
+
+   .form-group {
+       flex-direction: column; /* Stack label and input on smaller screens */
+       align-items: flex-start; /* Align items to the start when stacked */
+       gap: 8px;
+   }
+
+   .form-group label {
+       flex: none; /* Remove fixed basis when stacked */
+       width: auto; /* Auto width for label when stacked */
+       text-align: left; /* Align label text left when stacked */
+       margin-bottom: 0;
+   }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group textarea {
+        flex-grow: 1; /* Still allow inputs to grow */
+        width: 100%; /* Ensure inputs take full width when stacked */
+    }
+
+   .query-feedback-button-container {
+       margin-top: 20px;
+   }
 }
 
 @media (max-width: 480px) {
-    .query-feedback-section-heading { /* New heading class */
+    .query-feedback-section-heading {
         font-size: 2em;
     }
-     .contact-subheading { /* Reuse subheading class */
+     .contact-subheading {
         font-size: 1.3em;
      }
 
-     .query-feedback-form-block { /* Adjust padding */
+     .query-feedback-form-block {
          padding: 15px;
      }
      .form-group label {
@@ -179,7 +208,10 @@
          padding: 8px;
          font-size: 0.9em;
      }
-      .query-feedback-submit-btn { /* New button class */
+      .query-feedback-button-container {
+          margin-top: 15px;
+      }
+      .query-feedback-submit-btn {
           padding: 8px 20px;
           font-size: 1em;
       }

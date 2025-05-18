@@ -4,7 +4,7 @@
 :root {
   --base-color: #ffd7ac; /* Light peach (main theme base) */
   --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
-  --primary-color: #800000; /* Maroon */
+  --primary-color: #660033; /* Maroon */
   --secondary-color: #ff9900; /* #f90 Orange */
   --text-color: #000000; /* Black */
   --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
