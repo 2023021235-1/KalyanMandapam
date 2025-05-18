@@ -1,26 +1,23 @@
 /* Hero.css - Styling for Kalyan Mandapam Hero Section */
 
-/* --- Color Variables --- */
 :root {
-  --base-color: #ffd7ac; /* White */
-  --primary-color: #800000; /* Maroon */
-  --secondary-color: #ff9900; /* #f90 Orange */
-  --text-color: #000000; /* Black */
-  --button-text-color: var(--base-color); /* White text on primary/secondary buttons */
+  --base-color: #ffd7ac;
+  --primary-color: #800000;
+  --secondary-color: #ff9900;
+  --text-color: #000000;
+  --button-text-color: var(--base-color);
 }
 
-
 .hero-section {
-  background-color: #ffd7ac; /* Change to White background */
-  /* Removed gradient background */
+  background-color: #ffd7ac;
   padding: 80px 0;
   position: relative;
   overflow: hidden;
-  color: var(--text-color); /* Default text color in this section */
+  color: var(--text-color);
 }
 
 .container {
-    max-width: 1200px; /* Use the same container width as other sections */
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -31,75 +28,102 @@
   justify-content: space-between;
   position: relative;
   z-index: 2;
-  /* animation: fadeIn 1s ease-in-out; */ /* Keep or remove animation */
 }
 
 .hero-text {
   flex: 1;
-  max-width: 550px; /* Keep max-width */
-  /* Removed text-align center, default is left */
+  max-width: 550px;
 }
 
 .hero-text h1 {
-  color: var(--primary-color); /* Title color to Maroon */
+  color: var(--primary-color);
   margin-bottom: 20px;
   font-size: 2.8rem;
   line-height: 1.2;
 }
 
 .hero-text p {
-  text-align: justify; /* Keep justify */
-  color: var(--text-color); /* Paragraph text color to Black */
+  text-align: justify;
+  color: var(--text-color);
   margin-bottom: 30px;
   font-size: 1.1rem;
 }
+
+/* Styling for the button container */
+.hero-buttons { /* New class */
+    display: flex; /* Arrange buttons horizontally */
+    gap: 20px; /* Space between buttons */
+    margin-top: 30px; /* Space above buttons */
+    /* Removed margin-bottom from p tag, added margin-top here */
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+   /* Center buttons if they wrap (optional, depends on design) */
+}
+
 
 .hero-image {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-left: 20px; /* Add some space between text and image on desktop */
+  padding-left: 20px;
 }
 
-.venue-circle { /* Changed class name */
+.venue-circle {
   width: 400px;
   height: 400px;
   position: relative;
   overflow: hidden;
   border-radius: 50%;
-  background-color: var(--secondary-color); /* Circle background to Orange */
+  background-color: var(--secondary-color);
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-  /* animation: float 6s ease-in-out infinite; */ /* Keep or remove animation */
 }
 
 .venue-circle img {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ensure image covers the circle */
+    object-fit: cover;
 }
 
-/* Removed .paw-decorations and related styles */
 
-
-/* Button Styling (Referencing the theme button classes used in Navbar/About) */
-.btn.btn-primary { /* Targeting the specific button classes used in JSX */
-    background-color: var(--primary-color); /* Button background Maroon */
-    color: var(--button-text-color); /* Button text White */
-    padding: 12px 25px; /* Match padding from other buttons */
-    border: none; /* Ensure no default border */
-    border-radius: 5px; /* Match border-radius */
-    font-size: 1.1rem; /* Adjust font size */
-    font-weight: 600; /* Match font weight */
+/* Button Styling (Referencing the theme button classes) */
+/* General primary button style */
+.btn.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .btn.btn-primary:hover {
-    background-color: darken(var(--primary-color), 10%); /* Darker Maroon on hover */
-    transform: translateY(-2px); /* Subtle hover effect */
+    background-color: darken(var(--primary-color), 10%);
+    transform: translateY(-2px);
 }
+
+/* Added secondary button style for the second button */
+.btn.btn-secondary {
+    background-color: var(--primary-color); /* Orange background */
+    color: var(--button-text-color); /* White text */
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn.btn-secondary:hover {
+     background-color: darken(var(--secondary-color), 10%);
+     transform: translateY(-2px);
+}
+
+/* Note: .hero-button class in JSX can be used for Hero-specific button adjustments if needed */
 
 
 /* Responsive styles */
@@ -108,12 +132,12 @@
     font-size: 2.3rem;
   }
 
-  .venue-circle { /* Changed class name */
+  .venue-circle {
     width: 350px;
     height: 350px;
   }
    .hero-image {
-      padding-left: 10px; /* Reduce padding */
+      padding-left: 10px;
    }
 }
 
@@ -128,17 +152,31 @@
     max-width: 100%;
   }
 
-  
+  .hero-buttons { /* Adjust button container on mobile */
+      justify-content: center; /* Ensure buttons are centered */
+      gap: 15px; /* Reduce gap */
+  }
 
    .hero-image {
-      padding-left: 0; /* Remove padding on mobile */
-      margin-top: 20px; /* Add space between text and image */
+      padding-left: 0;
+      margin-top: 20px;
    }
 }
 
 @media (max-width: 480px) {
-  .venue-circle { /* Changed class name */
+  .venue-circle {
     width: 280px;
     height: 280px;
   }
+   .hero-buttons { /* Further adjust button container on smaller mobile */
+       flex-direction: column; /* Stack buttons vertically */
+       gap: 10px; /* Adjust gap */
+       align-items: center; /* Center stacked buttons */
+   }
+    /* Make stacked buttons wider */
+   .hero-buttons .btn {
+       width: 80%; /* Give buttons width when stacked */
+       max-width: 250px; /* Max width for stacked buttons */
+   }
+
 }

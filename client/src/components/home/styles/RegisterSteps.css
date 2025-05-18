@@ -73,7 +73,7 @@
 
 .rs-step-card:hover {
    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-   background-color: var(--hover-bg);
+   background-color: #f0f0f0;
 }
 
 .rs-step-card:hover .rs-step-icon-container {
@@ -141,7 +141,7 @@
 }
 
 .rs-btn-primary:hover {
-  background-color: darken(var(--secondary-color), 10%);
+  background-color: darken(#fff, 10%);
   transform: translateY(-5px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
