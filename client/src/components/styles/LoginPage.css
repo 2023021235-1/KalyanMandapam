@@ -39,7 +39,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(to right, #ffffff 0%, #eff1f4 50%, #ffd7ac 100%); /* Linear gradient */
+      background: linear-gradient(to right, #ffd7ac 0%, #eff1f4 50%, #ffd7ac 100%); /* Linear gradient */
       padding: 20px;
     }
 /* for login box */

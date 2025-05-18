@@ -155,6 +155,10 @@ function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleL
               <button type="submit" disabled={loading}>
                 {loading ? (languageType === 'en' ? "Logging in..." : "लॉग इन हो रहा है...") : (languageType === 'en' ? "Login" : "लॉगिन करें")}
               </button>
+               {/* Original links div - contains only one link in the original */}
+               <div className="links">
+                 {/* Add your forgot password link here if needed, but keeping original structure */}
+               </div>
             </form>
           )}
 
@@ -190,6 +194,7 @@ function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleL
                   <button type="submit" disabled={loading}>
                     {loading ? (languageType === 'en' ? "Sending OTP..." : "ओटीपी भेज रहा है...") : (languageType === 'en' ? "Send OTP" : "ओटीपी भेजें")}
                   </button>
+                 
                 </form>
               ) : (
                 <form onSubmit={verifyAndSignup}>
@@ -216,6 +221,13 @@ function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleL
               )}
             </div>
           )}
+           <div className="links">
+                <a href="#" onClick={(e) => {
+                  e.preventDefault();
+                  setView("signup");
+                                 }}>{languageType === 'en' ? "Create Account" : "खाता बनाएं"}</a>
+                <a href="#" onClick={(e) => e.preventDefault()}>{languageType === 'en' ? "Forgot Password?" : "पासवर्ड भूल गए?"}</a>
+              </div>
         </div>
       </div>
     </div>
