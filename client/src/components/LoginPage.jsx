@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const API = "http://localhost:5000/api";
+const API = "https://kalyanmandapam.onrender.com/api";
 
 function LoginPage({ setUser,setIsAdmin, languageType, toggleLanguage }) { // Added toggleLanguage prop
   const [view, setView] = useState("login");

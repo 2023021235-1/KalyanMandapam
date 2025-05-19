@@ -29,7 +29,7 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
     const [viewMode, setViewMode] = useState('calendar');
 
     // Base URL for API calls - Consider moving this to a config file or environment variable
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
 
     const months = [
         { value: '', label: languageType === 'hi' ? 'महीना चुनें' : 'Select Month' }, // Added placeholder

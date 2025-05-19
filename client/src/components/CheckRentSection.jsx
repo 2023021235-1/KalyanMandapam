@@ -19,7 +19,7 @@ const CheckRentSection = ({ languageType = 'en' }) => {
     const [detailsError, setDetailsError] = useState(null);
 
     // Base URL for API calls
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
 
     // Content for the section (remains mostly the same)
     const content = {

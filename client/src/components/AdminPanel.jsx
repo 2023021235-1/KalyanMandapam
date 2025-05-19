@@ -32,7 +32,7 @@ const AdminPanel = () => {
 
 
     // Base URL for API calls
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
 
     // Function to get the JWT token (replace with your actual logic)
     const getAuthToken = () => {

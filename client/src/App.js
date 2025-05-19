@@ -24,7 +24,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [isAdmin,setIsAdmin]=useState(false);
-  const backend = "http://localhost:5000";
+  const backend = "https://kalyanmandapam.onrender.com";
 
   const handleLogin = (userData, token) => {
     localStorage.setItem("token", token);

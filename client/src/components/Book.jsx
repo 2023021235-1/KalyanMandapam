@@ -38,7 +38,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const [editingBookingId, setEditingBookingId] = useState(null);
 
-    const API_BASE_URL = 'http://localhost:5000/api'; // Corrected API Base URL
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Corrected API Base URL
 
     const getAuthToken = () => {
         return localStorage.getItem('token');
