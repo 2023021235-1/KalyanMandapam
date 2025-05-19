@@ -1,0 +1,361 @@
+/* AdminPanel.css */
+
+:root {
+    --admin-primary-color: #800000; /* Maroon - Same as BookNow primary */
+    --admin-secondary-color: #ff9900; /* Orange - Same as BookNow secondary */
+    --admin-text-color: #000000; /* Black */
+    --admin-white-bg: #FFFFFF; /* White */
+    --admin-light-grey: #f8f9fa; /* Light grey for backgrounds */
+    --admin-border-color: #dee2e6; /* Grey border */
+
+    /* Status colors (matching BookNow) */
+    --admin-status-confirmed-bg: #4CAF50; /* Green */
+    --admin-status-confirmed-text: #FFFFFF;
+    --admin-status-rejected-bg: #f44336; /* Red */
+    --admin-status-rejected-text: #FFFFFF;
+    --admin-status-pending-bg: #ff9800; /* Orange/Amber */
+    --admin-status-pending-text: #FFFFFF;
+    --admin-status-cancelled-bg: #dc3545; /* Red (using danger color) */
+    --admin-status-cancelled-text: #FFFFFF;
+}
+
+.admin-panel-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: var(--admin-text-color);
+}
+
+.admin-panel-container h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--admin-primary-color);
+}
+
+/* Tab Styles */
+.admin-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--admin-border-color);
+}
+
+.admin-tab-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #555;
+    transition: color 0.3s ease, border-bottom-color 0.3s ease;
+    border-bottom: 2px solid transparent;
+    margin-right: 10px; /* Space between tabs */
+}
+
+.admin-tab-button.active {
+    color: var(--admin-primary-color);
+    border-bottom-color: var(--admin-primary-color);
+    font-weight: 600;
+}
+
+.admin-tab-button:hover:not(.active) {
+    color: var(--admin-secondary-color);
+    border-bottom-color: var(--admin-secondary-color);
+}
+
+.admin-tab-content {
+    /* Styles for the content area */
+    border: 1px solid var(--admin-border-color);
+    padding: 20px;
+    border-radius: 8px;
+    background-color: var(--admin-white-bg);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.admin-tab-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--admin-primary-color);
+    border-bottom: 1px solid var(--admin-border-color);
+    padding-bottom: 10px;
+}
+
+/* Form Styles */
+.admin-form-toggle-button {
+    padding: 10px 15px;
+    background-color: #007bff; /* Bootstrap-like primary blue */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.admin-form-toggle-button:hover {
+    background-color: #0056b3;
+}
+
+.admin-form-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px dashed var(--admin-border-color);
+    border-radius: 5px;
+    background-color: var(--admin-light-grey);
+}
+
+.admin-form-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--admin-primary-color);
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjusted minmax for larger form fields */
+    gap: 15px;
+}
+
+.admin-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--admin-text-color);
+}
+
+.admin-form-group input[type="text"],
+.admin-form-group input[type="number"],
+.admin-form-group textarea {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+.admin-form-group textarea {
+    min-height: 80px;
+    resize: vertical; /* Allow vertical resizing */
+    grid-column: span 2; /* Make textarea span two columns on larger screens */
+}
+
+.admin-form-group input[type="text"]:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+
+.admin-form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    grid-column: span 2; /* Make buttons span two columns */
+}
+
+.admin-form-submit-button {
+    padding: 10px 15px;
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.admin-form-submit-button:hover {
+    background-color: #218838;
+}
+
+.admin-form-cancel-button {
+     padding: 10px 15px;
+     background-color: #dc3545; /* Red */
+     color: white;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     transition: background-color 0.3s ease;
+}
+
+.admin-form-cancel-button:hover {
+     background-color: #c82333;
+}
+
+
+/* Table Styles */
+.admin-table-container {
+    overflow-x: auto; /* Horizontal scroll for tables */
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 10px;
+    border: 1px solid var(--admin-border-color);
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: var(--admin-primary-color); /* Primary color background */
+    color: var(--admin-white-bg); /* White text color */
+    font-weight: 600;
+}
+
+.admin-table tbody tr:nth-child(even) {
+    background-color: var(--admin-light-grey); /* Zebra striping */
+}
+
+/* Table Action Button Styles */
+.admin-table-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px; /* Space between buttons */
+    transition: background-color 0.3s ease;
+}
+
+.admin-table-actions button:last-child {
+    margin-right: 0;
+}
+
+
+.admin-edit-button {
+    background-color: #ffc107; /* Yellow */
+    color: black;
+}
+.admin-edit-button:hover {
+     background-color: #e0a800;
+}
+
+
+.admin-delete-button {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+.admin-delete-button:hover {
+     background-color: #c82333;
+}
+
+/* Booking Specific Action Button Styles */
+.admin-confirm-button {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+.admin-confirm-button:hover {
+    background-color: #218838;
+}
+
+.admin-cancel-button {
+    background-color: #ffc107; /* Yellow/Orange */
+    color: black;
+}
+.admin-cancel-button:hover {
+    background-color: #e0a800;
+}
+
+
+/* Status Indicator Styles (matching BookNow) */
+.admin-status-indicator {
+    display: inline-flex; /* Use flexbox for icon and text alignment */
+    align-items: center; /* Vertically center icon and text */
+    padding: 4px 8px;
+    border-radius: 12px; /* More rounded corners */
+    font-size: 0.9em;
+    font-weight: 600;
+    text-transform: capitalize; /* Capitalize the first letter of the status */
+    gap: 4px; /* Space between icon and text */
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+.admin-status-confirmed {
+    background-color: var(--admin-status-confirmed-bg);
+    color: var(--admin-status-confirmed-text);
+}
+
+.admin-status-rejected {
+    background-color: var(--admin-status-rejected-bg);
+    color: var(--admin-status-rejected-text);
+}
+
+.admin-status-pending {
+    background-color: var(--admin-status-pending-bg);
+    color: var(--admin-status-pending-text);
+}
+
+.admin-status-cancelled {
+    background-color: var(--admin-status-cancelled-bg);
+    color: var(--admin-status-cancelled-text);
+}
+
+.admin-status-indicator svg {
+    width: 1em; /* Match icon size to text font size */
+    height: 1em;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .admin-panel-container {
+        padding: 15px;
+    }
+
+    .admin-panel-container h1 {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+
+    .admin-tabs {
+        flex-wrap: wrap; /* Allow tabs to wrap */
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+
+    .admin-tab-button {
+        padding: 8px 15px;
+        font-size: 1em;
+        margin-right: 8px;
+        margin-bottom: 5px; /* Add space when wrapped */
+    }
+
+    .admin-tab-content {
+        padding: 15px;
+    }
+
+    .admin-tab-content h2 {
+        font-size: 1.3em;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+    }
+
+    .admin-form-grid {
+        grid-template-columns: 1fr; /* Stack form items on small screens */
+        gap: 10px;
+    }
+
+    .admin-form-group textarea,
+    .admin-form-buttons {
+         grid-column: span 1; /* Reset span for small screens */
+    }
+
+
+    .admin-table th,
+    .admin-table td {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+
+    .admin-table-actions button {
+        padding: 4px 8px;
+        font-size: 0.8em;
+        margin-right: 3px;
+    }
+}

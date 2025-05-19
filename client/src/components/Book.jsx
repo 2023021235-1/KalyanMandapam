@@ -1,13 +1,15 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './styles/BookNow.css'; // Ensure this path is correct
+import './styles/BookNow.css';
+import { CircleCheck, CircleX, CircleDot } from 'lucide-react'; // Import Lucide Icons
 
 const BookNowSection = ({ languageType = 'en', user }) => {
     const navigate = useNavigate();
 
-    const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-    const [showBookingModal, setShowBookingModal] = useState(false);
-    const [modalStep, setModalStep] = useState(1); // Keep modal step for disclaimer -> form flow
+    // Renamed state for clarity - controls if the main modal is open
+    const [showModal, setShowModal] = useState(false);
+    // modalStep 1: Disclaimer, modalStep 2: Booking Form
+    const [modalStep, setModalStep] = useState(1);
     const [isEditing, setIsEditing] = useState(false);
 
     const [bookings, setBookings] = useState([]);
@@ -36,7 +38,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const [editingBookingId, setEditingBookingId] = useState(null);
 
-    const API_BASE_URL = 'http://localhost:5000/api'; // Make sure this is correct
+    const API_BASE_URL = 'http://localhost:5000/api'; // Corrected API Base URL
 
     const getAuthToken = () => {
         return localStorage.getItem('token');
@@ -44,7 +46,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const content = {
         en: {
-            sectionHeading: 'Book BaratGhar',
+            sectionHeading: 'Book Baratghar',
             disclaimerHeading: 'Disclaimer',
             disclaimerPoints: [
                 'Before going to book the Barat Ghar please read all the terms & Conditions carefully.',
@@ -55,26 +57,26 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 'Further the concern Deputy Manager (CS) of Barat Ghar have been directed to ensure valet parking at the time of handing over the Barat Ghar to the party and in case the arrangement is not made by the Parking Management System Department for providing the valet parking.',
                 'Booking is neither transferable nor changeable.',
             ],
-            disclaimerAgreeButton: 'Agree',
+            disclaimerAgreeButton: 'Agree and Proceed', // Changed button text
             disclaimerCloseButton: 'Close',
             newBookingButton: 'New Booking',
             previousBookingsHeading: 'All Bookings',
             tableHeaders: ['S.No.', 'Booking Id', 'BaratGhar Name', 'Floor Name', 'Function', 'Total Amount', 'Status', 'Add-On AC/Heating', 'Booking Date', 'Action'],
-            cancelButton: 'Cancel', // Changed from Delete
+            cancelButton: 'Cancel',
             noBookingsMessage: 'No bookings found.',
             selectHallPlaceholder: 'Select BaratGhar',
             loadingHallsMessage: 'Loading halls...',
             hallsErrorMessage: 'Failed to load halls.',
-            loadingRentMessage: 'Fetching rent options...', // Updated message
+            loadingRentMessage: 'Fetching rent options...',
             rentErrorMessage: 'Failed to fetch rent details.',
-            rentOptionsLabel: 'Select Rent Type or Enter Amount:', // New label for rent options
+            rentOptionsLabel: 'Select Rent Type or Enter Amount:',
             commercialRentLabel: 'Commercial Rent:',
             socialRentLabel: 'Social Rent:',
             nonCommercialRentLabel: 'Non-Commercial Rent:',
             enterCustomAmountPlaceholder: 'Enter custom amount',
-            confirmCancelMessage: 'Are you sure you want to cancel this booking?', // Changed from delete
-            bookingTypeLabel: 'Booking Type (Optional):', // Label for optional booking type
-            bookingTypeOptions: [ // Keep options for manual selection if needed
+            confirmCancelMessage: 'Are you sure you want to cancel this booking?',
+            bookingTypeLabel: 'Booking Type (Optional):',
+            bookingTypeOptions: [
                  { value: 'employee', label: 'Employee of NDMC' },
                  { value: 'ex-employee', label: 'Ex-Employee of NDMC' },
                  { value: 'ndmc-resident', label: 'NDMC Area Resident' },
@@ -82,7 +84,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                  { value: 'commercial', label: 'Commercial' },
                  { value: 'social', label: 'Social' },
                  { value: 'non-commercial', label: 'Non-Commercial' },
-             ],
+            ],
+             closeModalButton: 'Close Modal' // Added for aria-label
         },
         hi: {
             sectionHeading: 'बारात घर बुक करें',
@@ -96,26 +99,26 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 'आगे संबंधित उपायुक्त (सीएस) बारात घर को बारात घर पार्टी को सौंपते समय वैले पार्किंग सुनिश्चित करने का निर्देश दिया गया है और यदि पार्किंग प्रबंधन प्रणाली विभाग द्वारा वैले पार्किंग की व्यवस्था नहीं की जाती है।',
                 'बुकिंग न तो हस्तांतरणीय है और न ही परिवर्तन योग्य है।',
             ],
-            disclaimerAgreeButton: 'सहमत',
+            disclaimerAgreeButton: 'सहमत और आगे बढ़ें', // Changed button text
             disclaimerCloseButton: 'बंद करें',
             newBookingButton: 'नई बुकिंग',
             previousBookingsHeading: 'सभी बुकिंग',
             tableHeaders: ['क्र.सं.', 'बुकिंग आईडी', 'बारात घर का नाम', 'मंजिल का नाम', 'समारोह', 'कुल राशि', 'स्थिति', 'ऐड-ऑन एसी/हीटिंग', 'बुकिंग तिथि', 'कार्रवाई'],
-            cancelButton: 'रद्द करें', // Changed from हटाएँ
+            cancelButton: 'रद्द करें',
             noBookingsMessage: 'कोई बुकिंग नहीं मिली।',
             selectHallPlaceholder: 'बारात घर चुनें',
             loadingHallsMessage: 'बारात घर लोड हो रहे हैं...',
             hallsErrorMessage: 'बारात घर लोड करने में विफल।',
-            loadingRentMessage: 'किराया विकल्प प्राप्त हो रहे हैं...', // Updated message
+            loadingRentMessage: 'किराया विकल्प प्राप्त हो रहे हैं...',
             rentErrorMessage: 'किराया विवरण प्राप्त करने में विफल।',
-            rentOptionsLabel: 'किराया प्रकार चुनें या राशि दर्ज करें:', // New label
+            rentOptionsLabel: 'किराया प्रकार चुनें या राशि दर्ज करें:',
             commercialRentLabel: 'वाणिज्यिक किराया:',
             socialRentLabel: 'सामाजिक किराया:',
             nonCommercialRentLabel: 'गैर-वाणिज्यिक किराया:',
             enterCustomAmountPlaceholder: 'कस्टम राशि दर्ज करें',
-            confirmCancelMessage: 'क्या आप वाकई इस बुकिंग को रद्द करना चाहते हैं?', // Changed from हटाना
-            bookingTypeLabel: 'बुकिंग प्रकार (वैकल्पिक):', // Label for optional booking type
-            bookingTypeOptions: [ // Keep options for manual selection if needed
+            confirmCancelMessage: 'क्या आप वाकई इस बुकिंग को रद्द करना चाहते हैं?',
+            bookingTypeLabel: 'बुकिंग प्रकार (वैकल्पिक):',
+            bookingTypeOptions: [
                 { value: 'employee', label: 'एनडीएमसी का कर्मचारी' },
                 { value: 'ex-employee', label: 'एनडीएमसी का पूर्व कर्मचारी' },
                 { value: 'ndmc-resident', label: 'एनडीएमसी क्षेत्र निवासी' },
@@ -124,6 +127,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 { value: 'social', label: 'सामाजिक' },
                 { value: 'non-commercial', label: 'गैर-वाणिज्यिक' },
             ],
+             closeModalButton: 'मॉडल बंद करें' // Added for aria-label
         },
     };
 
@@ -229,18 +233,37 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         }
     };
 
-    const handleAgreeDisclaimer = () => {
-        setDisclaimerAccepted(true);
+    // Function called when "Agree and Proceed" is clicked in the disclaimer modal
+    const handleDisclaimerAgreedInModal = () => {
+        setModalStep(2); // Move to the booking form step
     };
 
-    const handleCloseDisclaimer = () => {
-        alert(languageType === 'hi' ? 'बुकिंग जारी रखने के लिए आपको अस्वीकरण स्वीकार करना होगा।' : 'You must accept the disclaimer to proceed with booking.');
+    // Function to close the entire modal
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setModalStep(1); // Reset to disclaimer step for next time
+        setIsEditing(false);
+        setEditingBookingId(null);
+        // Reset form data
+        setBookingFormData({
+            booking_id: '',
+            hall_id_string: '',
+            booking_date: '',
+            floor: '',
+            function_type: '',
+            booking_amount: '',
+            booking_type: '',
+            addon_ac_heating: false,
+        });
+        setSelectedHallRentOptions(null); // Clear rent options
+        setHallRentError(null);
     };
 
+    // When "New Booking" is clicked from the main page
     const handleNewBookingClick = () => {
         setIsEditing(false);
         setEditingBookingId(null);
-        // Reset form data
+        // Reset form data for a new booking
         setBookingFormData({
             booking_id: '',
             hall_id_string: '',
@@ -248,33 +271,13 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             floor: '',
             function_type: '',
             booking_amount: '',
-            booking_type: '', // Reset booking type
+            booking_type: '',
             addon_ac_heating: false,
         });
         setSelectedHallRentOptions(null); // Clear rent options
         setHallRentError(null);
-        setModalStep(2); // Directly go to step 2 (form)
-        setShowBookingModal(true);
-    };
-
-    const handleCloseBookingModal = () => {
-        setShowBookingModal(false);
-        setModalStep(1); // Reset to step 1 (disclaimer check)
-        setIsEditing(false);
-        setEditingBookingId(null);
-        // Reset form data
-        setBookingFormData({
-            booking_id: '',
-            hall_id_string: '',
-            booking_date: '',
-            floor: '',
-            function_type: '',
-            booking_amount: '',
-            booking_type: '', // Reset booking type
-            addon_ac_heating: false,
-        });
-        setSelectedHallRentOptions(null); // Clear rent options
-        setHallRentError(null);
+        setModalStep(1); // Start with the disclaimer step
+        setShowModal(true); // Show the modal
     };
 
     const handleBookingFormChange = (e) => {
@@ -297,6 +300,16 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                  booking_type: rentType, // Set booking_type based on selected rent type
              });
         }
+        // REMOVE OR COMMENT OUT THIS ELSE IF BLOCK:
+        // else if (name === 'booking_amount') {
+        //     // Handle manual input in the amount field
+        //      setBookingFormData({
+        //         ...bookingFormData,
+        //         booking_amount: value,
+        //          // Clear booking_type when manually entering an amount, unless it was already custom
+        //         booking_type: (bookingFormData.booking_type === '' || bookingFormData.booking_type === undefined) ? '' : bookingFormData.booking_type,
+        //      });
+        // }
         else {
              setBookingFormData({
                  ...bookingFormData,
@@ -304,6 +317,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
              });
         }
     };
+
 
     const handleBookingSubmit = async (e) => {
         e.preventDefault();
@@ -315,6 +329,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         }
 
         // Basic validation: Hall, Date, Function Type, and Amount are required
+        // Note: The user reaches this step AFTER agreeing to the disclaimer in step 1 (for new bookings)
         if (!bookingFormData.hall_id_string || !bookingFormData.booking_date || !bookingFormData.function_type || !bookingFormData.booking_amount) {
              alert(languageType === 'hi' ? 'कृपया सभी आवश्यक बुकिंग विवरण भरें (बारात घर, तिथि, समारोह प्रकार, राशि)।' : 'Please fill in all required booking details (Hall, Date, Function Type, Amount).');
              return;
@@ -358,7 +373,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             }
 
             fetchBookings(); // Refresh the booking list
-            handleCloseBookingModal(); // Close the modal
+            handleCloseModal(); // Close the modal
 
             alert(isEditing ? (languageType === 'hi' ? 'बुकिंग सफलतापूर्वक अपडेट की गई!' : 'Booking updated successfully!') : (languageType === 'hi' ? 'बुकिंग सफलतापूर्वक बनाई गई!' : 'Booking created successfully!'));
 
@@ -368,6 +383,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         }
     };
 
+    // Function to start editing a booking (skips disclaimer step)
     const startEditBooking = (booking) => {
         setIsEditing(true);
         setEditingBookingId(booking.booking_id);
@@ -390,7 +406,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
              setHallRentError(null);
         }
         setModalStep(2); // Go directly to the form for editing
-        setShowBookingModal(true);
+        setShowModal(true); // Show the modal
     };
 
     // Function to handle cancelling a booking
@@ -403,9 +419,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
         if (window.confirm(currentContent.confirmCancelMessage)) {
             try {
-                // Use the new cancel endpoint
+                // Use the new cancel endpoint (assuming DELETE is the correct method for cancel)
                 const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToCancel}`, {
-                    method: 'DELETE', // Using PUT for cancellation
+                    method: 'DELETE', // Assuming DELETE endpoint for cancellation
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -417,6 +433,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                         navigate('/login');
                         return;
                     }
+                     if (response.status === 404) {
+                         throw new Error('Booking not found.');
+                     }
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
@@ -434,118 +453,136 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     return (
         <section className="bn-section">
+             <h2 className='main-heading'>{currentContent.sectionHeading}</h2>
+         
+            <div className="bn-main-content-block">
+                <div className="bn-main-header">
+                    <h2 ></h2>
+                    <button className="bn-button bn-new-booking-button" onClick={handleNewBookingClick}>
+                        {currentContent.newBookingButton}
+                    </button>
+                </div>
 
-            {!disclaimerAccepted && (
-                <Fragment>
-                    <div className="bn-disclaimer-overlay">
-                        <div className="bn-disclaimer-modal">
-                            <h3>{currentContent.disclaimerHeading}</h3>
-                            <div className="bn-disclaimer-content">
-                                {currentContent.disclaimerPoints.map((point, index) => (
-                                    <p key={index}>{`(${index + 1}). ${point}`}</p>
-                                ))}
-                            </div>
-                            <div className="bn-disclaimer-buttons">
-                                <button className="bn-button bn-agree-button" onClick={handleAgreeDisclaimer}>
-                                    {currentContent.disclaimerAgreeButton}
-                                </button>
-                                <button className="bn-button bn-close-button" onClick={handleCloseDisclaimer}>
-                                    {currentContent.disclaimerCloseButton}
-                                </button>
-                            </div>
+                <div className="bn-bookings-list-area">
+                    <h4>{currentContent.previousBookingsHeading}</h4>
+                    {loadingBookings ? (
+                         <p>Loading bookings...</p>
+                    ) : bookingError ? (
+                         <p style={{ color: 'red' }}>{bookingError}</p>
+                    ) : bookings.length === 0 ? (
+                        <p className="bn-message">{currentContent.noBookingsMessage}</p>
+                    ) : (
+                        <div className="bn-table-container">
+                            <table className="bn-bookings-table">
+                                <thead>
+                                    <tr>
+                                        {currentContent.tableHeaders.map((header, index) => (
+                                            <th key={index}>{header}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {bookings.map((booking, index) => (
+                                        <tr key={booking.booking_id}>
+                                            <td>{index + 1}</td>
+                                            <td>{booking.booking_id}</td>
+                                            <td>{booking.hall_id ? booking.hall_id.hall_name : 'N/A'}</td>
+                                            <td>{booking.floor || 'N/A'}</td>
+                                            <td>{booking.function_type}</td>
+                                            <td>{booking.booking_amount}</td>
+                                            {/* Updated Status Cell with Icons and Colors */}
+                                            <td className="bn-table-status-cell">
+                                                {booking.booking_status === 'Confirmed' && (
+                                                    <span className="bn-status-indicator bn-status-confirmed">
+                                                        <CircleCheck size={16} /> {/* Adjust size as needed */}
+                                                        {booking.booking_status}
+                                                    </span>
+                                                )}
+                                                {booking.booking_status === 'Cancelled' && (
+                                                    <span className="bn-status-indicator bn-status-rejected">
+                                                        <CircleX size={16} /> {/* Adjust size as needed */}
+                                                       {booking.booking_status}
+                                                    </span>
+                                                )}
+                                                {booking.booking_status === 'Pending' && (
+                                                    <span className="bn-status-indicator bn-status-pending">
+                                                        <CircleDot size={16} /> {/* Adjust size as needed */}
+                                                        {booking.booking_status}
+                                                    </span>
+                                                )}
+                                                {/* Add more conditions for other statuses if necessary */}
+                                                {!['Confirmed', 'Cancelled', 'Pending'].includes(booking.booking_status) && (
+                                                    <span>{booking.booking_status}</span>
+                                                )}
+                                            </td>
+                                            {/* End of Updated Status Cell */}
+                                            <td>{booking.addon_ac_heating ? (languageType === 'hi' ? 'हाँ' : 'Yes') : (languageType === 'hi' ? 'नहीं' : 'No')}</td>
+                                            <td>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>
+                                            <td className="bn-table-actions"> {/* Added a class for action cell */}
+                                                 {/* Edit button */}
+                                                 {booking.booking_status !== 'Cancelled' && ( // Only show edit if not cancelled
+                                                     <button
+                                                         className="bn-button bn-edit-button"
+                                                         onClick={() => startEditBooking(booking)}
+                                                         aria-label={`Edit booking ${booking.booking_id}`}
+                                                     >
+                                                         {languageType === 'hi' ? 'संपादित करें' : 'Edit'}
+                                                     </button>
+                                                 )}
+                                                 {/* Cancel button - only show if not already cancelled */}
+                                                 {booking.booking_status !== 'Cancelled' && (
+                                                     <button
+                                                         className="bn-button bn-cancel-button"
+                                                         onClick={() => handleCancelBooking(booking.booking_id)}
+                                                         aria-label={`Cancel booking ${booking.booking_id}`}
+                                                     >
+                                                         {currentContent.cancelButton}
+                                                     </button>
+                                                 )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </Fragment>
-            )}
+                    )}
+                </div>
+            </div>
 
-            {disclaimerAccepted && (
-                <Fragment>
-                    <div className="bn-main-content-block">
-                        <div className="bn-main-header">
-                            <h2>{currentContent.sectionHeading}</h2>
-                            <button className="bn-button bn-new-booking-button" onClick={handleNewBookingClick}>
-                                {currentContent.newBookingButton}
-                            </button>
-                        </div>
-
-                        <div className="bn-bookings-list-area">
-                            <h4>{currentContent.previousBookingsHeading}</h4>
-                            {loadingBookings ? (
-                                 <p>Loading bookings...</p>
-                            ) : bookingError ? (
-                                 <p style={{ color: 'red' }}>{bookingError}</p>
-                            ) : bookings.length === 0 ? (
-                                <p className="bn-message">{currentContent.noBookingsMessage}</p>
-                            ) : (
-                                <div className="bn-table-container">
-                                    <table className="bn-bookings-table">
-                                        <thead>
-                                            <tr>
-                                                {currentContent.tableHeaders.map((header, index) => (
-                                                    <th key={index}>{header}</th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {bookings.map((booking, index) => (
-                                                <tr key={booking.booking_id}>
-                                                    <td>{index + 1}</td>
-                                                    <td>{booking.booking_id}</td>
-                                                    <td>{booking.hall_id ? booking.hall_id.hall_name : 'N/A'}</td>
-                                                    <td>{booking.floor || 'N/A'}</td>
-                                                    <td>{booking.function_type}</td>
-                                                    <td>{booking.booking_amount}</td>
-                                                    <td>{booking.booking_status}</td>
-                                                    <td>{booking.addon_ac_heating ? (languageType === 'hi' ? 'हाँ' : 'Yes') : (languageType === 'hi' ? 'नहीं' : 'No')}</td>
-                                                    <td>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>
-                                                    <td>
-                                                         {/* Edit button */}
-                                                         <button
-                                                             className="bn-button bn-edit-button"
-                                                             onClick={() => startEditBooking(booking)}
-                                                             aria-label={`Edit booking ${booking.booking_id}`}
-                                                             style={{marginRight: '5px'}}
-                                                         >
-                                                             {languageType === 'hi' ? 'संपादित करें' : 'Edit'}
-                                                         </button>
-                                                         {/* Cancel button - only show if not already cancelled */}
-                                                         {booking.booking_status !== 'Cancelled' && (
-                                                             <button
-                                                                 className="bn-button bn-cancel-button" // New class for cancel button
-                                                                 onClick={() => handleCancelBooking(booking.booking_id)}
-                                                                 aria-label={`Cancel booking ${booking.booking_id}`}
-                                                             >
-                                                                 {currentContent.cancelButton}
-                                                             </button>
-                                                         )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </Fragment>
-            )}
 
             {/* Booking Modal */}
-            {showBookingModal && (
+            {showModal && (
                 <Fragment>
                     <div className="bn-modal-overlay">
                         <div className="bn-modal-content">
                             <div className="bn-modal-header">
-                                <h3>{isEditing ? (languageType === 'hi' ? 'बुकिंग संपादित करें' : 'Edit Booking') : (languageType === 'hi' ? 'नई बुकिंग' : 'New Booking')}</h3>
-                                <button className="bn-modal-close-button" onClick={handleCloseBookingModal} aria-label={currentContent.closeModalButton}>
+                                {/* Header changes based on modal step */}
+                                <h3>
+                                    {modalStep === 1
+                                        ? currentContent.disclaimerHeading
+                                        : isEditing
+                                            ? (languageType === 'hi' ? 'बुकिंग संपादित करें' : 'Edit Booking')
+                                            : (languageType === 'hi' ? 'नई बुकिंग' : 'New Booking')
+                                    }
+                                </h3>
+                                <button className="bn-modal-close-button" onClick={handleCloseModal} aria-label={currentContent.closeModalButton}>
                                     &times;
                                 </button>
                             </div>
+
                             <div className="bn-modal-body">
-                                {/* Modal Step 1 is now just the disclaimer check, handled outside */}
-                                {/* Modal Step 2 is the booking form */}
-                                {modalStep === 2 && ( // Always show form if modalStep is 2
-                                    <form onSubmit={handleBookingSubmit} className="bn-booking-form">
+                                {/* Modal Step 1: Disclaimer */}
+                                {modalStep === 1 && (
+                                    <div className="bn-disclaimer-content">
+                                        {currentContent.disclaimerPoints.map((point, index) => (
+                                            <p key={index}>{`(${index + 1}). ${point}`}</p>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Modal Step 2: Booking Form */}
+                                {modalStep === 2 && (
+                                    <form id="booking-form-id" onSubmit={handleBookingSubmit} className="bn-booking-form"> {/* Added id to the form */}
                                         {isEditing && (
                                             <div className="bn-form-group">
                                                 <label htmlFor="booking_id">Booking ID:</label>
@@ -640,7 +677,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                                  id="rent-commercial"
                                                                  name="booking_amount_radio"
                                                                  value={`commercial|${selectedHallRentOptions.commercial}`}
-                                                                 checked={bookingFormData.booking_amount === selectedHallRentOptions.commercial}
+                                                                 checked={bookingFormData.booking_amount === selectedHallRentOptions.commercial && bookingFormData.booking_type === 'commercial'}
                                                                  onChange={handleBookingFormChange}
                                                              />
                                                              <label htmlFor="rent-commercial">{currentContent.commercialRentLabel} {selectedHallRentOptions.commercial}</label>
@@ -653,7 +690,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                                  id="rent-social"
                                                                  name="booking_amount_radio"
                                                                  value={`social|${selectedHallRentOptions.social}`}
-                                                                 checked={bookingFormData.booking_amount === selectedHallRentOptions.social}
+                                                                 checked={bookingFormData.booking_amount === selectedHallRentOptions.social && bookingFormData.booking_type === 'social'}
                                                                  onChange={handleBookingFormChange}
                                                              />
                                                              <label htmlFor="rent-social">{currentContent.socialRentLabel} {selectedHallRentOptions.social}</label>
@@ -666,66 +703,17 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                                  id="rent-non-commercial"
                                                                  name="booking_amount_radio"
                                                                  value={`non-commercial|${selectedHallRentOptions.nonCommercial}`}
-                                                                 checked={bookingFormData.booking_amount === selectedHallRentOptions.nonCommercial}
+                                                                 checked={bookingFormData.booking_amount === selectedHallRentOptions.nonCommercial && bookingFormData.booking_type === 'non-commercial'}
                                                                  onChange={handleBookingFormChange}
                                                              />
                                                              <label htmlFor="rent-non-commercial">{currentContent.nonCommercialRentLabel} {selectedHallRentOptions.nonCommercial}</label>
                                                          </div>
                                                      )}
-                                                     {/* Input for custom amount */}
-                                                     <div className="bn-radio-group">
-                                                          <input
-                                                              type="radio"
-                                                              id="rent-custom"
-                                                              name="booking_amount_radio"
-                                                              value="custom|" // Value indicates custom amount
-                                                              checked={
-                                                                  bookingFormData.booking_amount !== selectedHallRentOptions?.commercial &&
-                                                                  bookingFormData.booking_amount !== selectedHallRentOptions?.social &&
-                                                                  bookingFormData.booking_amount !== selectedHallRentOptions?.nonCommercial &&
-                                                                  bookingFormData.booking_amount !== '' // Check if amount is not empty
-                                                              }
-                                                              onChange={(e) => {
-                                                                  // When custom is selected, clear booking_type and keep current amount or set to empty
-                                                                  setBookingFormData({
-                                                                      ...bookingFormData,
-                                                                      booking_amount: bookingFormData.booking_amount, // Keep current amount
-                                                                      booking_type: '', // Clear booking type for custom amount
-                                                                  });
-                                                              }}
-                                                          />
-                                                          <label htmlFor="rent-custom">{currentContent.enterCustomAmountPlaceholder}</label>
-                                                     </div>
-                                                     {/* Actual input for the amount (can be manually edited) */}
-                                                      <input
-                                                          type="text"
-                                                          id="booking_amount"
-                                                          name="booking_amount"
-                                                          value={bookingFormData.booking_amount}
-                                                          onChange={handleBookingFormChange}
-                                                          required
-                                                          className="bn-input bn-amount-input" // Add a class for specific styling
-                                                          placeholder={currentContent.enterCustomAmountPlaceholder}
-                                                          // Disable if a predefined rent is selected via radio
-                                                          disabled={
-                                                              bookingFormData.booking_amount === selectedHallRentOptions?.commercial ||
-                                                              bookingFormData.booking_amount === selectedHallRentOptions?.social ||
-                                                              bookingFormData.booking_amount === selectedHallRentOptions?.nonCommercial
-                                                          }
-                                                      />
+                                                    
                                                  </div>
                                              ) : (
-                                                 // Fallback input if rent options couldn't be fetched or no hall selected
-                                                 <input
-                                                     type="text"
-                                                     id="booking_amount"
-                                                     name="booking_amount"
-                                                     value={bookingFormData.booking_amount}
-                                                     onChange={handleBookingFormChange}
-                                                     required
-                                                     className="bn-input"
-                                                     placeholder={currentContent.enterCustomAmountPlaceholder}
-                                                 />
+                                                 
+                                                 <p>No rent options available for the selected hall.</p> // Add a message when no options are available
                                              )}
                                         </div>
 
@@ -760,23 +748,39 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             <label htmlFor="addon_ac_heating">{currentContent.tableHeaders[7]}</label>
                                         </div>
 
-                                        <button type="submit" className="bn-button bn-submit-button">
-                                            {isEditing ? (languageType === 'hi' ? 'बुकिंग अपडेट करें' : 'Update Booking') : (languageType === 'hi' ? 'बुकिंग बनाएँ' : 'Create Booking')}
-                                        </button>
+                                        {/* Submit button is now in the footer */}
                                     </form>
                                 )}
                             </div>
-                            {/* Footer is only needed if there's a step navigation */}
-                            {/* <div className="bn-modal-footer">
+
+                            {/* Modal Footer */}
+                            <div className="bn-modal-footer">
+                                {/* Buttons change based on modal step */}
                                 {modalStep === 1 && (
-                                     <button
-                                          className="bn-button bn-proceed-button"
-                                          onClick={() => setModalStep(2)} // Proceed to form
-                                     >
-                                         {currentContent.proceedButton}
-                                     </button>
+                                     <Fragment>
+                                          <button className="bn-button bn-modal-cancel-button" onClick={handleCloseModal}>
+                                               {languageType === 'hi' ? 'रद्द करें' : 'Cancel'}
+                                          </button>
+                                          <button
+                                               className="bn-button bn-proceed-button"
+                                               onClick={handleDisclaimerAgreedInModal}
+                                          >
+                                              {currentContent.disclaimerAgreeButton}
+                                          </button>
+                                     </Fragment>
                                 )}
-                            </div> */}
+                                {modalStep === 2 && (
+                                    <Fragment>
+                                          <button className="bn-button bn-modal-cancel-button" onClick={handleCloseModal}>
+                                               {languageType === 'hi' ? 'रद्द करें' : 'Cancel'}
+                                          </button>
+                                          {/* The submit button is type="submit" and is inside the form */}
+                                          <button type="submit" className="bn-button bn-submit-button" form="booking-form-id"> {/* Link button to form by id */}
+                                             {isEditing ? (languageType === 'hi' ? 'बुकिंग अपडेट करें' : 'Update Booking') : (languageType === 'hi' ? 'बुकिंग बनाएँ' : 'Create Booking')}
+                                          </button>
+                                    </Fragment>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </Fragment>

@@ -1,628 +1,515 @@
-/* BookNow.css - Styling for Book Now Section (Revised) */
+/* BookNow.css - Professional Responsive Styles */
 
-/* --- Color Variables --- */
+/* Color Palette */
 :root {
-  --base-color: #ffd7ac; /* Light peach (main theme base) */
-  --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
-  --primary-color: #800000; /* Maroon */
-  --secondary-color: #ff9900; /* #f90 Orange */
-  --text-color: #000000; /* Black */
-  --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
-  --button-text-color: var(--white-card-bg); /* White text on primary buttons */
-  --form-input-border: #ccc; /* Light grey border for form inputs */
-  --form-input-focus-border: var(--secondary-color); /* Orange border on focus */
-  --secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --table-border-color: #ddd; /* Light grey for table borders */
-  --table-header-bg: var(--hover-bg); /* Subtle background for table header */
-  --delete-button-color: #f44336; /* Red for delete */
-  --cancel-button-color: #ff9800; /* Orange for cancel */
+  --primary: #800000;;         /* Deep Navy Blue */
+  --primary-light: #800000;   /* Lighter Navy Blue */
+  --secondary: #e67e22;       /* Orange */
+  --accent: #3498db;          /* Bright Blue */
+  --success: #27ae60;         /* Green */
+  --danger: #e74c3c;          /* Red */
+  --warning: #f39c12;         /* Amber */
+  --neutral-bg: #f5f7fa;      /* Light Background */
+  --neutral-text: #333;       /* Dark Text */
+  --neutral-light: #ecf0f1;   /* Very Light Gray */
+  --neutral-border: #ddd;     /* Border Color */
+  --white: #ffffff;           /* White */
+  --shadow: rgba(0, 0, 0, 0.1); /* Shadow Color */
+  
+  /* Font family */
+  --font-primary: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Overall Section Background */
-.bn-section { /* Main section container */
-  background: linear-gradient(to bottom, #ffffff, #f0f0f0);
-  padding: 60px 0;
-  color: var(--text-color);
+/* Base Styles */
+.bn-section {
+  font-family: var(--font-primary);
+  color: var(--neutral-text);
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.main-heading {
+  color: var(--primary);
+  margin-bottom: 2rem;
   text-align: center;
-  min-height: 100vh;
-  display: flex;
-  align-items: center; /* Center content vertically if disclaimer is shown */
-  justify-content: center; /* Center content horizontally */
-}
-
-.bn-container { /* Inner container for max width and centering */
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Disclaimer Modal/Overlay Styling */
-.bn-disclaimer-overlay { /* Full screen overlay */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background */
-    display: flex;
-    align-items: center; /* Center modal vertically */
-    justify-content: center; /* Center modal horizontally */
-    z-index: 1000; /* High z-index to be on top */
-    padding: 20px;
-    overflow-y: auto; /* Allow scrolling if modal content overflows */
-}
-
-.bn-disclaimer-modal { /* Modal content box */
-    background-color: var(--white-card-bg);
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px var(--shadow-color);
-    max-width: 700px; /* Limit modal width */
-    width: 100%; /* Take full width up to max-width */
-    text-align: left; /* Align text inside modal */
-    max-height: 90vh; /* Limit modal height */
-    overflow-y: auto; /* Allow scrolling inside the modal body */
-}
-
-.bn-disclaimer-heading { /* Heading inside modal */
-    font-size: 1.8em;
-    color: var(--primary-color);
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--secondary-color); /* Separator line */
-    padding-bottom: 10px;
-}
-
-.bn-disclaimer-content p { /* Paragraphs in modal content */
-    font-size: 1em;
-    color: var(--text-color);
-    margin-bottom: 15px;
-    line-height: 1.5; /* Improved readability */
-}
-
-.bn-disclaimer-buttons { /* Container for modal buttons */
-    margin-top: 30px;
-    text-align: center; /* Center buttons */
-}
-
-/* Base Button styling */
-.bn-button { /* Common styles for all buttons */
-  display: inline-block;
-  padding: 10px 25px;
-  border-radius: 5px;
-  font-size: 1.1em;
+  font-size: 2.2rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  color: var(--button-text-color); /* White text */
-  border: none;
-  text-align: center;
-  margin: 0 10px; /* Space between buttons */
+  position: relative;
+  padding-bottom: 0.5rem;
 }
 
-.bn-agree-button { /* Specific style for Agree button */
-    background-color: #4CAF50; /* Green color */
+.main-heading:after {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 4px;
+  background-color: var(--secondary);
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 2px;
 }
 
-.bn-agree-button:hover {
-    background-color: darken(#4CAF50, 10%); /* Darken on hover */
-}
-
-.bn-close-button { /* Specific style for Close button */
-    background-color: #f44360; /* Red color */
-}
-
-.bn-close-button:hover {
-     background-color: darken(#f44360, 10%); /* Darken on hover */
-}
-
-
-/* Main Booking Content (after disclaimer) */
-.bn-main-content-block { /* White card wrapper for the entire booking view */
-  min-height: 60vh;
-  min-width: 80vw; /* Base min-width on larger screens */
-  max-width: 1000px; /* Max width limit */
-
-  background-color: var(--white-card-bg);
-  padding: 30px;
+/* Main Content Block */
+.bn-main-content-block {
+  background-color: var(--white);
   border-radius: 8px;
-  box-shadow: 0 5px 15px var(--shadow-color);
+  box-shadow: 0 4px 12px var(--shadow);
+  overflow: hidden;
+}
+
+.bn-main-header {
+
+  padding: 1.2rem 1.5rem;
   display: flex;
-  flex-direction: column; /* Stack header and list area vertically */
-  align-items: center; /* Center content horizontally within the card */
-  width: 100%;
-  margin: 40px auto; /* Space above/below the card */
-  text-align: left; /* Default text alignment */
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Header area with heading and New Booking button */
-.bn-main-header { /* Container for heading and New Booking button */
-    width: 100%;
-    display: flex;
-    justify-content: space-between; /* Space out heading and button */
-    align-items: center; /* Align items vertically */
-    margin-bottom: 20px; /* Space below the header */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+.bn-main-header h2 {
+  color: var(--white);
+  margin: 0;
+  font-size: 1.5rem;
 }
 
-.bn-section-heading { /* Section Heading (now inside the main header) */
-    font-size: 2em; /* Adjusted size as it's a sub-heading now */
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 0; /* Remove default margin */
-    padding: 0;
-    /* Remove ::after underline from the main section heading */
-    &::after {
-        content: none;
-    }
+/* Buttons */
+.bn-button {
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  border: none;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.bn-new-booking-button { /* New Booking button */
-    background-color: var(--primary-color); /* Maroon color */
-    margin: 0; /* Remove margin if using gap/space-between */
-    padding: 10px 20px; /* Adjust padding slightly */
-    font-size: 1em; /* Adjust font size */
+.bn-new-booking-button {
+  background-color: var(--secondary);
+  color: var(--white);
 }
 
 .bn-new-booking-button:hover {
-    background-color: darken(var(--primary-color), 10%);
+  background-color: #d35400;
+  box-shadow: 0 2px 8px rgba(230, 126, 34, 0.4);
 }
 
-/* Bookings List Area (Table) */
-.bn-bookings-list-area { /* Container for the bookings table */
-    width: 100%; /* Take full width of parent */
-    margin-top: 20px; /* Space above the table area */
+.bn-edit-button {
+  background-color: var(--accent);
+  color: var(--white);
+  margin-right: 8px;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
 }
 
-.bn-bookings-list-area h4 { /* Heading for the list */
-    font-size: 1.5em;
-    color: var(--primary-color);
-    margin-bottom: 15px;
-    border-bottom: 1px solid var(--table-border-color); /* Separator */
-    padding-bottom: 8px;
-    text-align: left; /* Align heading left */
+.bn-edit-button:hover {
+  background-color: #2980b9;
 }
 
-.bn-message { /* Message for no bookings */
-    font-size: 1.1em;
-    color: var(--primary-color);
-    text-align: center;
-    margin-top: 20px;
-}
-
-.bn-table-container { /* Wrapper for horizontal scrolling on smaller screens */
-     width: 100%;
-     overflow-x: auto; /* Add horizontal scroll if table overflows */
-}
-
-.bn-bookings-table { /* Table to display bookings */
-    width: 100%; /* Ensure table takes full width of its container */
-    border-collapse: collapse; /* Collapse borders */
-    margin-top: 10px; /* Space above table */
-    min-width: 600px; /* Ensure table is wide enough to demonstrate scroll if needed */
-}
-
-.bn-bookings-table th,
-.bn-bookings-table td { /* Table header and cell styles */
-    border: 1px solid var(--table-border-color); /* Cell borders */
-    padding: 12px 10px; /* Padding inside cells */
-    text-align: left; /* Align text left */
-    color: var(--text-color);
-    white-space: nowrap; /* Prevent text wrapping in cells */
-}
-
-.bn-bookings-table th { /* Table header specific styles */
-    background-color: var(--table-header-bg); /* Header background */
-    font-weight: 600;
-    color: var(--primary-color); /* Header text color */
-}
-
-.bn-bookings-table tbody tr:nth-child(odd) {
-    background-color: var(--hover-bg); /* Zebra striping for rows */
-}
-
-/* Style for the Cancel button in the table */
 .bn-cancel-button {
-    background: none; /* No background */
-    border: none; /* No border */
-    color: var(--cancel-button-color); /* Orange color */
-    cursor: pointer; /* Indicate clickable */
-    font-size: 0.95em;
-    font-weight: 600;
-    transition: color 0.3s ease;
-    padding: 0; /* Remove padding */
-    text-decoration: underline; /* Make it look like a link */
-    margin-left: 5px; /* Space from edit button */
+  background-color: var(--danger);
+  color: var(--white);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
 }
 
 .bn-cancel-button:hover {
-    color: darken(var(--cancel-button-color), 15%); /* Darken on hover */
-    text-decoration: none; /* Remove underline on hover */
+  background-color: #c0392b;
 }
 
-/* Remove the old delete button style if not used elsewhere */
-/* .bn-delete-button { ... } */
-
-
-/* Booking Modal Styling */
-.bn-modal-overlay { /* Full screen overlay for the modal */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background */
-    display: flex;
-    align-items: center; /* Center modal vertically */
-    justify-content: center; /* Center modal horizontally */
-    z-index: 1010; /* Higher z-index than disclaimer overlay */
-    padding: 20px;
-    overflow-y: auto; /* Allow scrolling if modal content overflows */
+.bn-modal-cancel-button {
+  background-color: var(--neutral-light);
+  color: var(--neutral-text);
 }
 
-.bn-modal-content { /* Modal content box */
-    background-color: var(--white-card-bg);
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px var(--shadow-color);
-    max-width: 500px; /* Limit modal width */
-    width: 100%; /* Take full width up to max-width */
-    text-align: left; /* Align text inside modal */
-    max-height: 90vh; /* Limit modal height */
-    overflow-y: auto; /* Allow scrolling inside the modal body */
-    display: flex;
-    flex-direction: column; /* Stack header, body, footer */
+.bn-modal-cancel-button:hover {
+  background-color: #bdc3c7;
 }
 
-.bn-modal-header { /* Modal header */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--table-border-color); /* Separator */
-    padding-bottom: 10px;
+.bn-proceed-button {
+  background-color: var(--accent);
+  color: var(--white);
 }
 
-.bn-modal-header h3 { /* Modal header heading */
-    font-size: 1.5em;
-    color: var(--primary-color);
-    margin: 0;
+.bn-proceed-button:hover {
+  background-color: #2980b9;
 }
 
-.bn-modal-close-button { /* Modal close button */
-    background: none;
-    border: none;
-    font-size: 1.8em;
-    cursor: pointer;
-    color: #999;
-    transition: color 0.3s ease;
-}
-.bn-modal-close-button:hover {
-    color: var(--text-color);
-}
-
-.bn-modal-body { /* Modal body */
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    /* Removed border-bottom here, moved to footer margin-top */
-}
-
-/* Form Styling */
-.bn-booking-form .bn-form-group {
-    margin-bottom: 20px;
-}
-
-.bn-booking-form label {
-    display: block; /* Label on its own line */
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--primary-color);
-}
-
-.bn-booking-form .bn-input,
-.bn-booking-form .bn-select {
-    width: 100%; /* Full width inputs */
-    padding: 10px;
-    border: 1px solid var(--form-input-border);
-    border-radius: 4px;
-    font-size: 1em;
-    box-sizing: border-box; /* Include padding and border in element's total width and height */
-    transition: border-color 0.3s ease;
-}
-
-.bn-booking-form .bn-input:focus,
-.bn-booking-form .bn-select:focus {
-    outline: none;
-    border-color: var(--form-input-focus-border);
-    box-shadow: 0 0 5px rgba(var(--secondary-color-rgb), 0.5);
-}
-
-.bn-booking-form .bn-checkbox-group {
-    display: flex;
-    align-items: center;
-}
-
-.bn-booking-form .bn-checkbox-group input[type="checkbox"] {
-    margin-right: 10px;
-    cursor: pointer;
-}
-
-.bn-booking-form .bn-checkbox-group label {
-    margin-bottom: 0; /* Remove bottom margin for inline label */
-    font-weight: normal; /* Normal weight for checkbox label */
-    color: var(--text-color);
-    cursor: pointer;
-}
-
-.bn-submit-button { /* Style for the form submit button */
-    background-color: var(--primary-color); /* Maroon */
-    width: 100%; /* Full width button */
-    padding: 12px; /* Larger padding */
-    font-size: 1.2em; /* Larger font size */
-    margin-top: 10px; /* Space above button */
+.bn-submit-button {
+  background-color: var(--success);
+  color: var(--white);
 }
 
 .bn-submit-button:hover {
-    background-color: darken(var(--primary-color), 10%);
+  background-color: #219653;
 }
 
-/* Rent Options Specific Styling */
+/* Bookings List Area */
+.bn-bookings-list-area {
+  padding: 1.5rem;
+}
+
+.bn-bookings-list-area h4 {
+  color: var(--primary);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+  border-bottom: 2px solid var(--neutral-border);
+  padding-bottom: 0.5rem;
+}
+
+.bn-message {
+  font-style: italic;
+  color: #777;
+  text-align: center;
+}
+
+/* Table Styles */
+.bn-table-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.bn-bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.bn-bookings-table th {
+  background-color: var(--primary-light);
+  color: var(--white);
+  padding: 0.9rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bn-bookings-table th:first-child {
+  border-radius: 6px 0 0 0;
+}
+
+.bn-bookings-table th:last-child {
+  border-radius: 0 6px 0 0;
+}
+
+.bn-bookings-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--neutral-border);
+  vertical-align: middle;
+}
+
+.bn-bookings-table tr:nth-child(even) {
+  background-color: var(--neutral-light);
+}
+
+.bn-bookings-table tr:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.bn-table-actions {
+  white-space: nowrap;
+}
+
+/* Status indicators */
+.bn-table-status-cell {
+  font-weight: 500;
+}
+
+.bn-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  width: fit-content;
+  font-size: 0.85rem;
+}
+
+.bn-status-confirmed {
+  background-color: rgba(39, 174, 96, 0.15);
+  color: var(--success);
+}
+
+.bn-status-rejected {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: var(--danger);
+}
+
+.bn-status-pending {
+  background-color: rgba(243, 156, 18, 0.15);
+  color: var(--warning);
+}
+
+/* Modal Styles */
+.bn-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.bn-modal-content {
+  background-color: var(--white);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.bn-modal-header {
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 1.2rem 1.5rem;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bn-modal-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.bn-modal-close-button {
+  background: none;
+  border: none;
+  color: var(--white);
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.bn-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(90vh - 150px);
+}
+
+.bn-modal-footer {
+  padding: 1rem 1.5rem;
+  background-color: var(--neutral-light);
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Disclaimer Content */
+.bn-disclaimer-content {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.bn-disclaimer-content p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* Form Styles */
+.bn-booking-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+}
+
+.bn-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.bn-form-group label {
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: var(--primary);
+}
+
+.bn-input, .bn-select {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--neutral-border);
+  border-radius: 4px;
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.bn-input:focus, .bn-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+.bn-checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
 .bn-rent-options {
-    border: 1px solid var(--form-input-border);
-    border-radius: 4px;
-    padding: 15px;
-    background-color: #f9f9f9; /* Light background for the options box */
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
 }
 
-.bn-rent-options .bn-radio-group {
-    margin-bottom: 10px; /* Space between rent options */
+.bn-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.bn-rent-options .bn-radio-group label {
-     font-weight: normal;
-     color: var(--text-color);
+/* Responsive Design */
+@media (min-width: 576px) {
+  .bn-booking-form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .bn-form-group:first-child, 
+  .bn-form-group:nth-child(3),
+  .bn-form-group:nth-child(5),
+  .bn-form-group:nth-child(7) {
+    grid-column: 1 / 2;
+  }
+  
+  .bn-form-group:nth-child(2),
+  .bn-form-group:nth-child(4),
+  .bn-form-group:nth-child(6),
+  .bn-form-group:nth-child(8) {
+    grid-column: 2 / 3;
+  }
+  
+  .bn-checkbox-group {
+    grid-column: 1 / -1;
+  }
 }
-
-.bn-rent-options .bn-amount-input {
-    margin-top: 10px; /* Space above the custom amount input */
-    /* Add specific styles if needed, e.g., smaller width if desired */
-}
-
-.bn-rent-options .bn-amount-input:disabled {
-    background-color: #eee;
-    cursor: not-allowed;
-}
-
-
-.bn-modal-footer { /* Modal footer */
-    margin-top: auto; /* Push footer to the bottom */
-    padding-top: 20px;
-    border-top: 1px solid var(--table-border-color); /* Separator */
-    text-align: right; /* Align footer content right */
-}
-
-.bn-proceed-button { /* Proceed button in modal */
-    background-color: #4CAF50; /* Green */
-    width: auto; /* Auto width */
-    margin: 0; /* Remove margin */
-}
-.bn-proceed-button:hover {
-     background-color: darken(#4CAF50, 10%);
-}
-
-
-/* Responsive Adjustments */
-@media (max-width: 992px) {
-    .bn-main-content-block {
-        min-width: 90vw;
-        padding: 25px;
-    }
-    .bn-main-header {
-        flex-direction: column; /* Stack heading and button */
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 15px;
-    }
-    .bn-section-heading {
-        font-size: 1.8em;
-    }
-    .bn-new-booking-button {
-        font-size: 0.95em;
-        padding: 8px 18px;
-    }
-    .bn-bookings-list-area h4 {
-        font-size: 1.3em;
-        margin-bottom: 10px;
-    }
-    .bn-bookings-table th,
-    .bn-bookings-table td {
-        padding: 10px 8px;
-        font-size: 0.95em;
-    }
-    .bn-cancel-button { /* Adjusted for smaller screens */
-        font-size: 0.9em;
-    }
-     .bn-modal-content {
-         padding: 25px;
-         max-width: 90%;
-     }
-      .bn-modal-header h3 {
-          font-size: 1.3em;
-      }
-       .bn-radio-group label {
-           font-size: 0.95em;
-       }
-        .bn-modal-footer {
-            padding-top: 15px;
-        }
-        .bn-proceed-button {
-            padding: 8px 20px;
-            font-size: 1em;
-        }
-}
-
 
 @media (max-width: 768px) {
-  .bn-section {
-      padding: 40px 0;
+  .bn-main-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
   }
-  .bn-disclaimer-modal {
-      padding: 20px;
-      max-width: 95%;
+  
+  .bn-table-container {
+    margin-top: 1rem;
+    overflow-x: scroll;
   }
-  .bn-disclaimer-heading {
-      font-size: 1.5em;
+  
+  .bn-bookings-table th, 
+  .bn-bookings-table td {
+    padding: 0.6rem 0.8rem;
   }
-   .bn-disclaimer-content p {
-       font-size: 0.9em;
-       margin-bottom: 10px;
-   }
-   .bn-button {
-       padding: 8px 15px;
-       font-size: 1em;
-       margin: 0 8px;
-   }
-   .bn-main-content-block {
-    min-height: 50vh;
-    min-width: 95vw;
-    max-width: 95%;
-    padding: 20px;
-    margin: 20px auto;
+  
+  .bn-modal-content {
+    width: 95%;
   }
-   .bn-main-header {
-       gap: 10px;
-       margin-bottom: 10px;
-   }
-   .bn-section-heading {
-       font-size: 1.5em;
-   }
-    .bn-new-booking-button {
-        font-size: 0.9em;
-         padding: 8px 15px;
-    }
-    .bn-bookings-list-area h4 {
-        font-size: 1.1em;
-         margin-bottom: 8px;
-         padding-bottom: 5px;
-    }
-    .bn-bookings-table th,
-    .bn-bookings-table td {
-        padding: 8px 6px;
-        font-size: 0.9em;
-    }
-    .bn-cancel-button { /* Adjusted for smaller screens */
-        font-size: 0.85em;
-    }
-     .bn-modal-content {
-         padding: 20px;
-         max-width: 95%;
-     }
-      .bn-modal-header h3 {
-          font-size: 1.1em;
-      }
-       .bn-modal-header {
-           margin-bottom: 15px;
-            padding-bottom: 8px;
-       }
-       .bn-modal-body {
-           margin-bottom: 15px;
-            padding-bottom: 15px;
-       }
-       .bn-radio-group {
-           margin-bottom: 10px;
-       }
-       .bn-radio-group label {
-           font-size: 0.9em;
-       }
-        .bn-modal-footer {
-            padding-top: 15px;
-        }
-         .bn-proceed-button {
-             padding: 8px 15px;
-             font-size: 0.9em;
-         }
+  
+  .bn-booking-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .bn-form-group:nth-child(n) {
+    grid-column: 1 / -1;
+  }
 }
 
-@media (max-width: 480px) {
-    .bn-section {
-        padding: 30px 0;
-    }
-     .bn-disclaimer-modal {
-         padding: 15px;
-     }
-      .bn-disclaimer-heading {
-          font-size: 1.3em;
-      }
-      .bn-disclaimer-content p {
-          font-size: 0.8em;
-          margin-bottom: 8px;
-      }
-      .bn-button {
-          padding: 6px 10px;
-          font-size: 0.85em;
-          margin: 0 4px;
-      }
-       .bn-disclaimer-buttons {
-           margin-top: 15px;
-       }
-       .bn-main-content-block {
-           padding: 15px;
-            margin: 15px auto;
-       }
-        .bn-main-header {
-            gap: 8px;
-             margin-bottom: 8px;
-        }
-        .bn-section-heading {
-            font-size: 1.3em;
-        }
-         .bn-new-booking-button {
-             font-size: 0.8em;
-             padding: 6px 12px;
-         }
-         .bn-bookings-list-area h4 {
-             font-size: 1em;
-             margin-bottom: 6px;
-             padding-bottom: 4px;
-         }
-         .bn-bookings-table th,
-         .bn-bookings-table td {
-             padding: 6px 4px;
-             font-size: 0.8em;
-         }
-         .bn-cancel-button { /* Adjusted for smaller screens */
-             font-size: 0.8em;
-         }
-          .bn-modal-content {
-              padding: 15px;
-              max-width: 100%;
-          }
-           .bn-modal-header h3 {
-               font-size: 1em;
-           }
-            .bn-modal-header {
-                margin-bottom: 10px;
-                 padding-bottom: 5px;
-            }
-            .bn-modal-body {
-                margin-bottom: 10px;
-                 padding-bottom: 10px;
-            }
-            .bn-radio-group {
-                margin-bottom: 8px;
-            }
-            .bn-radio-group label {
-                font-size: 0.8em;
-            }
-             .bn-modal-footer {
-                 padding-top: 10px;
-             }
-              .bn-proceed-button {
-                 padding: 6px 10px;
-                 font-size: 0.85em;
-              }
+@media (max-width: 576px) {
+  .bn-section {
+    padding: 1rem 0.5rem;
+  }
+  
+  .main-heading {
+    font-size: 1.8rem;
+  }
+  
+  .bn-bookings-list-area {
+    padding: 1rem;
+  }
+  
+  .bn-modal-body {
+    padding: 1rem;
+  }
+  
+  .bn-table-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .bn-edit-button, .bn-cancel-button {
+    margin-right: 0;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Loading States and Error Messages */
+.bn-loading {
+  color: var(--accent);
+  text-align: center;
+  padding: 1rem;
+}
+
+.bn-error {
+  color: var(--danger);
+  padding: 1rem;
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  background-color: rgba(231, 76, 60, 0.1);
+  margin: 1rem 0;
+}
+
+/* Focus Styles for Accessibility */
+button:focus, input:focus, select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .bn-new-booking-button,
+  .bn-modal-overlay,
+  .bn-table-actions,
+  .bn-button {
+    display: none !important;
+  }
+  
+  .bn-section,
+  .bn-main-content-block {
+    box-shadow: none;
+    padding: 0;
+  }
+  
+  .bn-bookings-table {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .bn-bookings-table th {
+    background-color: #f1f1f1 !important;
+    color: #000 !important;
+    border-bottom: 1px solid #000;
+  }
+  
+  .bn-status-indicator {
+    background: none !important;
+    padding: 0;
+  }
 }

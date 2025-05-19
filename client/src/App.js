@@ -23,24 +23,23 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+  const [isAdmin,setIsAdmin]=useState(false);
   const backend = "http://localhost:5000";
 
   const handleLogin = (userData, token) => {
     localStorage.setItem("token", token);
     setUser(userData);
-    navigate("/");
+   
   };
 
   const handleLogout = () => {
     setUser(null);
+    setIsAdmin(false);
     localStorage.removeItem("token");
     navigate("/login");
   };
 
-  const handleLanguageChange = (lang) => {
-    setLanguageType(lang);
-  };
+
 
   useEffect(() => {
     const MINIMUM_LOAD_TIME = 500; 
@@ -82,16 +81,31 @@ function App() {
       <Navbar
         languageType={languageType}
         user={user}
+        isAdmin={isAdmin}
         onLogin={handleLogin}
         onLogout={handleLogout}
        setLanguageType={setLanguageType}
       />
 
       <Routes>
-        <Route
-          path="/login"
-          element={!user ? <LoginPage languageType={languageType} onLogin={handleLogin} setUser={setUser} /> : <Navigate to="/" />}
-        />
+      <Route
+  path="/login"
+  element={
+    !user ? (
+      <LoginPage
+        languageType={languageType}
+        setIsAdmin={setIsAdmin}
+        onLogin={handleLogin}
+        setUser={setUser}
+      />
+    ) : isAdmin ? (
+      <Navigate to="/admin" />
+    ) : (
+      <Navigate to="/" />
+    )
+  }
+/>
+
         <Route path="/" element={<HomePage languageType={languageType}/>} />
         <Route path="/home" element={<HomePage languageType={languageType}/>} />
         <Route path="/book" element={<BookNowSection user={user} languageType={languageType}/>} />

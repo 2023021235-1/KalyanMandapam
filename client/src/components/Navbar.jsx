@@ -33,7 +33,7 @@ const textContent = {
 // Define paths to hide when not logged in
 const pathsToHideWhenLoggedOut = ['/book', '/refund-status'];
 
-function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType }) {
+function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType,isAdmin }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const navigate = useNavigate();
@@ -176,7 +176,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
           </ul>
         </div>
 
-        <div className='navbar__desktop-only'>
+        {!isAdmin && (<div className='navbar__desktop-only'>
           {/* This condition (true || user) effectively means the bottom row always renders if items exist.
               The filtering of displayedNavItems will handle which items are shown. */}
           {(true || user) && (
@@ -195,7 +195,8 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
               </ul>
             </div>
           )}
-        </div>
+        </div>)
+        }
       </div>
     </nav>
   );

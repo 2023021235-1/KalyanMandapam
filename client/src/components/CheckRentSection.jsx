@@ -1,6 +1,10 @@
 // CheckRentSection.jsx
-import React, { useState, useEffect } from 'react'; // Import useEffect
+import React, { useState, useEffect } from 'react';
 import './styles/CheckRent.css';
+// Import necessary icons from 'lucide-react'
+// Example imports:
+// import { Home, MapPin, Users, Info } from 'lucide-react';
+
 
 const CheckRentSection = ({ languageType = 'en' }) => {
     // State to store the list of available halls fetched from the API
@@ -8,11 +12,11 @@ const CheckRentSection = ({ languageType = 'en' }) => {
     const [loadingHalls, setLoadingHalls] = useState(true);
     const [hallsError, setHallsError] = useState(null);
 
-    // State for the selected hall and its rent data
+    // State for the selected hall details (including rent, location, capacity)
     const [selectedHallId, setSelectedHallId] = useState('');
-    const [rentData, setRentData] = useState(null); // State to display rent data for the selected hall
-    const [loadingRent, setLoadingRent] = useState(false);
-    const [rentError, setRentError] = useState(null);
+    const [selectedHallDetails, setSelectedHallDetails] = useState(null); // State to display details for the selected hall
+    const [loadingDetails, setLoadingDetails] = useState(false);
+    const [detailsError, setDetailsError] = useState(null);
 
     // Base URL for API calls
     const API_BASE_URL = 'http://localhost:5000/api';
@@ -20,9 +24,9 @@ const CheckRentSection = ({ languageType = 'en' }) => {
     // Content for the section (remains mostly the same)
     const content = {
         en: {
-            sectionHeading: 'Check Rent Details',
+            sectionHeading: 'Check Rent & Details', // Updated heading
             dropdownLabel: 'BaratGhar Name',
-            selectHallPlaceholder: 'Select BaratGhar', // Added placeholder text
+            selectHallPlaceholder: 'Select BaratGhar',
             notesHeading: 'NOTES : Terms & Condition are also apply.',
             note1: '(1). Commercial : 2.5 time multiple Extra charges on baratghar rent applied in Commercial Category.',
             note2: '(2). Social : Normal Charges',
@@ -32,15 +36,17 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             categoryCommercial: 'Commercial',
             categorySocial: 'Social',
             categoryNonCommercial: 'Non-Commercial',
+            locationLabel: 'Location', // Added location label
+            capacityLabel: 'Capacity', // Added capacity label
             loadingHallsMessage: 'Loading halls...',
-            fetchingRentMessage: 'Fetching rent details...',
-            selectHallMessage: 'Please select a BaratGhar to see rent details.', // Message when no hall is selected
-            hallNotFound: 'Rent details not found for the selected hall.', // Message if API returns 404 for rent
+            fetchingDetailsMessage: 'Fetching details...', // Updated message
+            selectHallMessage: 'Please select a BaratGhar to see details.', // Updated message
+            hallNotFound: 'Details not found for the selected hall.', // Updated message
         },
         hi: {
-            sectionHeading: 'किराया विवरण जांचें',
+            sectionHeading: 'किराया और विवरण जांचें', // Updated heading
             dropdownLabel: 'बारात घर का नाम',
-            selectHallPlaceholder: 'बारात घर चुनें', // Added placeholder text
+            selectHallPlaceholder: 'बारात घर चुनें',
             notesHeading: 'नोट्स : नियम और शर्तें भी लागू होती हैं।',
             note1: '(१). वाणिज्यिक : वाणिज्यिक श्रेणी में लागू बारात घर किराए पर २.५ गुना अतिरिक्त शुल्क।',
             note2: '(२). सामाजिक : सामान्य शुल्क',
@@ -50,10 +56,12 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             categoryCommercial: 'वाणिज्यिक',
             categorySocial: 'सामाजिक',
             categoryNonCommercial: 'गैर-वाणिज्यिक',
+            locationLabel: 'स्थान', // Added location label
+            capacityLabel: 'क्षमता', // Added capacity label
             loadingHallsMessage: 'बारात घर लोड हो रहे हैं...',
-            fetchingRentMessage: 'किराया विवरण प्राप्त हो रहा है...',
-            selectHallMessage: 'किराया विवरण देखने के लिए कृपया एक बारात घर चुनें।', // Message when no hall is selected
-            hallNotFound: 'चयनित बारात घर के लिए किराया विवरण नहीं मिला।', // Message if API returns 404 for rent
+            fetchingDetailsMessage: 'विवरण प्राप्त हो रहा है...', // Updated message
+            selectHallMessage: 'विवरण देखने के लिए कृपया एक बारात घर चुनें।', // Updated message
+            hallNotFound: 'चयनित बारात घर के लिए विवरण नहीं मिला।', // Updated message
         },
     };
 
@@ -65,7 +73,6 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             setLoadingHalls(true);
             setHallsError(null);
             try {
-                // GET /api/halls is a public route based on your hallRoutes.js
                 const response = await fetch(`${API_BASE_URL}/halls`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -84,53 +91,58 @@ const CheckRentSection = ({ languageType = 'en' }) => {
     }, [API_BASE_URL, currentContent.loadingHallsMessage]); // Dependencies: API_BASE_URL and content for error message
 
 
-    // Handle dropdown change and fetch rent data for the selected hall
+    // Handle dropdown change and fetch details for the selected hall
     const handleDropdownChange = async (event) => {
         const selectedValue = event.target.value;
         setSelectedHallId(selectedValue);
-        setRentData(null); // Clear previous rent data
-        setRentError(null); // Clear previous error
+        setSelectedHallDetails(null); // Clear previous details
+        setDetailsError(null); // Clear previous error
 
         if (selectedValue) { // Only fetch if a hall is selected (not the placeholder)
-            setLoadingRent(true);
+            setLoadingDetails(true);
             try {
-                // GET /api/halls/:id is a public route based on your hallRoutes.js
                 const response = await fetch(`${API_BASE_URL}/halls/${selectedValue}`);
                 if (!response.ok) {
-                     if (response.status === 404) {
-                         throw new Error(currentContent.hallNotFound);
-                     }
+                    if (response.status === 404) {
+                        throw new Error(currentContent.hallNotFound);
+                    }
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                // Assuming the fetched hall data contains rent_commercial, rent_social, rent_non_commercial
-                setRentData({
-                    commercial: data.rent_commercial,
-                    social: data.rent_social,
-                    nonCommercial: data.rent_non_commercial,
-                });
+                // Assuming the fetched hall data contains all necessary fields
+                setSelectedHallDetails(data);
             } catch (error) {
-                console.error('Error fetching rent data:', error);
-                setRentError(error.message || currentContent.fetchingRentMessage + ' failed.');
+                console.error('Error fetching hall details:', error);
+                setDetailsError(error.message || currentContent.fetchingDetailsMessage + ' failed.');
             } finally {
-                setLoadingRent(false);
+                setLoadingDetails(false);
             }
         }
     };
 
     return (
-        <section className="check-rent-section">
-            <div className="container">
-                <h2 className="check-rent-section-heading">{currentContent.sectionHeading}</h2>
+        <section className="rental-section">
+            <div className="rental-container">
+                {/* Example of adding an icon next to the heading */}
+                {/* <h2 className="rental-section__heading"><Home size={36} className="icon-inline" /> {currentContent.sectionHeading}</h2> */}
+                <h2 className="rental-section__heading">{currentContent.sectionHeading}</h2>
 
-                <div className="check-rent-content">
-                    <div className="check-rent-form-block"> {/* The white card */}
-                        <div className="form-group"> {/* Reuse form-group styling for label+select */}
-                            <label htmlFor="baratghar-select">{currentContent.dropdownLabel}</label>
+                <div className="rental-section__content">
+                    <div className="rental-form-block"> {/* The white card */}
+                        <div className="rental-form-group"> {/* Reuse form-group styling for label+select */}
+                            <label htmlFor="baratghar-select">
+                                {/* Example of adding an icon next to the label */}
+                                {/* <MapPin size={18} className="icon-inline" /> {currentContent.dropdownLabel} */}
+                                {currentContent.dropdownLabel}
+                                </label>
                             {loadingHalls ? (
-                                <p>{currentContent.loadingHallsMessage}</p>
+                                <p className="rental-info-message">
+                                    {/* Example of adding a loading icon */}
+                                    {/* <Loader size={18} className="icon-spin" /> {currentContent.loadingHallsMessage} */}
+                                    {currentContent.loadingHallsMessage}
+                                    </p>
                             ) : hallsError ? (
-                                <p style={{ color: 'red' }}>{hallsError}</p>
+                                <p className="rental-info-message" style={{ color: 'red' }}>{hallsError}</p>
                             ) : (
                                 <select
                                     id="baratghar-select"
@@ -150,54 +162,69 @@ const CheckRentSection = ({ languageType = 'en' }) => {
 
                         {/* Display messages based on state */}
                         {!selectedHallId && !loadingHalls && !hallsError && (
-                            <p className="info-message">{currentContent.selectHallMessage}</p>
+                            <p className="rental-info-message">{currentContent.selectHallMessage}</p>
                         )}
 
-                        {loadingRent && (
-                            <p>{currentContent.fetchingRentMessage}</p>
+                        {loadingDetails && (
+                            <p className="rental-info-message">
+                                {/* Example of adding a loading icon */}
+                                {/* <Loader size={18} className="icon-spin" /> {currentContent.fetchingDetailsMessage} */}
+                                {currentContent.fetchingDetailsMessage}
+                                </p>
                         )}
 
-                        {rentError && (
-                            <p style={{ color: 'red' }}>{rentError}</p>
+                        {detailsError && (
+                            <p className="rental-info-message" style={{ color: 'red' }}>{detailsError}</p>
                         )}
 
+                        {/* Hall Details (Location and Capacity) and Rent Details Table (Conditional Rendering) */}
+                        {selectedHallDetails && !loadingDetails && !detailsError && (
+                            <div className="rental-hall-details">
+                                {/* Example of adding an icon next to the hall details heading */}
+                                {/* <h4><Info size={20} className="icon-inline" /> {selectedHallDetails.hall_name} Details</h4> */}
+                                <h4>{selectedHallDetails.hall_name} Details</h4> {/* Display hall name as title */}
+                                <p><strong>{currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
+                                <p><strong>{currentContent.capacityLabel}:</strong> {selectedHallDetails.capacity}</p>
 
-                        {/* Rent Details Table (Conditional Rendering) */}
-                        {rentData && !loadingRent && !rentError && (
-                            <div className="rent-details-chart">
-                                <h4>{currentContent.sectionHeading}</h4> {/* Using section heading for table title */}
-                                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: '#f2f2f2' }}>
-                                            <th style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'left' }}>{currentContent.rentTableCategoryHeader}</th>
-                                            <th style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'left' }}>{currentContent.rentTableRentHeader}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td style={{ padding: '10px', border: '1px solid #ddd' }}>{currentContent.categoryCommercial}</td>
-                                            <td style={{ padding: '10px', border: '1px solid #ddd' }}>{rentData.commercial}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{ padding: '10px', border: '1px solid #ddd' }}>{currentContent.categorySocial}</td>
-                                            <td style={{ padding: '10px', border: '1px solid #ddd' }}>{rentData.social}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{ padding: '10px', border: '1px solid #ddd' }}>{currentContent.categoryNonCommercial}</td>
-                                            <td style={{ padding: '10px', border: '1px solid #ddd' }}>{rentData.nonCommercial}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <div className="rental-details-chart" style={{ marginTop: '20px' }}>
+                                    {/* Example of adding an icon next to the rent table heading */}
+                                    {/* <h4><DollarSign size={20} className="icon-inline" /> {currentContent.rentTableRentHeader}</h4> */}
+                                    <h4>{currentContent.rentTableRentHeader}</h4> {/* Rent details table title */}
+                                    <table className="rental-details-chart__table">
+                                        <thead>
+                                            <tr style={{ backgroundColor: '#f2f2f2' }}>
+                                                <th>{currentContent.rentTableCategoryHeader}</th>
+                                                <th>{currentContent.rentTableRentHeader}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{currentContent.categoryCommercial}</td>
+                                                <td>{selectedHallDetails.rent_commercial}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>{currentContent.categorySocial}</td>
+                                                <td>{selectedHallDetails.rent_social}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>{currentContent.categoryNonCommercial}</td>
+                                                <td>{selectedHallDetails.rent_non_commercial}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         )}
 
                         {/* Notes Section (Inside the card) */}
-                        <div className="check-rent-notes-card" style={{ marginTop: '20px' }}>
-                            <h3 className="notes-heading">{currentContent.notesHeading}</h3>
-                            <ul>
-                                <li>{currentContent.note1}</li>
-                                <li>{currentContent.note2}</li>
-                                <li>{currentContent.note3}</li>
+                        <div className="rental-notes-card" style={{ marginTop: '20px' }}>
+                            {/* Example of adding an icon next to the notes heading */}
+                            {/* <h3 className="rental-notes-card__heading"><BookOpen size={22} className="icon-inline" /> {currentContent.notesHeading}</h3> */}
+                            <h3 className="rental-notes-card__heading">{currentContent.notesHeading}</h3>
+                            <ul className="rental-notes-card__list">
+                                <li className="rental-notes-card__list-item">{currentContent.note1}</li>
+                                <li className="rental-notes-card__list-item">{currentContent.note2}</li>
+                                <li className="rental-notes-card__list-item">{currentContent.note3}</li>
                             </ul>
                         </div>
 

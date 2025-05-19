@@ -2,31 +2,34 @@
 
 /* --- Color Variables --- */
 :root {
-  --base-color: #ffd7ac; /* Light peach (main theme base) */
-  --white-card-bg: #FFFFFF; /* Explicit White for inner cards */
-  --primary-color: #800000; /* Maroon */
-  --secondary-color: #ff9900; /* #f90 Orange */
-  --text-color: #000000; /* Black */
-  --hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
-  --button-text-color: var(--white-card-bg); /* White text on primary buttons */
-  --form-input-border: #ccc; /* Light grey border for form inputs */
-  --form-input-focus-border: var(--secondary-color); /* Orange border on focus */
-  --secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --notes-heading-color: var(--primary-color); /* Maroon for notes heading */
-  --table-border-color: #ddd; /* Light grey for table borders */
-  --table-header-bg: var(--hover-bg); /* Subtle background for table header */
+  --rental-base-color: #ffd7ac; /* Light peach (main theme base) */
+  --rental-white-card-bg: #FFFFFF; /* Explicit White for inner cards */
+  --rental-primary-color: #800000; /* Maroon */
+  --rental-secondary-color: #ff9900; /* #f90 Orange */
+  --rental-text-color: #000000; /* Black */
+  --rental-hover-bg: rgba(0, 0, 0, 0.05); /* Subtle hover on light background */
+  --rental-button-text-color: var(--rental-white-card-bg); /* White text on primary buttons */
+  --rental-form-input-border: #ccc; /* Light grey border for form inputs */
+  --rental-form-input-focus-border: var(--rental-secondary-color); /* Orange border on focus */
+  --rental-secondary-color-rgb: 255, 153, 0; /* RGB values for #ff9900 */
+  --rental-shadow-color: rgba(0, 0, 0, 0.1);
+  --rental-notes-heading-color: var(--rental-primary-color); /* Maroon for notes heading */
+  --rental-table-border-color: #ddd; /* Light grey for table borders */
+  --rental-table-header-bg: var(--rental-hover-bg); /* Subtle background for table header */
+  --rental-icon-color: var(--rental-primary-color); /* Icon color */
+  --rental-error-color: #d32f2f; /* Material Red 700 */
+  --rental-info-color: #1976d2; /* Material Blue 700 */
 }
 
 /* Overall Check Rent Section Background */
-.check-rent-section {
+.rental-section {
   background: linear-gradient(to bottom, #ffffff, #f0f0f0);
   padding: 60px 0;
-  color: var(--text-color);
+  color: var(--rental-text-color);
   text-align: center;
 }
 
-.container {
+.rental-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
@@ -34,16 +37,24 @@
 }
 
 /* Section Heading */
-.check-rent-section-heading {
+.rental-section__heading {
   font-size: 3em;
   margin-bottom: 40px;
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--rental-primary-color);
   position: relative;
   padding-bottom: 10px;
+  display: inline-flex; /* Align icon and text */
+  align-items: center;
 }
 
-.check-rent-section-heading::after {
+.rental-section__heading svg { /* Style for icon in heading */
+    margin-right: 10px;
+    color: var(--rental-icon-color);
+}
+
+
+.rental-section__heading::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -51,27 +62,26 @@
   transform: translateX(-50%);
   width: 60px;
   height: 2px;
-  background-color: var(--secondary-color);
+  background-color: var(--rental-secondary-color);
   border-radius: 1px;
 }
 
 /* Container for the Form Block */
-.check-rent-content {
+.rental-section__content {
   display: flex;
   justify-content: center;
 }
 
 /* Style for the Form Block (the white card) */
-.check-rent-form-block {
-  /* Dimensions as requested */
+.rental-form-block {
   min-height: 60vh;
   min-width: 70vw; /* This will be overridden on smaller screens */
   max-width: 900px; /* Allow it to be wider on large screens */
 
-  background-color: var(--white-card-bg);
+  background-color: var(--rental-white-card-bg);
   padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 5px 15px var(--shadow-color);
+  box-shadow: 0 5px 15px var(--rental-shadow-color);
   display: flex;
   flex-direction: column; /* Stack content vertically */
   align-items: center; /* Center items horizontally in the column */
@@ -82,30 +92,36 @@
 
 
 /* Form Group (Label + Input/Select) */
-.form-group {
+.rental-form-group {
   margin-bottom: 20px; /* Space below the dropdown */
   width: 100%;
   max-width: 400px; /* Optional: limit max width of the form elements within the card */
-  /* No margin-top needed as it's the first element after heading */
 }
 
-.form-group label {
-  display: block;
+.rental-form-group label {
+  display: flex; /* Use flexbox for icon and text alignment */
+  align-items: center;
   font-size: 1em;
-  color: var(--primary-color);
+  color: var(--rental-primary-color);
   margin-bottom: 8px;
   font-weight: 600;
 }
 
+.rental-form-group label svg { /* Style for icon in label */
+    margin-right: 5px;
+    color: var(--rental-icon-color);
+}
+
+
 /* Styling for the Select Dropdown */
-.form-group select {
+.rental-form-group select {
   width: 100%;
   padding: 10px;
-  border: 1px solid var(--form-input-border);
+  border: 1px solid var(--rental-form-input-border);
   border-radius: 4px;
   font-size: 1em;
-  color: var(--text-color);
-  background-color: var(--white-card-bg);
+  color: var(--rental-text-color);
+  background-color: var(--rental-white-card-bg);
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -118,150 +134,283 @@
   box-sizing: border-box;
 }
 
-.form-group select:focus {
+.rental-form-group select:focus {
   outline: none;
-  border-color: var(--form-input-focus-border);
-  box-shadow: 0 0 5px rgba(var(--secondary-color-rgb, 255, 153, 0), 0.5);
+  border-color: var(--rental-form-input-focus-border);
+  box-shadow: 0 0 5px rgba(var(--rental-secondary-color-rgb, 255, 153, 0), 0.5);
 }
 
-/* Removed Submit Button Styling */
-/* .check-rent-submit-btn { ... } */
+/* Hall Details Styling */
+.rental-hall-details {
+    margin-top: 25px; /* Space above the details block */
+    width: 100%;
+    max-width: 400px; /* Match the form group width */
+    text-align: left;
+}
+
+.rental-hall-details h4 {
+    font-size: 1.2em;
+    color: var(--rental-primary-color);
+    margin-bottom: 15px;
+    text-align: center;
+    display: flex; /* Align icon and text */
+    align-items: center;
+    justify-content: center; /* Center the heading with icon */
+}
+
+.rental-hall-details h4 svg { /* Style for icon in hall details heading */
+    margin-right: 8px;
+    color: var(--rental-icon-color);
+}
+
+
+.rental-hall-details p {
+    margin-bottom: 10px;
+    color: var(--rental-text-color);
+    display: flex; /* Align icon and text */
+    align-items: center;
+}
+
+.rental-hall-details p strong {
+    margin-right: 5px;
+}
+
+.rental-hall-details p svg { /* Style for icon in hall detail paragraphs */
+    margin-right: 5px;
+    color: var(--rental-icon-color);
+}
 
 
 /* Rent Details Chart Styling */
-.rent-details-chart {
-    margin-top: 30px; /* Space above the chart */
+.rental-details-chart {
+    margin-top: 20px; /* Space above the chart */
     width: 100%;
-    max-width: 400px; /* Optional: limit max width of the table */
+    max-width: 400px; /* Match the form group width */
 }
 
-.rent-details-chart h4 {
+.rental-details-chart h4 {
     font-size: 1.2em;
-    color: var(--primary-color);
+    color: var(--rental-primary-color);
     margin-bottom: 15px;
     text-align: center;
+    display: flex; /* Align icon and text */
+    align-items: center;
+    justify-content: center; /* Center the heading with icon */
 }
 
-.rent-details-chart table {
+.rental-details-chart h4 svg { /* Style for icon in chart heading */
+     margin-right: 8px;
+     color: var(--rental-icon-color);
+}
+
+.rental-details-chart__table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow for the table */
 }
 
-.rent-details-chart th,
-.rent-details-chart td {
-    border: 1px solid var(--table-border-color);
+.rental-details-chart__table th,
+.rental-details-chart__table td {
+    border: 1px solid var(--rental-table-border-color);
     padding: 10px;
     text-align: left;
-    color: var(--text-color);
+    color: var(--rental-text-color);
 }
 
-.rent-details-chart th {
-    background-color: var(--table-header-bg);
+.rental-details-chart__table th {
+    background-color: var(--rental-table-header-bg);
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--rental-primary-color);
 }
 
 
 /* Notes Section Styling (Inside the card) */
-.check-rent-notes-card {
+.rental-notes-card {
     margin-top: 30px; /* Space above the notes */
     width: 100%;
+     
     text-align: left;
     padding-top: 20px;
-    border-top: 1px solid var(--hover-bg);
+    border-top: 1px solid var(--rental-hover-bg);
 }
 
-.notes-heading {
+.rental-notes-card__heading {
     font-size: 1.3em;
-    color: var(--notes-heading-color);
+    color: var(--rental-notes-heading-color);
     margin-bottom: 15px;
     font-weight: 600;
     text-align: center;
+    display: flex; /* Align icon and text */
+    align-items: center;
+    justify-content: center; /* Center the heading with icon */
 }
 
-.check-rent-notes-card ul {
-    list-style: disc;
-    padding-left: 20px;
+.rental-notes-card__heading svg { /* Style for icon in notes heading */
+    margin-right: 8px;
+    color: var(--rental-icon-color);
+}
+
+
+.rental-notes-card__list {
+    list-style: none; /* Remove default list style */
+    padding-left: 0; /* Remove default padding */
     margin: 0;
 }
 
-.check-rent-notes-card li {
+.rental-notes-card__list-item {
     margin-bottom: 10px;
     line-height: 1.6;
-    color: var(--text-color);
+    color: var(--rental-text-color);
+    position: relative; /* Needed for custom bullet */
+    padding-left: 20px; /* Space for custom bullet */
+}
+
+
+
+/* Info and Error Messages */
+.rental-message {
+    font-style: italic;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px; /* Match form group width */
+}
+
+.rental-message svg { /* Style for icon in messages */
+    margin-right: 8px;
+}
+
+.rental-message--info {
+    color: var(--rental-info-color);
+    background-color: rgba(var(--rental-info-color-rgb, 25, 118, 210), 0.1); /* Light blue background */
+}
+
+.rental-message--error {
+    color: var(--rental-error-color);
+     background-color: rgba(var(--rental-error-color-rgb, 211, 47, 47), 0.1); /* Light red background */
+}
+
+/* Add RGB variables for message backgrounds if not already present */
+:root {
+    --rental-info-color-rgb: 25, 118, 210;
+    --rental-error-color-rgb: 211, 47, 47;
 }
 
 
 /* Responsive Adjustments */
 @media (max-width: 992px) {
-    .check-rent-form-block {
+    .rental-form-block {
         min-width: 80vw;
         max-width: 700px;
     }
-     .form-group {
-        max-width: 350px;
+     .rental-form-group,
+     .rental-hall-details,
+     .rental-details-chart,
+     .rental-notes-card,
+     .rental-message { /* Apply max-width to messages too */
+        max-width: 350px; /* Adjust max-width for smaller screens */
     }
-     .rent-details-chart {
-         max-width: 600px;
-     }
-      .check-rent-notes-card {
-         max-width: 600px;
-     }
 }
 
 
 @media (max-width: 768px) {
-  .check-rent-form-block {
+  .rental-form-block {
     min-height: 50vh;
     min-width: 90vw;
     max-width: 95%;
     padding: 20px;
   }
 
-  .check-rent-section-heading {
+  .rental-section__heading {
       font-size: 2em;
   }
 
-   .form-group,
-   .rent-details-chart,
-   .check-rent-notes-card {
+   .rental-form-group,
+   .rental-hall-details,
+   .rental-details-chart,
+   .rental-notes-card,
+   .rental-message { /* Ensure full width on very small screens */
       max-width: 100%;
    }
 
-   .notes-heading {
+   .rental-notes-card__heading {
        font-size: 1.2em;
    }
 }
 
 @media (max-width: 480px) {
-    .check-rent-section-heading {
+    .rental-section__heading {
         font-size: 1.8em;
     }
+     .rental-section__heading svg {
+         margin-right: 5px;
+         width: 1.2em; /* Adjust icon size with text */
+         height: 1.2em;
+     }
 
-     .check-rent-form-block {
+
+     .rental-form-block {
          min-height: 40vh;
          padding: 15px;
      }
 
-     .form-group label {
+     .rental-form-group label {
          font-size: 0.9em;
      }
+     .rental-form-group label svg {
+         width: 0.9em; /* Adjust icon size with text */
+         height: 0.9em;
+     }
 
-     .form-group select {
+     .rental-form-group select {
          padding: 8px;
          font-size: 0.9em;
      }
 
-     .notes-heading {
-        font-size: 1em;
+    .rental-hall-details h4,
+    .rental-details-chart h4 {
+        font-size: 1.1em;
+    }
+     .rental-hall-details h4 svg,
+     .rental-details-chart h4 svg {
+         margin-right: 5px;
+         width: 1.1em; /* Adjust icon size with text */
+         height: 1.1em;
      }
 
-     .check-rent-notes-card ul {
+    .rental-hall-details p,
+    .rental-notes-card__list-item {
+         font-size: 0.9em;
+     }
+    .rental-hall-details p svg {
+        width: 0.9em; /* Adjust icon size with text */
+        height: 0.9em;
+    }
+
+     .rental-notes-card__heading {
+        font-size: 1em;
+     }
+      .rental-notes-card__heading svg {
+          margin-right: 5px;
+          width: 1em; /* Adjust icon size with text */
+          height: 1em;
+      }
+
+     .rental-notes-card__list {
         padding-left: 15px;
      }
 
-     .check-rent-notes-card li {
-         font-size: 0.9em;
-     }
+    .rental-message {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+    .rental-message svg {
+        width: 0.9em; /* Adjust icon size with text */
+        height: 0.9em;
+    }
 }

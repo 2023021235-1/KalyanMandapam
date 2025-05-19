@@ -54,9 +54,7 @@
     display: flex; /* Arrange buttons horizontally */
     gap: 20px; /* Space between buttons */
     margin-top: 30px; /* Space above buttons */
-    /* Removed margin-bottom from p tag, added margin-top here */
     flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-   /* Center buttons if they wrap (optional, depends on design) */
 }
 
 
@@ -101,13 +99,15 @@
 }
 
 .btn.btn-primary:hover {
-    background-color: darken(var(--primary-color), 10%);
+    /* Reverted to a simple darker color as 'darken' is not standard CSS */
+    background-color: #6a0000; /* A darker shade of #800000 */
     transform: translateY(-2px);
 }
 
 /* Added secondary button style for the second button */
 .btn.btn-secondary {
-    background-color: var(--primary-color); /* Orange background */
+    /* Reverted background color to primary color as in your original CSS */
+    background-color: var(--primary-color);
     color: var(--button-text-color); /* White text */
     padding: 12px 25px;
     border: none;
@@ -119,8 +119,9 @@
 }
 
 .btn.btn-secondary:hover {
-     background-color: darken(var(--secondary-color), 10%);
-     transform: translateY(-2px);
+    /* Reverted hover color to secondary color as in your original CSS */
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
 }
 
 /* Note: .hero-button class in JSX can be used for Hero-specific button adjustments if needed */
@@ -136,9 +137,9 @@
     width: 350px;
     height: 350px;
   }
-   .hero-image {
+    .hero-image {
       padding-left: 10px;
-   }
+    }
 }
 
 @media (max-width: 768px) {
@@ -147,20 +148,26 @@
     text-align: center;
   }
 
+  /* Use order to place the image above the text on mobile */
+  .hero-image {
+      order: -1; /* Place image first */
+      margin-bottom: 40px; /* Add space below the image */
+      padding-left: 0; /* Remove left padding */
+      margin-top: 0; /* Remove top margin */
+  }
+
   .hero-text {
-    margin-bottom: 40px;
+    order: 1; /* Place text second */
+    margin-bottom: 0; /* Remove bottom margin from text */
     max-width: 100%;
   }
+
 
   .hero-buttons { /* Adjust button container on mobile */
       justify-content: center; /* Ensure buttons are centered */
       gap: 15px; /* Reduce gap */
   }
 
-   .hero-image {
-      padding-left: 0;
-      margin-top: 20px;
-   }
 }
 
 @media (max-width: 480px) {
@@ -168,15 +175,15 @@
     width: 280px;
     height: 280px;
   }
-   .hero-buttons { /* Further adjust button container on smaller mobile */
-       flex-direction: column; /* Stack buttons vertically */
-       gap: 10px; /* Adjust gap */
-       align-items: center; /* Center stacked buttons */
-   }
+    .hero-buttons { /* Further adjust button container on smaller mobile */
+        flex-direction: column; /* Stack buttons vertically */
+        gap: 10px; /* Adjust gap */
+        align-items: center; /* Center stacked buttons */
+    }
     /* Make stacked buttons wider */
-   .hero-buttons .btn {
-       width: 80%; /* Give buttons width when stacked */
-       max-width: 250px; /* Max width for stacked buttons */
-   }
+    .hero-buttons .btn {
+        width: 80%; /* Give buttons width when stacked */
+        max-width: 250px; /* Max width for stacked buttons */
+    }
 
 }

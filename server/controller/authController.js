@@ -71,7 +71,13 @@ const token = generateToken(user);
 res.status(200).json({
 token,
 userType: user.userType, // Send the userType from the fetched user object
-user: { name: user.name, email: user.email, id: user._id } // It's good practice to send the user's ID too
+ user: {
+ id: user._id,
+ name: user.name,
+ email: user.email,
+ userType: user.userType // Send userType in profile too
+ // Add other fields you want to expose in the profile
+ } // It's good practice to send the user's ID too
 });
 };
 

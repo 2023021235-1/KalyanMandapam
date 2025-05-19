@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const API = "http://localhost:5000/api";
 
-function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleLanguage prop
+function LoginPage({ setUser,setIsAdmin, languageType, toggleLanguage }) { // Added toggleLanguage prop
   const [view, setView] = useState("login");
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -36,18 +36,15 @@ function LoginPage({ setUser, languageType, toggleLanguage }) { // Added toggleL
     // `data` will now correctly have `userType` from the backend
     const { token, user, userType } = data;
     localStorage.setItem("token", token);
-    // setUser(user); // Assuming setUser updates some state with user details
-    // It might be better to store the whole user object or specific parts
-    localStorage.setItem("user", JSON.stringify({ ...user, userType })); // Store user info including type
-    // Or if your AuthContext/UserProvider handles this:
-    // loginUser({ token, user: { ...user, userType } }); // Example of calling a context function
-
+  
+     setUser(user);
+     console.log(user)
     console.log("Logged in user type:", userType); // This will now show the actual userType
 
     if (userType === 'Admin') {
-      navigate("/admin");
+      setIsAdmin(true);navigate("/admin");
     } else {
-      navigate("/home"); // Or any other default route for non-admin users
+     navigate("/home"); 
     }
   } catch (err) {
     setError(err.response?.data?.message || (languageType === 'en' ? "Login failed" : "लॉगिन असफल"));

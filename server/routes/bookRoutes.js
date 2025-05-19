@@ -6,7 +6,7 @@ const {
     getAllBookings,
     getBookingById,
     updateBooking,
-    deleteBooking,
+    cancelBooking,
     getRefundStatus,
 } = require('../controller/bookController');
 const { protect } = require('../middleware/authMiddleware'); // Import the protect middleware
@@ -17,7 +17,7 @@ router.post('/', protect, createBooking); // Create a new booking
 router.get('/', protect, getAllBookings); // Get all bookings (can add logic in controller to filter by user or admin)
 router.get('/:id', protect, getBookingById); // Get booking by unique booking_id string
 router.put('/:id', protect, updateBooking); // Update booking details by unique booking_id string
-router.delete('/:id', protect, deleteBooking); // Delete a booking by unique booking_id string
+router.delete('/:id', protect, cancelBooking); // Delete a booking by unique booking_id string
 router.get('/:id/refund-status', protect, getRefundStatus); // Check refund status by unique booking_id string
 
 

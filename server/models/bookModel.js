@@ -8,6 +8,13 @@ const bookSchema = new mongoose.Schema({
         unique: true, // Ensure booking_id is unique
         trim: true,
     },
+    // Added transaction_id field
+    transaction_id: {
+        type: String,
+        required: true, // Assuming every booking must have a transaction ID
+        unique: true, // Ensure transaction_id is unique
+        trim: true,
+    },
     hall_id: {
         type: mongoose.Schema.Types.ObjectId, // Reference to the Hall model's internal _id
         ref: 'Hall', // Reference to the Hall model
@@ -15,7 +22,7 @@ const bookSchema = new mongoose.Schema({
     },
     user_id: {
         type: mongoose.Schema.Types.ObjectId, // Reference to a User model's internal _id
-        ref: 'User', // Assuming you have a User model
+        ref: 'User',
         required: true,
     },
     booking_date: {
@@ -48,8 +55,7 @@ const bookSchema = new mongoose.Schema({
     },
     booking_type: {
         type: String,
-        // Removed 'required: true' to make it optional
-        enum: ['employee', 'ex-employee', 'ndmc-resident', 'non-ndmc-resident', 'commercial', 'social', 'non-commercial'], // Added commercial, social, non-commercial to enum for clarity, though not strictly required by schema now
+        enum: ['employee', 'ex-employee', 'ndmc-resident', 'non-ndmc-resident', 'commercial', 'social', 'non-commercial'],
     },
     refund_status: {
         type: String,

@@ -1,5 +1,5 @@
 // CheckAvailabilitySection.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Import useCallback
 import './styles/CheckAvailability.css';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, List } from 'lucide-react';
 
@@ -9,14 +9,16 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
     const [loadingHalls, setLoadingHalls] = useState(true);
     const [hallsError, setHallsError] = useState(null);
 
-    // State for the selected hall, month, and year
+    // State for the selected hall, month, and year from dropdowns
     const [selectedHallId, setSelectedHallId] = useState('');
     const [selectedMonthValue, setSelectedMonthValue] = useState('');
     const [selectedYearValue, setSelectedYearValue] = useState('');
 
     // State for the currently displayed month and year in the calendar/list
-    const [displayMonth, setDisplayMonth] = useState(new Date().getMonth() + 1);
-    const [displayYear, setDisplayYear] = useState(new Date().getFullYear());
+    // Initialize with selected values if available, otherwise current date
+    const [displayMonth, setDisplayMonth] = useState(parseInt(selectedMonthValue, 10) || new Date().getMonth() + 1);
+    const [displayYear, setDisplayYear] = useState(parseInt(selectedYearValue, 10) || new Date().getFullYear());
+
 
     // State for availability data fetched for the displayed month/year
     const [availabilityDataForMonth, setAvailabilityDataForMonth] = useState(null);
@@ -26,10 +28,11 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
 
     const [viewMode, setViewMode] = useState('calendar');
 
-    // Base URL for API calls
+    // Base URL for API calls - Consider moving this to a config file or environment variable
     const API_BASE_URL = 'http://localhost:5000/api';
 
     const months = [
+        { value: '', label: languageType === 'hi' ? 'महीना चुनें' : 'Select Month' }, // Added placeholder
         { value: '01', label: languageType === 'hi' ? 'जनवरी' : 'January' },
         { value: '02', label: languageType === 'hi' ? 'फरवरी' : 'February' },
         { value: '03', label: languageType === 'hi' ? 'मार्च' : 'March' },
@@ -52,11 +55,13 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
 
     const currentYear = new Date().getFullYear();
     const years = [
+        { value: '', label: languageType === 'hi' ? 'वर्ष चुनें' : 'Select Year' }, // Added placeholder
         { value: currentYear.toString(), label: currentYear.toString() },
         { value: (currentYear + 1).toString(), label: (currentYear + 1).toString() },
         { value: (currentYear + 2).toString(), label: (currentYear + 2).toString() },
     ];
 
+    // Define booking statuses with labels and corresponding CSS color classes
     const bookingStatuses = {
         available: { label: languageType === 'hi' ? 'उपलब्ध' : 'Available', colorClass: 'status-available' },
         preliminary: { label: languageType === 'hi' ? 'प्रारंभिक रूप से बुक किया गया' : 'Preliminary Booked', colorClass: 'status-preliminary' },
@@ -65,21 +70,22 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
         special: { label: languageType === 'hi' ? 'विशेष बुकिंग' : 'Special Booking', colorClass: 'status-special' },
     };
 
+    // Localized content based on languageType
     const content = {
         en: {
             sectionHeading: 'Check Availability',
             baratGharLabel: 'BaratGhar Name',
-            selectHallPlaceholder: 'Select BaratGhar', // Added placeholder text
+            selectHallPlaceholder: 'Select BaratGhar',
             monthLabel: 'Month',
-            selectMonthPlaceholder: 'Select Month', // Added placeholder text
+            selectMonthPlaceholder: 'Select Month',
             yearLabel: 'Year',
-            selectYearPlaceholder: 'Select Year', // Added placeholder text
-            showAvailabilityButton: 'Show Availability',
+            selectYearPlaceholder: 'Select Year',
+            // Removed showAvailabilityButton text
             legendHeading: 'Booking Status Legend:',
-            tableDateHeader: 'DATE',
-            tableStatusHeader: 'BOOKING STATUS',
-            noDataMessage: 'Please select BaratGhar, Month, and Year and click "Show Availability".',
-            noAvailabilityFound: 'No specific availability data found for the selected criteria. Dates are assumed available unless otherwise marked.', // Modified message
+            tableDateHeader: 'DATE', // Keep for potential future use or alternative list views
+            tableStatusHeader: 'BOOKING STATUS', // Keep for potential future use or alternative list views
+            noDataMessage: 'Please select BaratGhar, Month, and Year.', // Updated message
+            noAvailabilityFound: 'No specific availability data found for the selected criteria. Dates are assumed available unless otherwise marked.',
             toggleCalendarView: 'Calendar View',
             toggleListView: 'List View',
             previousMonth: 'Previous Month',
@@ -92,17 +98,17 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
         hi: {
             sectionHeading: 'उपलब्धता जांचें',
             baratGharLabel: 'बारात घर का नाम',
-            selectHallPlaceholder: 'बारात घर चुनें', // Added placeholder text
+            selectHallPlaceholder: 'बारात घर चुनें',
             monthLabel: 'महीना',
-            selectMonthPlaceholder: 'महीना चुनें', // Added placeholder text
+            selectMonthPlaceholder: 'महीना चुनें',
             yearLabel: 'वर्ष',
-            selectYearPlaceholder: 'वर्ष चुनें', // Added placeholder text
-            showAvailabilityButton: 'उपलब्धता दिखाएं',
+            selectYearPlaceholder: 'वर्ष चुनें',
+            // Removed showAvailabilityButton text
             legendHeading: 'बुकिंग स्थिति लीजेंड:',
-            tableDateHeader: 'दिनांक',
-            tableStatusHeader: 'बुकिंग स्थिति',
-            noDataMessage: 'कृपया बारात घर, महीना और वर्ष चुनें और "उपलब्धता दिखाएं" पर क्लिक करें।',
-            noAvailabilityFound: 'चयनित मानदंडों के लिए कोई विशिष्ट उपलब्धता डेटा नहीं मिला। जब तक अन्यथा चिह्नित न किया जाए, तिथियां उपलब्ध मानी जाती हैं।', // Modified message
+            tableDateHeader: 'दिनांक', // Keep for potential future use or alternative list views
+            tableStatusHeader: 'बुकिंग स्थिति', // Keep for potential future use or alternative list views
+            noDataMessage: 'कृपया बारात घर, महीना और वर्ष चुनें।', // Updated message
+            noAvailabilityFound: 'चयनित मानदंडों के लिए कोई विशिष्ट उपलब्धता डेटा नहीं मिला। जब तक अन्यथा चिह्नित न किया जाए, तिथियां उपलब्ध मानी जाती हैं।',
             toggleCalendarView: 'कैलेंडर दृश्य',
             toggleListView: 'सूची दृश्य',
             previousMonth: 'पिछला महीना',
@@ -122,7 +128,6 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
             setLoadingHalls(true);
             setHallsError(null);
             try {
-                // GET /api/halls is a public route
                 const response = await fetch(`${API_BASE_URL}/halls`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -138,78 +143,114 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
         };
 
         fetchAllHalls();
-    }, [API_BASE_URL, currentContent.hallsErrorMessage]); // Dependencies
+    }, [API_BASE_URL, currentContent.hallsErrorMessage]);
 
-    // Function to fetch availability data for a specific hall, year, and month
-    const fetchAvailabilityData = async (hallId, year, month) => {
+    // Memoized function to fetch availability data
+    const fetchAvailabilityData = useCallback(async (hallId, year, month) => {
+        if (!hallId || !year || !month) {
+             // Don't fetch if inputs are not complete
+            setAvailabilityDataForMonth(null);
+            setAvailabilityError(null);
+            setLoadingAvailability(false);
+            return;
+        }
+
         setLoadingAvailability(true);
         setAvailabilityError(null);
         setAvailabilityDataForMonth(null); // Clear previous data
 
         try {
-            // GET /api/halls/:id/availability?month=MM&year=YYYY
             const response = await fetch(`${API_BASE_URL}/halls/${hallId}/availability?month=${month}&year=${year}`);
 
             if (!response.ok) {
                  if (response.status === 404) {
-                     // Hall not found or availability data not found for this month/year
-                     // We will treat this as no specific bookings found, so all days are available by default
                      console.warn(`Availability data not found for hall ${hallId}, month ${month}, year ${year}. Assuming available.`);
-                     setAvailabilityDataForMonth([]); // Set empty array to indicate no specific data
-                     return []; // Return empty array to calling function
+                     // If no specific data, generate all days as available
+                     const daysInMonth = new Date(year, month, 0).getDate();
+                     const availableDays = Array.from({ length: daysInMonth }, (_, i) => ({ date: i + 1, status: 'available' }));
+                     setAvailabilityDataForMonth(availableDays);
+                     return availableDays;
                  }
-                throw new Error(`HTTP error! status: ${response.status}`);
+                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            const responseData = await response.json();
+            // Access the nested 'availability' object from the response
+            const availabilityData = responseData.availability;
 
-            // The backend should return an array of availability objects for the month
-            // e.g., [{ date: 'YYYY-MM-DD', status: 'booked' }, ...]
-            // We need to convert the date strings to Date objects and extract the day
-            const processedData = data.map(item => {
-                 const itemDate = new Date(item.date);
-                 return {
-                     date: itemDate.getDate(), // Get the day of the month
-                     status: item.status,
-                 };
-            });
+            // Process the availability data object into a flat array for calendar/list
+            const processedData = [];
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            // Create a map for quick lookup of availability status by day from fetched data
+             const fetchedAvailabilityMap = Object.keys(availabilityData).reduce((map, dateString) => {
+                const date = new Date(dateString);
+                const day = date.getDate();
+                const floorAvailabilities = availabilityData[dateString];
+
+                let overallStatus = 'available'; // Default to available from fetched data if date exists
+
+                if (floorAvailabilities && floorAvailabilities.length > 0) {
+                    // Prioritize blocked > booked > preliminary > special
+                    if (floorAvailabilities.some(floor => floor.status === 'blocked')) {
+                         overallStatus = 'blocked';
+                    } else if (floorAvailabilities.some(floor => floor.status === 'booked')) {
+                        overallStatus = 'booked';
+                    } else if (floorAvailabilities.some(floor => floor.status === 'preliminary')) {
+                        overallStatus = 'preliminary';
+                    } else if (floorAvailabilities.some(floor => floor.status === 'special')) {
+                         overallStatus = 'special';
+                    }
+                     // If none of the above, it remains 'available' based on fetched data presence
+                }
+                 map[day] = overallStatus;
+                 return map;
+            }, {});
+
+
+            // Generate data for all days of the month, defaulting to 'available'
+            for (let day = 1; day <= daysInMonth; day++) {
+                 // Use status from fetched data if available, otherwise default to 'available'
+                 const status = fetchedAvailabilityMap[day] || 'available';
+                 processedData.push({ date: day, status: status });
+            }
 
             setAvailabilityDataForMonth(processedData);
-            return processedData; // Return the data for use in calendar generation
+            return processedData; // Return the processed data
 
         } catch (error) {
             console.error('Error fetching availability data:', error);
             setAvailabilityError(error.message || currentContent.availabilityErrorMessage);
-            setAvailabilityDataForMonth([]); // Set empty array on error to show calendar with default available
-            return []; // Return empty array on error
+            setAvailabilityDataForMonth([]); // Set empty array or handle as needed on error
+            return [];
         } finally {
             setLoadingAvailability(false);
         }
-    };
+    }, [API_BASE_URL, currentContent.availabilityErrorMessage]); // Added dependencies
 
-
-    // Handle the "Show Availability" button click
-    const handleShowAvailability = () => {
-        if (!selectedHallId || !selectedMonthValue || !selectedYearValue) {
-            alert(languageType === 'hi' ? 'कृपया सभी फ़ील्ड चुनें।' : 'Please select all fields.');
-            setAvailabilityDataForMonth(null); // Keep message visible if fields are missing
-            return;
+    // Effect to fetch data automatically when dropdown selections are complete and change
+    useEffect(() => {
+        if (selectedHallId && selectedMonthValue && selectedYearValue) {
+            const monthInt = parseInt(selectedMonthValue, 10);
+            const yearInt = parseInt(selectedYearValue, 10);
+            setDisplayMonth(monthInt);
+            setDisplayYear(yearInt);
+            fetchAvailabilityData(selectedHallId, yearInt, monthInt);
+        } else {
+            // Clear data and messages if selections are incomplete
+            setAvailabilityDataForMonth(null);
+            setAvailabilityError(null);
+            setLoadingAvailability(false);
+             // Optionally reset display month/year if you want it blank when no selection
+            // setDisplayMonth(parseInt(new Date().getMonth() + 1, 10)); // Or a default value
+            // setDisplayYear(parseInt(new Date().getFullYear(), 10)); // Or a default value
         }
+    }, [selectedHallId, selectedMonthValue, selectedYearValue, fetchAvailabilityData]); // Depend on selected values and the memoized fetch function
 
-        const monthInt = parseInt(selectedMonthValue);
-        const yearInt = parseInt(selectedYearValue);
-
-        setDisplayMonth(monthInt);
-        setDisplayYear(yearInt);
-
-        // Fetch data for the selected month and year
-        fetchAvailabilityData(selectedHallId, yearInt, monthInt);
-
-        setViewMode('calendar'); // Default to calendar view after showing availability
-    };
 
     // Handle navigation to previous month
     const handlePreviousMonth = () => {
+         // Navigation is now tied to displayed month/year, but also needs selected hall
         if (!selectedHallId) return; // Cannot navigate if no hall is selected
 
         let newMonth = displayMonth - 1;
@@ -220,12 +261,13 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
         }
         setDisplayMonth(newMonth);
         setDisplayYear(newYear);
-        // Fetch data for the new month and year
-        fetchAvailabilityData(selectedHallId, newYear, newMonth);
+        // Fetch data for the new month and year for the selected hall
+        fetchAvailabilityData(selectedHallId, newYear, newMonth); // Fetch data for the new month
     };
 
     // Handle navigation to next month
     const handleNextMonth = () => {
+         // Navigation is now tied to displayed month/year, but also needs selected hall
         if (!selectedHallId) return; // Cannot navigate if no hall is selected
 
         let newMonth = displayMonth + 1;
@@ -237,34 +279,25 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
         setDisplayMonth(newMonth);
         setDisplayYear(newYear);
         // Fetch data for the new month and year
-        fetchAvailabilityData(selectedHallId, newYear, newMonth);
+        fetchAvailabilityData(selectedHallId, newYear, newMonth); // Fetch data for the new month
     };
 
     // Handle change for BaratGhar select dropdown
     const handleBaratGharChange = (event) => {
         setSelectedHallId(event.target.value);
-        // Clear availability data when hall changes
-        setAvailabilityDataForMonth(null);
-        setAvailabilityError(null);
-        setLoadingAvailability(false);
+        // The useEffect will handle fetching if all three are selected
     };
 
     // Handle change for Month select dropdown
     const handleMonthChange = (event) => {
         setSelectedMonthValue(event.target.value);
-        // Clear availability data when month changes
-        setAvailabilityDataForMonth(null);
-        setAvailabilityError(null);
-        setLoadingAvailability(false);
+        // The useEffect will handle fetching if all three are selected
     };
 
     // Handle change for Year select dropdown
     const handleYearChange = (event) => {
         setSelectedYearValue(event.target.value);
-        // Clear availability data when year changes
-        setAvailabilityDataForMonth(null);
-        setAvailabilityError(null);
-        setLoadingAvailability(false);
+        // The useEffect will handle fetching if all three are selected
     };
 
 
@@ -305,11 +338,12 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
 
     // Helper to get localized status label and color class
     const getStatusInfo = (statusKey) => {
+        // Return default status info if key is not found
         return bookingStatuses[statusKey] || { label: statusKey, colorClass: '' };
     };
 
-    // Determine if the data area should be shown (only after availability data is fetched)
-    const showDataArea = availabilityDataForMonth !== null;
+     // Determine if the data area should be shown
+    const showDataArea = selectedHallId && selectedMonthValue && selectedYearValue && availabilityDataForMonth !== null;
 
 
     return (
@@ -324,24 +358,24 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                             <div className="ca-form-group">
                                 <label htmlFor="ca-baratghar-select">{currentContent.baratGharLabel}</label>
                                 {loadingHalls ? (
-                                     <p>{currentContent.loadingHallsMessage}</p>
+                                    <p>{currentContent.loadingHallsMessage}</p>
                                 ) : hallsError ? (
-                                     <p style={{ color: 'red' }}>{hallsError}</p>
+                                    <p style={{ color: 'red' }}>{hallsError}</p>
                                 ) : (
-                                     <select
-                                         id="ca-baratghar-select"
-                                         value={selectedHallId}
-                                         onChange={handleBaratGharChange}
-                                         required
-                                         className="ca-select"
-                                     >
-                                         <option value="">{currentContent.selectHallPlaceholder}</option>
-                                         {availableHalls.map((hall) => (
-                                             <option key={hall.hall_id} value={hall.hall_id}>
-                                                 {hall.hall_name}
-                                             </option>
-                                         ))}
-                                     </select>
+                                    <select
+                                        id="ca-baratghar-select"
+                                        value={selectedHallId}
+                                        onChange={handleBaratGharChange}
+                                        required
+                                        className="ca-select"
+                                    >
+                                        <option value="">{currentContent.selectHallPlaceholder}</option>
+                                        {availableHalls.map((hall) => (
+                                            <option key={hall.hall_id} value={hall.hall_id}>
+                                                {hall.hall_name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 )}
                             </div>
 
@@ -354,9 +388,8 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                                     required
                                     className="ca-select"
                                 >
-                                    <option value="">{currentContent.selectMonthPlaceholder}</option>
                                     {months.map((option) => (
-                                        <option key={option.value} value={option.value}>
+                                        <option key={option.value || 'default'} value={option.value}>
                                             {option.label}
                                         </option>
                                     ))}
@@ -372,9 +405,8 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                                     required
                                     className="ca-select"
                                 >
-                                    <option value="">{currentContent.selectYearPlaceholder}</option>
                                     {years.map((option) => (
-                                        <option key={option.value} value={option.value}>
+                                        <option key={option.value || 'default'} value={option.value}>
                                             {option.label}
                                         </option>
                                     ))}
@@ -382,45 +414,23 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                             </div>
                         </div>
 
-                        <button
-                            className="ca-show-button"
-                            onClick={handleShowAvailability}
-                            disabled={loadingHalls || loadingAvailability} // Disable button while loading
-                        >
-                            {loadingAvailability ? currentContent.fetchingAvailabilityMessage : currentContent.showAvailabilityButton}
-                        </button>
+                         {/* Removed the Show Availability Button */}
                     </div>
 
-                    {/* Display messages based on state */}
-                    {!selectedHallId && availabilityDataForMonth === null && !loadingHalls && !hallsError && (
-                         <p className="ca-availability-message">{currentContent.noDataMessage}</p>
+                     {/* Display initial message if selections are not complete */}
+                     {!showDataArea && !loadingHalls && !hallsError && !loadingAvailability && !availabilityError && (
+                            <p className="ca-availability-message">{currentContent.noDataMessage}</p>
                     )}
 
-                    {availabilityError && (
-                         <p style={{ color: 'red' }}>{availabilityError}</p>
-                    )}
+                    {/* Display loading or error messages */}
+                    {loadingAvailability && <p className="ca-availability-message">{currentContent.fetchingAvailabilityMessage}</p>}
+                    {availabilityError && <p style={{ color: 'red', textAlign: 'center', marginTop: '20px' }}>{availabilityError}</p>}
 
 
                     {/* Availability Display Area (Calendar or List) */}
                     {showDataArea && !loadingAvailability && !availabilityError && (
                         <>
-                            <div className="ca-availability-legend">
-                                <h4>{currentContent.legendHeading}</h4>
-                                <div className="ca-legend-items">
-                                    {Object.keys(bookingStatuses).map(statusKey => {
-                                        const statusInfo = bookingStatuses[statusKey];
-                                        return (
-                                            <div className="ca-legend-item" key={statusKey}>
-                                                {/* Use unique class for each color box */}
-                                                <span className={`ca-legend-color-box-${statusKey}`}></span>
-                                                <span>{statusInfo.label}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="ca-view-toggle-buttons">
+                         <div className="ca-view-toggle-buttons">
                                 <button
                                     className={`ca-toggle-button ${viewMode === 'calendar' ? 'active' : ''}`}
                                     onClick={() => setViewMode('calendar')}
@@ -436,6 +446,22 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                                     <List size={18} style={{ marginRight: '5px' }} /> {currentContent.toggleListView}
                                 </button>
                             </div>
+                            <div className="ca-availability-legend">
+                                <h4>{currentContent.legendHeading}</h4>
+                                <div className="ca-legend-items">
+                                    {Object.keys(bookingStatuses).map(statusKey => {
+                                        const statusInfo = bookingStatuses[statusKey];
+                                        return (
+                                            <div className="ca-legend-item" key={statusKey}>
+                                                <span className={`ca-legend-color-box-${statusKey}`}></span>
+                                                <span>{statusInfo.label}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                           
 
                             {viewMode === 'calendar' ? (
                                 <div className="ca-availability-calendar">
@@ -444,7 +470,7 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                                             <ChevronLeft size={24} />
                                         </button>
                                         <h3>
-                                            {months.find(m => m.value === displayMonth.toString().padStart(2, '0'))?.label} {displayYear}
+                                            {months.find(m => parseInt(m.value, 10) === displayMonth)?.label} {displayYear}
                                         </h3>
                                         <button className="ca-nav-button" onClick={handleNextMonth} aria-label={currentContent.nextMonth}>
                                             <ChevronRight size={24} />
@@ -471,46 +497,55 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                                 </div>
 
                             ) : (
-                                <div className="ca-availability-table-container">
-                                    <h4 className="ca-availability-table-month-year">
-                                        {months.find(m => m.value === displayMonth.toString().padStart(2, '0'))?.label} {displayYear}
-                                    </h4>
-                                    <table className="ca-availability-table">
-                                        <thead>
-                                            <tr>
-                                                <th>{currentContent.tableDateHeader}</th>
-                                                <th>{currentContent.tableStatusHeader}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {/* Map over availabilityDataForMonth to display in list view */}
-                                            {availabilityDataForMonth && availabilityDataForMonth.length > 0 ? (
-                                                 availabilityDataForMonth.map((day) => {
+                                // List View with Two Columns and Navigation
+                                <div className="ca-availability-list"> {/* New container for list view */}
+                                     <div className="ca-calendar-header"> {/* Reusing calendar header styles for list nav */}
+                                        <button className="ca-nav-button" onClick={handlePreviousMonth} aria-label={currentContent.previousMonth}>
+                                            <ChevronLeft size={24} />
+                                        </button>
+                                        <h4 className="ca-availability-table-month-year">
+                                            {months.find(m => parseInt(m.value, 10) === displayMonth)?.label} {displayYear}
+                                        </h4>
+                                        <button className="ca-nav-button" onClick={handleNextMonth} aria-label={currentContent.nextMonth}>
+                                            <ChevronRight size={24} />
+                                        </button>
+                                    </div>
+                                    {availabilityDataForMonth && availabilityDataForMonth.length > 0 ? (
+                                        <div className="ca-list-columns"> {/* Container for the two columns */}
+                                            <div className="ca-list-column"> {/* Left column */}
+                                                {availabilityDataForMonth.slice(0, 15).map((day) => {
+                                                    const statusInfo = getStatusInfo(day.status);
+                                                    // Create a div for each day with status class
+                                                    return (
+                                                        <div key={`list-day-left-${day.date}`} className={`ca-list-item ${statusInfo.colorClass}`}>
+                                                            <span className="ca-list-date">{day.date}</span>
+                                                            <span className="ca-list-status">{statusInfo.label}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            <div className="ca-list-column"> {/* Right column */}
+                                                {availabilityDataForMonth.slice(15).map((day) => {
                                                      const statusInfo = getStatusInfo(day.status);
+                                                    // Create a div for each day with status class
                                                      return (
-                                                         <tr key={day.date} className={statusInfo.colorClass}>
-                                                             <td>{day.date}</td>
-                                                             <td>{statusInfo.label}</td>
-                                                         </tr>
+                                                         <div key={`list-day-right-${day.date}`} className={`ca-list-item ${statusInfo.colorClass}`}>
+                                                             <span className="ca-list-date">{day.date}</span>
+                                                             <span className="ca-list-status">{statusInfo.label}</span>
+                                                         </div>
                                                      );
-                                                 })
-                                            ) : (
-                                                 // If no specific data, show all days as available (optional, or just the no data message)
-                                                 // This part might need adjustment based on desired UI for "no specific data"
-                                                 <tr>
-                                                     <td colSpan="2" style={{textAlign: 'center'}}>
-                                                         {currentContent.noAvailabilityFound}
-                                                     </td>
-                                                 </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                                                })}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                         // Message when no specific data, displayed in the list area
+                                         <p className="ca-availability-message" style={{textAlign: 'center', width: '100%'}}>
+                                             {currentContent.noAvailabilityFound}
+                                         </p>
+                                    )}
                                 </div>
                             )}
-                             {/* Message when no specific availability data is found */}
-                            {availabilityDataForMonth !== null && availabilityDataForMonth.length === 0 && !loadingAvailability && !availabilityError && (
-                                <p className="ca-availability-message">{currentContent.noAvailabilityFound}</p>
-                            )}
+                            {/* Removed the no data found message outside the conditional render as it's handled by showDataArea */}
                         </>
                     )}
 
