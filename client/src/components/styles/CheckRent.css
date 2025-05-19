@@ -310,9 +310,8 @@
     }
      .rental-form-group,
      .rental-hall-details,
-     .rental-details-chart,
-     .rental-notes-card,
-     .rental-message { /* Apply max-width to messages too */
+     .rental-details-chart
+      { /* Apply max-width to messages too */
         max-width: 350px; /* Adjust max-width for smaller screens */
     }
 }
