@@ -7,46 +7,113 @@ const Booking = require('../models/bookModel'); // Need Booking model for availa
 // @access  Private (Admin) - Assuming only admins can add halls
 const createHall = async (req, res) => {
     try {
-        const { hall_name, location, capacity, description, rent_commercial, rent_social, rent_non_commercial, total_floors } = req.body;
-
-        // Basic validation
-        if (!hall_name || !rent_commercial || !rent_social || !rent_non_commercial || !total_floors) {
-            return res.status(400).json({ message: 'Please provide required hall details (Hall Name, Rent types, Total Floors).' });
-        }
-
-     const [lastHall] = await Hall.aggregate([
-  { 
-    $addFields: { numericId: { $toInt: "$hall_id" } }
-  },
-  { $sort: { numericId: -1 } },
-  { $limit: 1 }
-]);
-
-// If none exists yet, lastHall will be undefined
-const lastNum = lastHall ? lastHall.numericId : 0;
-const nextHallId = (lastNum + 1).toString();
-
-        // Check if the generated hall_id already exists (unlikely with auto-increment but good practice)
-        const existingHall = await Hall.findOne({ hall_id: nextHallId });
-        if (existingHall) {
-             // This scenario should ideally not happen with proper id generation,
-             // but as a fallback, you might want to handle it or log an error.
-             // For now, let's return an error, indicating a potential issue with ID generation.
-             return res.status(500).json({ message: `${existingHall}Failed to generate a unique hall ID.` });
-        }
-
-        const hall_id = nextHallId; // Assign the generated ID
-
-        const hall = new Hall({
-            hall_id, // Use the generated ID
+        // Destructure all fields from the request body, including new pricing structures
+        const {
             hall_name,
             location,
             capacity,
             description,
-            rent_commercial,
-            rent_social,
-            rent_non_commercial,
-            total_floors, // Add total_floors
+            total_floors,
+            total_area_sqft, // Added total_area_sqft
+            conference_hall_ac,
+            conference_hall_nonac,
+            food_prep_area_ac,
+            food_prep_area_nonac,
+            lawn_ac,
+            lawn_nonac,
+            room_rent_ac,
+            room_rent_nonac,
+            parking,
+            electricity_ac,
+            electricity_nonac,
+            cleaning,
+            event_pricing // This will be an array of event pricing objects
+        } = req.body;
+
+        // Basic validation for required hall details and all fixed-price blocks
+        if (
+            !hall_name || total_floors === undefined || // Check for undefined, 0 is now allowed
+            !conference_hall_ac || !conference_hall_nonac ||
+            !food_prep_area_ac || !food_prep_area_nonac ||
+            !lawn_ac || !lawn_nonac ||
+            !room_rent_ac || !room_rent_nonac ||
+            !parking ||
+            !electricity_ac || !electricity_nonac ||
+            !cleaning
+        ) {
+            return res.status(400).json({ message: 'Please provide all required hall details and pricing information.' });
+        }
+
+        // Validate that each tiered price object has all three types
+        const validateTieredPrice = (priceObj) => {
+            return priceObj && typeof priceObj.municipal === 'number' && typeof priceObj.municipality === 'number' && typeof priceObj.panchayat === 'number';
+        };
+
+        // Validate all fixed price blocks
+        if (
+            !validateTieredPrice(conference_hall_ac) || !validateTieredPrice(conference_hall_nonac) ||
+            !validateTieredPrice(food_prep_area_ac) || !validateTieredPrice(food_prep_area_nonac) ||
+            !validateTieredPrice(lawn_ac) || !validateTieredPrice(lawn_nonac) ||
+            !validateTieredPrice(room_rent_ac) || !validateTieredPrice(room_rent_nonac) ||
+            !validateTieredPrice(parking) ||
+            !validateTieredPrice(electricity_ac) || !validateTieredPrice(electricity_nonac) ||
+            !validateTieredPrice(cleaning)
+        ) {
+            return res.status(400).json({ message: 'All fixed price blocks must have municipal, municipality, and panchayat rates.' });
+        }
+
+        // Validate event_pricing: must be an array and each item must conform to eventPriceSchema
+        if (!Array.isArray(event_pricing) || event_pricing.length === 0) {
+             return res.status(400).json({ message: 'At least one event pricing entry is required.' });
+        }
+        for (const event of event_pricing) {
+            if (!event.event_type || !validateTieredPrice(event.prices_per_sqft_ac) || !validateTieredPrice(event.prices_per_sqft_nonac)) {
+                return res.status(400).json({ message: 'Each event pricing entry must have an event_type and valid AC and Non-AC tiered prices.' });
+            }
+        }
+
+        // Generate a unique hall_id by finding the last one and incrementing
+        const [lastHall] = await Hall.aggregate([
+            {
+                $addFields: { numericId: { $toInt: "$hall_id" } }
+            },
+            { $sort: { numericId: -1 } },
+            { $limit: 1 }
+        ]);
+
+        const lastNum = lastHall ? lastHall.numericId : 0;
+        const nextHallId = (lastNum + 1).toString();
+
+        // Check if the generated hall_id already exists (unlikely with auto-increment but good practice)
+        const existingHall = await Hall.findOne({ hall_id: nextHallId });
+        if (existingHall) {
+            return res.status(500).json({ message: `Failed to generate a unique hall ID. Hall ID ${nextHallId} already exists.` });
+        }
+
+        const hall_id = nextHallId; // Assign the generated ID
+
+        // Create a new Hall instance with all provided data
+        const hall = new Hall({
+            hall_id,
+            hall_name,
+            location,
+            capacity,
+            description,
+            total_floors,
+            total_area_sqft, // Added total_area_sqft
+            conference_hall_ac,
+            conference_hall_nonac,
+            food_prep_area_ac,
+            food_prep_area_nonac,
+            lawn_ac,
+            lawn_nonac,
+            room_rent_ac,
+            room_rent_nonac,
+            parking,
+            electricity_ac,
+            electricity_nonac,
+            cleaning,
+            event_pricing,
             availability_details: [] // Initialize with empty availability
         });
 
@@ -54,8 +121,8 @@ const nextHallId = (lastNum + 1).toString();
         res.status(201).json(createdHall);
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('Error creating hall:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
@@ -64,7 +131,7 @@ const getAllHalls = async (req, res) => {
         const halls = await Hall.find({});
         res.json(halls);
     } catch (error) {
-        console.error(error);
+        console.error('Error fetching all halls:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -80,7 +147,7 @@ const getHallById = async (req, res) => {
             res.status(404).json({ message: 'Hall not found' });
         }
     } catch (error) {
-        console.error(error);
+        console.error('Error fetching hall by ID:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -90,28 +157,69 @@ const getHallById = async (req, res) => {
 // @access  Private (Admin)
 const updateHall = async (req, res) => {
     try {
-        const { hall_name, location, capacity, description, rent_commercial, rent_social, rent_non_commercial, total_floors, availability_details } = req.body;
+        // Destructure all fields from the request body, including new pricing structures
+        const {
+            hall_name,
+            location,
+            capacity,
+            description,
+            total_floors,
+            total_area_sqft, // Added total_area_sqft
+            conference_hall_ac,
+            conference_hall_nonac,
+            food_prep_area_ac,
+            food_prep_area_nonac,
+            lawn_ac,
+            lawn_nonac,
+            room_rent_ac,
+            room_rent_nonac,
+            parking,
+            electricity_ac,
+            electricity_nonac,
+            cleaning,
+            event_pricing // This will be an array of event pricing objects
+        } = req.body;
 
         // Find hall by the unique hall_id string
         const hall = await Hall.findOne({ hall_id: req.params.id });
 
         if (hall) {
-            hall.hall_name = hall_name || hall.hall_name;
-            hall.location = location || hall.location;
-            hall.capacity = capacity || hall.capacity;
-            hall.description = description || hall.description;
-            hall.rent_commercial = rent_commercial || hall.rent_commercial;
-            hall.rent_social = rent_social || hall.rent_social;
-            hall.rent_non_commercial = rent_non_commercial || hall.rent_non_commercial;
-            hall.total_floors = total_floors || hall.total_floors; // Handle update for total_floors
+            // Update basic hall details
+            hall.hall_name = hall_name !== undefined ? hall_name : hall.hall_name;
+            hall.location = location !== undefined ? location : hall.location;
+            hall.capacity = capacity !== undefined ? capacity : hall.capacity;
+            hall.description = description !== undefined ? description : hall.description;
+            hall.total_floors = total_floors !== undefined ? total_floors : hall.total_floors;
+            hall.total_area_sqft = total_area_sqft !== undefined ? total_area_sqft : hall.total_area_sqft; // Updated
 
-            // Handle updating availability_details - this is a simplified approach.
-            // In a real app, you'd merge/update carefully, likely per date/floor.
-            // Replacing the whole array is dangerous if bookings exist.
-            if (availability_details && Array.isArray(availability_details)) {
-                   // Clear existing and add new - BE CAREFUL with this in production
-                   // A better approach would be to find and update specific entries or add new ones.
-                   hall.availability_details = availability_details;
+            // Update all fixed-price blocks if provided
+            if (conference_hall_ac) hall.conference_hall_ac = conference_hall_ac;
+            if (conference_hall_nonac) hall.conference_hall_nonac = conference_hall_nonac;
+            if (food_prep_area_ac) hall.food_prep_area_ac = food_prep_area_ac;
+            if (food_prep_area_nonac) hall.food_prep_area_nonac = food_prep_area_nonac;
+            if (lawn_ac) hall.lawn_ac = lawn_ac;
+            if (lawn_nonac) hall.lawn_nonac = lawn_nonac;
+            if (room_rent_ac) hall.room_rent_ac = room_rent_ac;
+            if (room_rent_nonac) hall.room_rent_nonac = room_rent_nonac;
+            if (parking) hall.parking = parking;
+            if (electricity_ac) hall.electricity_ac = electricity_ac;
+            if (electricity_nonac) hall.electricity_nonac = electricity_nonac;
+            if (cleaning) hall.cleaning = cleaning;
+
+            // Update event_pricing if provided and is an array
+            if (event_pricing && Array.isArray(event_pricing)) {
+                // Validate event_pricing before assigning
+                const validateTieredPrice = (priceObj) => {
+                    return priceObj && typeof priceObj.municipal === 'number' && typeof priceObj.municipality === 'number' && typeof priceObj.panchayat === 'number';
+                };
+                for (const event of event_pricing) {
+                    if (!event.event_type || !validateTieredPrice(event.prices_per_sqft_ac) || !validateTieredPrice(event.prices_per_sqft_nonac)) {
+                        return res.status(400).json({ message: 'Each event pricing entry must have an event_type and valid AC and Non-AC tiered prices.' });
+                    }
+                }
+                hall.event_pricing = event_pricing;
+            } else if (event_pricing && !Array.isArray(event_pricing)) {
+                return res.status(400).json({ message: 'Event pricing must be an array.' });
             }
 
 
@@ -121,8 +229,8 @@ const updateHall = async (req, res) => {
             res.status(404).json({ message: 'Hall not found' });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('Error updating hall:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
@@ -135,14 +243,11 @@ const deleteHall = async (req, res) => {
         const hall = await Hall.findOne({ hall_id: req.params.id });
 
         if (hall) {
-            // Optional: Check if there are any active bookings for this hall before deleting
-            // Note: Booking model would need to store the hall's _id for this check.
-            // Assuming Booking has a hall_id field referencing Hall._id
-             const activeBookings = await Booking.countDocuments({ hall_id: hall._id, booking_status: { $in: ['Confirmed', 'Pending'] } });
-             if (activeBookings > 0) {
-                 return res.status(400).json({ message: 'Cannot delete hall with active bookings.' });
-             }
-
+            // Check if there are any active bookings for this hall before deleting
+            const activeBookings = await Booking.countDocuments({ hall_id: hall._id, booking_status: { $in: ['Confirmed', 'Pending'] } });
+            if (activeBookings > 0) {
+                return res.status(400).json({ message: 'Cannot delete hall with active bookings.' });
+            }
 
             await hall.deleteOne(); // Use deleteOne() for Mongoose 6+
             res.json({ message: 'Hall removed' });
@@ -150,7 +255,7 @@ const deleteHall = async (req, res) => {
             res.status(404).json({ message: 'Hall not found' });
         }
     } catch (error) {
-        console.error(error);
+        console.error('Error deleting hall:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -179,8 +284,6 @@ const checkAvailability = async (req, res) => {
         }
 
         // Filter availability details for the requested month and year
-        // Note: With floor_number in availability_details, this now returns availability per floor for the month.
-        // Frontend will need to process this list to show availability per date/floor.
         const availabilityForMonth = hall.availability_details.filter(detail => {
             const detailDate = new Date(detail.date);
             return detailDate.getMonth() === monthInt - 1 && detailDate.getFullYear() === yearInt;
@@ -188,15 +291,14 @@ const checkAvailability = async (req, res) => {
 
         // For checkAvailability, you might want to return availability grouped by date,
         // where each date lists the availability of its floors.
-        // Let's transform the flat list into a date-keyed object.
         const groupedAvailability = {};
         availabilityForMonth.forEach(detail => {
-            const dateString = detail.date.toISOString().split('T')[0]; // YYYY-MM-DD format
+            const dateString = detail.date.toISOString().split('T')[0]; //YYYY-MM-DD format
             if (!groupedAvailability[dateString]) {
                 groupedAvailability[dateString] = [];
             }
             groupedAvailability[dateString].push({
-                floor_number: detail.floor_number,
+                floor: detail.floor, // Use 'floor' as per bookModel.js and hallModel.js availability_details
                 status: detail.status,
                 booking_id: detail.booking_id, // Include booking_id if needed
             });
@@ -212,7 +314,7 @@ const checkAvailability = async (req, res) => {
 
 
     } catch (error) {
-        console.error(error);
+        console.error('Error checking availability:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };

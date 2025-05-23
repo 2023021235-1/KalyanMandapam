@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const API = "https://kalyanmandapam.onrender.com/api";
+const API = "http://localhost:5000/api";
 
-function LoginPage({ setUser,setIsAdmin, languageType, toggleLanguage }) { // Added toggleLanguage prop
+function LoginPage({ setUser,setIsAdmin, languageType, toggleLanguage }) { 
   const [view, setView] = useState("login");
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);

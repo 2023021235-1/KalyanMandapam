@@ -1,9 +1,7 @@
 // CheckRentSection.jsx
 import React, { useState, useEffect } from 'react';
 import './styles/CheckRent.css';
-// Import necessary icons from 'lucide-react'
-// Example imports:
-// import { Home, MapPin, Users, Info } from 'lucide-react';
+import { Home, MapPin, Users, Info, DollarSign, Zap, Droplet, Car, Building, Utensils, TreePine, BedDouble, BookOpen, CalendarDays } from 'lucide-react';
 
 
 const CheckRentSection = ({ languageType = 'en' }) => {
@@ -19,49 +17,93 @@ const CheckRentSection = ({ languageType = 'en' }) => {
     const [detailsError, setDetailsError] = useState(null);
 
     // Base URL for API calls
-    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    const API_BASE_URL = 'http://localhost:5000/api';
 
-    // Content for the section (remains mostly the same)
+    // Content for the section (updated to include new pricing labels)
     const content = {
         en: {
-            sectionHeading: 'Check Rent & Details', // Updated heading
+            sectionHeading: 'Check Rent & Details',
             dropdownLabel: 'BaratGhar Name',
             selectHallPlaceholder: 'Select BaratGhar',
             notesHeading: 'NOTES : Terms & Condition are also apply.',
             note1: '(1). Commercial : 2.5 time multiple Extra charges on baratghar rent applied in Commercial Category.',
             note2: '(2). Social : Normal Charges',
             note3: '(3). Non-Commercial : Get 50% Extra Discount on Commercial baratghar rent charges.',
-            rentTableCategoryHeader: 'Category',
-            rentTableRentHeader: 'Rent (Per Day)',
-            categoryCommercial: 'Commercial',
-            categorySocial: 'Social',
-            categoryNonCommercial: 'Non-Commercial',
-            locationLabel: 'Location', // Added location label
-            capacityLabel: 'Capacity', // Added capacity label
+            locationLabel: 'Location',
+            capacityLabel: 'Capacity',
+            totalFloorsLabel: 'Total Floors', // New label
+            descriptionLabel: 'Description', // New label
             loadingHallsMessage: 'Loading halls...',
-            fetchingDetailsMessage: 'Fetching details...', // Updated message
-            selectHallMessage: 'Please select a BaratGhar to see details.', // Updated message
-            hallNotFound: 'Details not found for the selected hall.', // Updated message
+            fetchingDetailsMessage: 'Fetching details...',
+            selectHallMessage: 'Please select a BaratGhar to see details.',
+            hallNotFound: 'Details not found for the selected hall.',
+
+            // New pricing labels
+            fixedPriceBlocksHeading: 'Fixed Price Blocks (Per Day)',
+            eventSpecificPricingHeading: 'Event Specific Pricing (Per Sq. Ft. Per Day)',
+            categoryHeader: 'Category',
+            municipalHeader: 'Municipal',
+            municipalityHeader: 'Municipality',
+            panchayatHeader: 'Panchayat',
+            acPricesHeader: 'AC Prices', // New
+            nonAcPricesHeader: 'Non-AC Prices', // New
+
+            // Fixed block names
+            conferenceHallAc: 'Conference Hall (AC)',
+            conferenceHallNonAc: 'Conference Hall (Non-AC)',
+            foodPrepAreaAc: 'Food Prep Area (AC)',
+            foodPrepAreaNonAc: 'Food Prep Area (Non-AC)',
+            lawnAc: 'Lawn (AC)',
+            lawnNonAc: 'Lawn (Non-AC)',
+            roomRentAc: 'Room Rent (AC)',
+            roomRentNonAc: 'Room Rent (Non-AC)',
+            parking: 'Parking',
+            electricityAc: 'Electricity (AC)',
+            electricityNonAc: 'Electricity (Non-AC)',
+            cleaning: 'Cleaning',
+            eventType: 'Event Type',
         },
         hi: {
-            sectionHeading: 'किराया और विवरण जांचें', // Updated heading
+            sectionHeading: 'किराया और विवरण जांचें',
             dropdownLabel: 'बारात घर का नाम',
             selectHallPlaceholder: 'बारात घर चुनें',
             notesHeading: 'नोट्स : नियम और शर्तें भी लागू होती हैं।',
             note1: '(१). वाणिज्यिक : वाणिज्यिक श्रेणी में लागू बारात घर किराए पर २.५ गुना अतिरिक्त शुल्क।',
             note2: '(२). सामाजिक : सामान्य शुल्क',
             note3: '(३). गैर-वाणिज्यिक : वाणिज्यिक बारात घर किराए पर ५०% अतिरिक्त छूट प्राप्त करें।',
-            rentTableCategoryHeader: 'श्रेणी',
-            rentTableRentHeader: 'किराया (प्रति दिन)',
-            categoryCommercial: 'वाणिज्यिक',
-            categorySocial: 'सामाजिक',
-            categoryNonCommercial: 'गैर-वाणिज्यिक',
-            locationLabel: 'स्थान', // Added location label
-            capacityLabel: 'क्षमता', // Added capacity label
+            locationLabel: 'स्थान',
+            capacityLabel: 'क्षमता',
+            totalFloorsLabel: 'कुल मंजिलें', // New label
+            descriptionLabel: 'विवरण', // New label
             loadingHallsMessage: 'बारात घर लोड हो रहे हैं...',
-            fetchingDetailsMessage: 'विवरण प्राप्त हो रहा है...', // Updated message
-            selectHallMessage: 'विवरण देखने के लिए कृपया एक बारात घर चुनें।', // Updated message
-            hallNotFound: 'चयनित बारात घर के लिए विवरण नहीं मिला।', // Updated message
+            fetchingDetailsMessage: 'विवरण प्राप्त हो रहा है...',
+            selectHallMessage: 'विवरण देखने के लिए कृपया एक बारात घर चुनें।',
+            hallNotFound: 'चयनित बारात घर के लिए विवरण नहीं मिला।',
+
+            // New pricing labels
+            fixedPriceBlocksHeading: 'निश्चित मूल्य ब्लॉक (प्रति दिन)',
+            eventSpecificPricingHeading: 'इवेंट विशिष्ट मूल्य निर्धारण (प्रति वर्ग फुट प्रति दिन)',
+            categoryHeader: 'श्रेणी',
+            municipalHeader: 'नगरपालिका',
+            municipalityHeader: 'नगर निगम',
+            panchayatHeader: 'पंचायत',
+            acPricesHeader: 'एसी मूल्य', // New
+            nonAcPricesHeader: 'गैर-एसी मूल्य', // New
+
+            // Fixed block names
+            conferenceHallAc: 'सम्मेलन कक्ष (एसी)',
+            conferenceHallNonAc: 'सम्मेलन कक्ष (गैर-एसी)',
+            foodPrepAreaAc: 'भोजन तैयारी क्षेत्र (एसी)',
+            foodPrepAreaNonAc: 'भोजन तैयारी क्षेत्र (गैर-एसी)',
+            lawnAc: 'लॉन (एसी)',
+            lawnNonAc: 'लॉन (गैर-एसी)',
+            roomRentAc: 'कमरे का किराया (एसी)',
+            roomRentNonAc: 'कमरे का किराया (गैर-एसी)',
+            parking: 'पार्किंग',
+            electricityAc: 'बिजली (एसी)',
+            electricityNonAc: 'बिजली (गैर-एसी)',
+            cleaning: 'सफाई',
+            eventType: 'इवेंट प्रकार',
         },
     };
 
@@ -120,27 +162,93 @@ const CheckRentSection = ({ languageType = 'en' }) => {
         }
     };
 
+    const renderPricingTable = (data, title) => {
+        if (!data || Object.keys(data).length === 0) {
+            return null; // Don't render if no data
+        }
+        return (
+            <div className="rental-details-chart" style={{ marginTop: '20px' }}>
+                <h4>{title}</h4>
+                <table className="rental-details-chart__table">
+                    <thead>
+                        <tr style={{ backgroundColor: '#f2f2f2' }}>
+                            <th>{currentContent.categoryHeader}</th>
+                            <th>{currentContent.municipalHeader}</th>
+                            <th>{currentContent.municipalityHeader}</th>
+                            <th>{currentContent.panchayatHeader}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Object.entries(data).map(([key, prices]) => (
+                            <tr key={key}>
+                                <td>
+                                    {/* Dynamically get label based on key */}
+                                    {currentContent[key] || key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim()}
+                                </td>
+                                <td>Rs. {prices.municipal}</td>
+                                <td>Rs. {prices.municipality}</td>
+                                <td>Rs. {prices.panchayat}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    const renderEventPricingTable = (eventPricing) => {
+        if (!eventPricing || eventPricing.length === 0) {
+            return null;
+        }
+        return (
+            <div className="rental-details-chart" style={{ marginTop: '20px' }}>
+                <h4>{currentContent.eventSpecificPricingHeading}</h4>
+                <table className="rental-details-chart__table">
+                    <thead>
+                        <tr style={{ backgroundColor: '#f2f2f2' }}>
+                            <th>{currentContent.eventType}</th>
+                            <th>{currentContent.acPricesHeader}</th>
+                            <th>{currentContent.nonAcPricesHeader}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {eventPricing.map((event, index) => (
+                            <tr key={index}>
+                                <td>{event.event_type}</td>
+                                <td>
+                                    Municipal: Rs. {event.prices_per_sqft_ac.municipal}<br />
+                                    Municipality: Rs. {event.prices_per_sqft_ac.municipality}<br />
+                                    Panchayat: Rs. {event.prices_per_sqft_ac.panchayat}
+                                </td>
+                                <td>
+                                    Municipal: Rs. {event.prices_per_sqft_nonac.municipal}<br />
+                                    Municipality: Rs. {event.prices_per_sqft_nonac.municipality}<br />
+                                    Panchayat: Rs. {event.prices_per_sqft_nonac.panchayat}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+
     return (
         <section className="rental-section">
             <div className="rental-container">
-                {/* Example of adding an icon next to the heading */}
-                {/* <h2 className="rental-section__heading"><Home size={36} className="icon-inline" /> {currentContent.sectionHeading}</h2> */}
-                <h2 className="rental-section__heading">{currentContent.sectionHeading}</h2>
+                <h2 className="rental-section__heading"><Home size={36} className="icon-inline" /> {currentContent.sectionHeading}</h2>
 
                 <div className="rental-section__content">
                     <div className="rental-form-block"> {/* The white card */}
                         <div className="rental-form-group"> {/* Reuse form-group styling for label+select */}
                             <label htmlFor="baratghar-select">
-                                {/* Example of adding an icon next to the label */}
-                                {/* <MapPin size={18} className="icon-inline" /> {currentContent.dropdownLabel} */}
-                                {currentContent.dropdownLabel}
-                                </label>
+                                <MapPin size={18} className="icon-inline" /> {currentContent.dropdownLabel}
+                            </label>
                             {loadingHalls ? (
                                 <p className="rental-info-message">
-                                    {/* Example of adding a loading icon */}
-                                    {/* <Loader size={18} className="icon-spin" /> {currentContent.loadingHallsMessage} */}
                                     {currentContent.loadingHallsMessage}
-                                    </p>
+                                </p>
                             ) : hallsError ? (
                                 <p className="rental-info-message" style={{ color: 'red' }}>{hallsError}</p>
                             ) : (
@@ -167,60 +275,50 @@ const CheckRentSection = ({ languageType = 'en' }) => {
 
                         {loadingDetails && (
                             <p className="rental-info-message">
-                                {/* Example of adding a loading icon */}
-                                {/* <Loader size={18} className="icon-spin" /> {currentContent.fetchingDetailsMessage} */}
                                 {currentContent.fetchingDetailsMessage}
-                                </p>
+                            </p>
                         )}
 
                         {detailsError && (
                             <p className="rental-info-message" style={{ color: 'red' }}>{detailsError}</p>
                         )}
 
-                        {/* Hall Details (Location and Capacity) and Rent Details Table (Conditional Rendering) */}
+                        {/* Hall Details (Location, Capacity, Total Floors, Description) and Pricing Tables */}
                         {selectedHallDetails && !loadingDetails && !detailsError && (
                             <div className="rental-hall-details">
-                                {/* Example of adding an icon next to the hall details heading */}
-                                {/* <h4><Info size={20} className="icon-inline" /> {selectedHallDetails.hall_name} Details</h4> */}
-                                <h4>{selectedHallDetails.hall_name} Details</h4> {/* Display hall name as title */}
-                                <p><strong>{currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
-                                <p><strong>{currentContent.capacityLabel}:</strong> {selectedHallDetails.capacity}</p>
+                                <h4><Info size={20} className="icon-inline" /> {selectedHallDetails.hall_name} Details</h4>
+                                <p><strong><MapPin size={16} className="icon-inline" /> {currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
+                                <p><strong><Users size={16} className="icon-inline" /> {currentContent.capacityLabel}:</strong> {selectedHallDetails.capacity}</p>
+                                <p><strong><Building size={16} className="icon-inline" /> {currentContent.totalFloorsLabel}:</strong> {selectedHallDetails.total_floors}</p>
+                                {selectedHallDetails.description && (
+                                    <p><strong><BookOpen size={16} className="icon-inline" /> {currentContent.descriptionLabel}:</strong> {selectedHallDetails.description}</p>
+                                )}
 
-                                <div className="rental-details-chart" style={{ marginTop: '20px' }}>
-                                    {/* Example of adding an icon next to the rent table heading */}
-                                    {/* <h4><DollarSign size={20} className="icon-inline" /> {currentContent.rentTableRentHeader}</h4> */}
-                                    <h4>{currentContent.rentTableRentHeader}</h4> {/* Rent details table title */}
-                                    <table className="rental-details-chart__table">
-                                        <thead>
-                                            <tr style={{ backgroundColor: '#f2f2f2' }}>
-                                                <th>{currentContent.rentTableCategoryHeader}</th>
-                                                <th>{currentContent.rentTableRentHeader}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>{currentContent.categoryCommercial}</td>
-                                                <td>{selectedHallDetails.rent_commercial}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{currentContent.categorySocial}</td>
-                                                <td>{selectedHallDetails.rent_social}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{currentContent.categoryNonCommercial}</td>
-                                                <td>{selectedHallDetails.rent_non_commercial}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                {/* Fixed Price Blocks Table */}
+                                {renderPricingTable({
+                                    conferenceHallAc: selectedHallDetails.conference_hall_ac,
+                                    conferenceHallNonAc: selectedHallDetails.conference_hall_nonac,
+                                    foodPrepAreaAc: selectedHallDetails.food_prep_area_ac,
+                                    foodPrepAreaNonAc: selectedHallDetails.food_prep_area_nonac,
+                                    lawnAc: selectedHallDetails.lawn_ac,
+                                    lawnNonAc: selectedHallDetails.lawn_nonac,
+                                    roomRentAc: selectedHallDetails.room_rent_ac,
+                                    roomRentNonAc: selectedHallDetails.room_rent_nonac,
+                                    parking: selectedHallDetails.parking,
+                                    electricityAc: selectedHallDetails.electricity_ac,
+                                    electricityNonAc: selectedHallDetails.electricity_nonac,
+                                    cleaning: selectedHallDetails.cleaning,
+                                }, currentContent.fixedPriceBlocksHeading)}
+
+                                {/* Event Specific Pricing Table */}
+                                {renderEventPricingTable(selectedHallDetails.event_pricing)}
+
                             </div>
                         )}
 
                         {/* Notes Section (Inside the card) */}
                         <div className="rental-notes-card" style={{ marginTop: '20px' }}>
-                            {/* Example of adding an icon next to the notes heading */}
-                            {/* <h3 className="rental-notes-card__heading"><BookOpen size={22} className="icon-inline" /> {currentContent.notesHeading}</h3> */}
-                            <h3 className="rental-notes-card__heading">{currentContent.notesHeading}</h3>
+                            <h3 className="rental-notes-card__heading"><BookOpen size={22} className="icon-inline" /> {currentContent.notesHeading}</h3>
                             <ul className="rental-notes-card__list">
                                 <li className="rental-notes-card__list-item">{currentContent.note1}</li>
                                 <li className="rental-notes-card__list-item">{currentContent.note2}</li>

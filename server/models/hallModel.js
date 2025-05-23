@@ -6,15 +6,13 @@ const availabilitySchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true,
-        // Note: Uniqueness per date AND floor will be enforced at the application level
-        // when embedded in the hall's availability_details array.
     },
-   floor_number: {
-    type: Number,
-    required: true,
-    min: 1,
-    default: 1              // ← ensure we always have at least “1”
-  },
+    floor: { // Changed from floor_number to floor to match bookModel and bookController
+        type: Number,
+        required: true,
+        min: 1,
+        default: 1
+    },
     status: {
         type: String,
         enum: ['available', 'preliminary', 'booked', 'blocked', 'special'],
@@ -32,73 +30,57 @@ const availabilitySchema = new mongoose.Schema({
     },
 });
 
-// Add a compound index for date and floor_number to the subdocument schema
-// This provides validation if you were using the subdocument directly,
-// but application logic is needed for uniqueness within the embedded array.
-availabilitySchema.index({ date: 1, floor_number: 1 }, { unique: true });
+// reusable tiered prices schema
+const tieredSchema = new mongoose.Schema({
+  municipal:    { type: Number, required: true },
+  municipality: { type: Number, required: true },
+  panchayat:    { type: Number, required: true }
+}, { _id: false });
 
+// per-sqft event pricing - NOW WITH AC AND NON-AC TIERS
+const eventPriceSchema = new mongoose.Schema({
+  event_type:            { type: String, required: true, trim: true },
+  prices_per_sqft_ac:    { type: tieredSchema, required: true }, // AC tiered prices
+  prices_per_sqft_nonac: { type: tieredSchema, required: true }  // Non-AC tiered prices
+}, { _id: false });
 
-// Define the schema for the Hall model
 const hallSchema = new mongoose.Schema({
-    hall_id: {
-        type: String,
-        required: true,
-        unique: true, // Ensure hall_id is unique
-        trim: true,
-    },
-    hall_name: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    location: {
-        type: String,
-        // required: true, // Assuming location is essential
-        trim: true,
-    },
-    capacity: {
-        type: Number,
-        // required: true, // Assuming capacity is important
-        min: 1,
-    },
-    total_floors: {
-        type: Number,
-        required: true,
-        min: 1,
-    },
-    description: {
-        type: String,
-        trim: true,
-    },
-    rent_commercial: {
-        type: String, // Storing as string to match frontend format 'Rs. X'
-        required: true,
-        trim: true,
-    },
-    rent_social: {
-        type: String, // Storing as string
-        required: true,
-        trim: true,
-    },
-    rent_non_commercial: {
-        type: String, // Storing as string
-        required: true,
-        trim: true,
-    },
-    // Array to store availability details per floor per date
-    availability_details: [availabilitySchema],
-    // Add a compound index for date and floor_number within the availability_details array
-    // This is a bit tricky for embedded documents, usually handled in application logic
-    // Mongoose does not directly support unique compound indexes on nested arrays this way.
-    // We will rely on application-level validation in the controller for unique date/floor per hall.
-    // Mongoose unique compound index on the subdocument schema (above) is for validation when using the subdocument directly.
-    // When embedded in an array, you typically need application logic to enforce uniqueness.
-    // However, let's keep the index definition on the subschema as it's good practice.
+  hall_id:               { type: String, required: true, unique: true, trim: true },
+  hall_name:             { type: String, required: true, trim: true },
+  location:              { type: String, trim: true },
+  capacity:              { type: Number, min: 1 },
+  total_floors:          { type: Number, required: true, min: 0 }, // Changed min to 0
+  total_area_sqft:       { type: Number, min: 0 }, // Added total_area_sqft
+  description:           { type: String, trim: true },
+
+  // fixed-price blocks with AC & Non-AC tiered rates
+  conference_hall_ac:    { type: tieredSchema, required: true },
+  conference_hall_nonac: { type: tieredSchema, required: true },
+
+  food_prep_area_ac:     { type: tieredSchema, required: true },
+  food_prep_area_nonac:  { type: tieredSchema, required: true },
+
+  lawn_ac:               { type: tieredSchema, required: true },
+  lawn_nonac:            { type: tieredSchema, required: true },
+
+  room_rent_ac:          { type: tieredSchema, required: true },
+  room_rent_nonac:       { type: tieredSchema, required: true },
+
+  parking:               { type: tieredSchema, required: true },
+
+  // electricity charges tiered, split AC vs Non-AC
+  electricity_ac:        { type: tieredSchema, required: true },
+  electricity_nonac:     { type: tieredSchema, required: true },
+
+  // cleaning charges tiered, same for AC & Non-AC
+  cleaning:              { type: tieredSchema, required: true },
+
+  // any additional per-sqft events
+  event_pricing:         { type: [eventPriceSchema], default: [] },
+
+  availability_details: [availabilitySchema],
 }, {
-    timestamps: true // Adds createdAt and updatedAt timestamps
+  timestamps: true
 });
 
-// Create the Mongoose model
-const Hall = mongoose.model('Hall', hallSchema);
-
-module.exports = Hall;
+module.exports = mongoose.model('Hall', hallSchema);

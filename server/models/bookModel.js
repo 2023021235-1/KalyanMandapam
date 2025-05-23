@@ -1,83 +1,60 @@
+// bookModel.js
 const mongoose = require('mongoose');
 
-// Define the schema for the Booking model
 const bookSchema = new mongoose.Schema({
-    booking_id: {
-        type: String,
-        required: true,
-        unique: true, // Ensure booking_id is unique
-        trim: true,
-    },
-    // Added transaction_id field
-    transaction_id: {
-        type: String,
-        required: true, // Assuming every booking must have a transaction ID
-        unique: true, // Ensure transaction_id is unique
-        trim: true,
-    },
-    hall_id: {
-        type: mongoose.Schema.Types.ObjectId, // Reference to the Hall model's internal _id
-        ref: 'Hall', // Reference to the Hall model
-        required: true,
-    },
-    user_id: {
-        type: mongoose.Schema.Types.ObjectId, // Reference to a User model's internal _id
-        ref: 'User',
-        required: true,
-    },
-    booking_date: {
-        type: Date,
-        required: true,
-    },
-    floor: {
-        type: String,
-        trim: true,
-    },
-    function_type: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    booking_amount: {
-        type: String, // Storing as string to match frontend format 'Rs. X'
-        required: true, // Keeping booking_amount required as a price must be set
-        trim: true,
-    },
-    booking_status: {
-        type: String,
-        enum: ['Confirmed', 'Pending', 'Cancelled'], // Align with frontend statuses
-        default: 'Pending',
-        required: true,
-    },
-    addon_ac_heating: {
-        type: Boolean, // Using boolean for Yes/No
-        default: false,
-    },
-    booking_type: {
-        type: String,
-        enum: ['employee', 'ex-employee', 'ndmc-resident', 'non-ndmc-resident', 'commercial', 'social', 'non-commercial'],
-    },
-    refund_status: {
+  hall_id_string:    { type: String, required: true },
+  hall_id:           { type: mongoose.Schema.Types.ObjectId, ref: 'Hall', required: true },
+  user_id:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Assuming user is authenticated
+
+  booking_id:        { type: String, required: true, unique: true, trim: true }, // Unique ID for the booking
+  transaction_id:    { type: String, required: true, unique: true, trim: true }, // Unique ID for payment transaction
+
+  booking_date:      { type: Date, required: true },
+  floor:             { type: Number, required: true, min: 1 },
+
+  function_type:     { type: String, required: true, trim: true },
+
+  // area only for per-sqft events
+  area_sqft:         { type: Number }, // Made optional as not all bookings are per-sqft
+
+  booking_type: { // 'municipal', 'municipality', 'panchayat'
+    type: String,
+    enum: ['municipal', 'municipality', 'panchayat'],
+    required: true
+  },
+
+  // flags for fixed-price blocks
+  is_parking:          { type: Boolean, default: false },
+  is_conference_hall:  { type: Boolean, default: false },
+  is_food_prep_area:   { type: Boolean, default: false },
+  is_lawn:             { type: Boolean, default: false },
+  is_ac:          { type: Boolean, default: false }, // Indicates if AC prices were applied
+
+  // legacy add-ons (if you still want extra beyond fixed blocks)
+  add_parking:         { type: Boolean, default: false },
+  add_room:            { type: Boolean, default: false },
+
+  booking_status: {
+    type: String,
+    enum: ['Confirmed', 'Pending', 'Cancelled'], // Align with frontend statuses
+    default: 'Pending',
+    required: true,
+  },
+  booking_amount:      { type: Number, required: true },
+   refund_status: {
         type: String,
         enum: ['Processed', 'Pending', 'Rejected', 'N/A'], // Align with frontend statuses, add N/A
         default: 'N/A',
     },
     refund_amount: {
-        type: String, // Storing as string
+        type: String, // Storing as string "Rs. X"
         default: 'Rs. 0',
     },
     refund_processed_date: {
         type: Date,
-        // Only required if refund_status is 'Processed'
-        required: function() {
-            return this.refund_status === 'Processed';
-        },
     },
 }, {
-    timestamps: true // Adds createdAt and updatedAt timestamps
+  timestamps: true // Adds createdAt and updatedAt timestamps
 });
 
-// Create the Mongoose model
-const Booking = mongoose.model('Booking', bookSchema);
-
-module.exports = Booking;
+module.exports = mongoose.model('Booking', bookSchema);

@@ -1,7 +1,7 @@
 // AdminPanel.jsx
 import React, { useState, useEffect } from 'react';
 import './styles/AdminPanel.css'; // Import the new CSS file
-import { CheckCircle, XCircle, Clock } from 'lucide-react'; // Import Lucide icons
+import { CheckCircle, XCircle, Clock, PlusCircle, MinusCircle } from 'lucide-react'; // Import Lucide icons
 
 const AdminPanel = () => {
     // State for managing halls
@@ -10,17 +10,39 @@ const AdminPanel = () => {
     const [hallError, setHallError] = useState(null);
     const [showHallForm, setShowHallForm] = useState(false);
     const [currentHall, setCurrentHall] = useState(null); // For editing - holds full hall object including ID
+
+    // Initial state for tiered pricing - using empty strings for new inputs,
+    // but ensuring existing 0s are displayed correctly in the form.
+    const initialTieredPrice = { municipal: '', municipality: '', panchayat: '' };
+
     const [hallFormData, setHallFormData] = useState({
-        // hall_id is removed from formData as it's backend-generated for new halls
         hall_name: '',
         location: '',
         capacity: '',
-        total_floors: '', // Added total_floors
+        total_floors: '',
+        total_area_sqft: '', // Added total_area_sqft
         description: '',
-        rent_commercial: '',
-        rent_social: '',
-        rent_non_commercial: '',
+        // Fixed-price blocks
+        conference_hall_ac: { ...initialTieredPrice },
+        conference_hall_nonac: { ...initialTieredPrice },
+        food_prep_area_ac: { ...initialTieredPrice },
+        food_prep_area_nonac: { ...initialTieredPrice },
+        lawn_ac: { ...initialTieredPrice },
+        lawn_nonac: { ...initialTieredPrice },
+        room_rent_ac: { ...initialTieredPrice },
+        room_rent_nonac: { ...initialTieredPrice },
+        parking: { ...initialTieredPrice },
+        electricity_ac: { ...initialTieredPrice },
+        electricity_nonac: { ...initialTieredPrice },
+        cleaning: { ...initialTieredPrice },
     });
+
+    // State for managing event pricing dynamically - now includes AC and Non-AC tiers
+    const [eventPrices, setEventPrices] = useState([{
+        event_type: '',
+        prices_per_sqft_ac: { ...initialTieredPrice },
+        prices_per_sqft_nonac: { ...initialTieredPrice }
+    }]);
 
     // State for managing bookings
     const [bookings, setBookings] = useState([]);
@@ -32,7 +54,7 @@ const AdminPanel = () => {
 
 
     // Base URL for API calls
-    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    const API_BASE_URL = 'http://localhost:5000/api';
 
     // Function to get the JWT token (replace with your actual logic)
     const getAuthToken = () => {
@@ -69,12 +91,13 @@ const AdminPanel = () => {
         setBookingError(null);
         const token = getAuthToken();
         if (!token) {
-            setBookingError('Authentication token not found.');
+            setBookingError('Authentication token not found. Cannot perform this action.');
             setLoadingBookings(false);
             return;
         }
         try {
             const response = await fetch(`${API_BASE_URL}/bookings`, {
+                method:'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -105,7 +128,7 @@ const AdminPanel = () => {
         }
     }, [activeTab]); // Rerun when activeTab changes
 
-    // Handle hall form input changes
+    // Handle hall form input changes (for direct fields like name, location, capacity)
     const handleHallInputChange = (e) => {
         const { name, value } = e.target;
         setHallFormData({
@@ -113,6 +136,45 @@ const AdminPanel = () => {
             [name]: value,
         });
     };
+
+    // Handle input changes for nested tiered price objects (for fixed blocks)
+    const handleTieredPriceChange = (blockName, type, value) => {
+        setHallFormData((prevData) => ({
+            ...prevData,
+            [blockName]: {
+                ...prevData[blockName],
+                [type]: value === '' ? '' : Number(value) // Allow empty string for required validation, convert to Number otherwise
+            },
+        }));
+    };
+
+    // Handle input changes for event pricing array - now includes AC and Non-AC tiers
+    const handleEventPriceChange = (index, tierType, priceType, value) => {
+        const newEventPrices = [...eventPrices];
+        if (tierType === 'event_type') {
+            newEventPrices[index].event_type = value;
+        } else {
+            // tierType will be 'prices_per_sqft_ac' or 'prices_per_sqft_nonac'
+            newEventPrices[index][tierType][priceType] = value === '' ? '' : Number(value);
+        }
+        setEventPrices(newEventPrices);
+    };
+
+    // Add a new event pricing entry
+    const addEventPrice = () => {
+        setEventPrices([...eventPrices, {
+            event_type: '',
+            prices_per_sqft_ac: { ...initialTieredPrice },
+            prices_per_sqft_nonac: { ...initialTieredPrice }
+        }]);
+    };
+
+    // Remove an event pricing entry
+    const removeEventPrice = (index) => {
+        const newEventPrices = eventPrices.filter((_, i) => i !== index);
+        setEventPrices(newEventPrices);
+    };
+
 
     // Handle submit for creating/updating a hall
     const handleHallSubmit = async (e) => {
@@ -124,8 +186,93 @@ const AdminPanel = () => {
         }
 
         const method = currentHall ? 'PUT' : 'POST';
-        // For PUT, use the ID from currentHall. For POST, the URL is just /halls
         const url = currentHall ? `${API_BASE_URL}/halls/${currentHall.hall_id}` : `${API_BASE_URL}/halls`;
+
+        // Combine hallFormData and eventPrices for the payload
+        // Ensure all numerical values are converted to numbers, empty strings become 0 if required by backend
+        const payload = {
+            ...hallFormData,
+            // Convert all tiered price values to numbers, treating empty strings as 0 for submission
+            conference_hall_ac: {
+                municipal: Number(hallFormData.conference_hall_ac.municipal || 0),
+                municipality: Number(hallFormData.conference_hall_ac.municipality || 0),
+                panchayat: Number(hallFormData.conference_hall_ac.panchayat || 0),
+            },
+            conference_hall_nonac: {
+                municipal: Number(hallFormData.conference_hall_nonac.municipal || 0),
+                municipality: Number(hallFormData.conference_hall_nonac.municipality || 0),
+                panchayat: Number(hallFormData.conference_hall_nonac.panchayat || 0),
+            },
+            food_prep_area_ac: {
+                municipal: Number(hallFormData.food_prep_area_ac.municipal || 0),
+                municipality: Number(hallFormData.food_prep_area_ac.municipality || 0),
+                panchayat: Number(hallFormData.food_prep_area_ac.panchayat || 0),
+            },
+            food_prep_area_nonac: {
+                municipal: Number(hallFormData.food_prep_area_nonac.municipal || 0),
+                municipality: Number(hallFormData.food_prep_area_nonac.municipality || 0),
+                panchayat: Number(hallFormData.food_prep_area_nonac.panchayat || 0),
+            },
+            lawn_ac: {
+                municipal: Number(hallFormData.lawn_ac.municipal || 0),
+                municipality: Number(hallFormData.lawn_ac.municipality || 0),
+                panchayat: Number(hallFormData.lawn_ac.panchayat || 0),
+            },
+            lawn_nonac: {
+                municipal: Number(hallFormData.lawn_nonac.municipal || 0),
+                municipality: Number(hallFormData.lawn_nonac.municipality || 0),
+                panchayat: Number(hallFormData.lawn_nonac.panchayat || 0),
+            },
+            room_rent_ac: {
+                municipal: Number(hallFormData.room_rent_ac.municipal || 0),
+                municipality: Number(hallFormData.room_rent_ac.municipality || 0),
+                panchayat: Number(hallFormData.room_rent_ac.panchayat || 0),
+            },
+            room_rent_nonac: {
+                municipal: Number(hallFormData.room_rent_nonac.municipal || 0),
+                municipality: Number(hallFormData.room_rent_nonac.municipality || 0),
+                panchayat: Number(hallFormData.room_rent_nonac.panchayat || 0),
+            },
+            parking: {
+                municipal: Number(hallFormData.parking.municipal || 0),
+                municipality: Number(hallFormData.parking.municipality || 0),
+                panchayat: Number(hallFormData.parking.panchayat || 0),
+            },
+            electricity_ac: {
+                municipal: Number(hallFormData.electricity_ac.municipal || 0),
+                municipality: Number(hallFormData.electricity_ac.municipality || 0),
+                panchayat: Number(hallFormData.electricity_ac.panchayat || 0),
+            },
+            electricity_nonac: {
+                municipal: Number(hallFormData.electricity_nonac.municipal || 0),
+                municipality: Number(hallFormData.electricity_nonac.municipality || 0),
+                panchayat: Number(hallFormData.electricity_nonac.panchayat || 0),
+            },
+            cleaning: {
+                municipal: Number(hallFormData.cleaning.municipal || 0),
+                municipality: Number(hallFormData.cleaning.municipality || 0),
+                panchayat: Number(hallFormData.cleaning.panchayat || 0),
+            },
+            // Convert capacity and total_floors to numbers, treating empty strings as 0
+            capacity: Number(hallFormData.capacity || 0),
+            total_floors: Number(hallFormData.total_floors || 0),
+            total_area_sqft: Number(hallFormData.total_area_sqft || 0), // Added total_area_sqft
+
+            // Map event prices, ensuring AC and Non-AC tiers are correctly converted
+            event_pricing: eventPrices.map(event => ({
+                event_type: event.event_type,
+                prices_per_sqft_ac: {
+                    municipal: Number(event.prices_per_sqft_ac.municipal || 0),
+                    municipality: Number(event.prices_per_sqft_ac.municipality || 0),
+                    panchayat: Number(event.prices_per_sqft_ac.panchayat || 0),
+                },
+                prices_per_sqft_nonac: {
+                    municipal: Number(event.prices_per_sqft_nonac.municipal || 0),
+                    municipality: Number(event.prices_per_sqft_nonac.municipality || 0),
+                    panchayat: Number(event.prices_per_sqft_nonac.panchayat || 0),
+                }
+            }))
+        };
 
         try {
             const response = await fetch(url, {
@@ -134,9 +281,7 @@ const AdminPanel = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                // Send the formData state which now excludes hall_id for POST,
-                // and contains updated fields for PUT. The backend uses the ID from the URL for PUT.
-                body: JSON.stringify(hallFormData),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
@@ -144,9 +289,7 @@ const AdminPanel = () => {
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
-            // Refresh the hall list
             fetchHalls();
-            // Reset form and hide it
             resetHallForm();
 
         } catch (error) {
@@ -157,19 +300,48 @@ const AdminPanel = () => {
 
     // Set form data for editing a hall
     const startEditHall = (hall) => {
-        // Store the whole hall object for ID reference in PUT request
         setCurrentHall(hall);
-        // Populate form data fields (excluding hall_id as it's not editable via input)
         setHallFormData({
-            hall_name: hall.hall_name,
-            location: hall.location || '', // Handle potential null/undefined
-            capacity: hall.capacity || '',
-            total_floors: hall.total_floors || '', // Include total_floors
-            description: hall.description || '',
-            rent_commercial: hall.rent_commercial,
-            rent_social: hall.rent_social,
-            rent_non_commercial: hall.rent_non_commercial,
+            hall_name: hall.hall_name ?? '',
+            location: hall.location ?? '',
+            capacity: hall.capacity ?? '',
+            total_floors: hall.total_floors ?? '',
+            total_area_sqft: hall.total_area_sqft ?? '', // Added total_area_sqft
+            description: hall.description ?? '',
+            conference_hall_ac: hall.conference_hall_ac ?? { ...initialTieredPrice },
+            conference_hall_nonac: hall.conference_hall_nonac ?? { ...initialTieredPrice },
+            food_prep_area_ac: hall.food_prep_area_ac ?? { ...initialTieredPrice },
+            food_prep_area_nonac: hall.food_prep_area_nonac ?? { ...initialTieredPrice },
+            lawn_ac: hall.lawn_ac ?? { ...initialTieredPrice },
+            lawn_nonac: hall.lawn_nonac ?? { ...initialTieredPrice },
+            room_rent_ac: hall.room_rent_ac ?? { ...initialTieredPrice },
+            room_rent_nonac: hall.room_rent_nonac ?? { ...initialTieredPrice },
+            parking: hall.parking ?? { ...initialTieredPrice },
+            electricity_ac: hall.electricity_ac ?? { ...initialTieredPrice },
+            electricity_nonac: hall.electricity_nonac ?? { ...initialTieredPrice },
+            cleaning: hall.cleaning ?? { ...initialTieredPrice },
         });
+        // Map existing event pricing for editing - now includes AC and Non-AC tiers
+        setEventPrices(hall.event_pricing && hall.event_pricing.length > 0 ?
+            hall.event_pricing.map(event => ({
+                event_type: event.event_type ?? '',
+                prices_per_sqft_ac: {
+                    municipal: event.prices_per_sqft_ac?.municipal ?? '',
+                    municipality: event.prices_per_sqft_ac?.municipality ?? '',
+                    panchayat: event.prices_per_sqft_ac?.panchayat ?? '',
+                },
+                prices_per_sqft_nonac: {
+                    municipal: event.prices_per_sqft_nonac?.municipal ?? '',
+                    municipality: event.prices_per_sqft_nonac?.municipality ?? '',
+                    panchayat: event.prices_per_sqft_nonac?.panchayat ?? '',
+                }
+            })) :
+            [{ // Default if no events
+                event_type: '',
+                prices_per_sqft_ac: { ...initialTieredPrice },
+                prices_per_sqft_nonac: { ...initialTieredPrice }
+            }]
+        );
         setShowHallForm(true);
     };
 
@@ -195,9 +367,7 @@ const AdminPanel = () => {
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
-                // Refresh the hall list
                 fetchHalls();
-                 // If the deleted hall was being edited, close/reset the form
                 if (currentHall && currentHall.hall_id === hallId) {
                     resetHallForm();
                 }
@@ -211,18 +381,32 @@ const AdminPanel = () => {
 
       // Reset the hall form
     const resetHallForm = () => {
-        setCurrentHall(null); // Clear the hall being edited
+        setCurrentHall(null);
         setHallFormData({
-            // Reset to initial empty state
             hall_name: '',
             location: '',
             capacity: '',
             total_floors: '',
+            total_area_sqft: '', // Added total_area_sqft
             description: '',
-            rent_commercial: '',
-            rent_social: '',
-            rent_non_commercial: '',
+            conference_hall_ac: { ...initialTieredPrice },
+            conference_hall_nonac: { ...initialTieredPrice },
+            food_prep_area_ac: { ...initialTieredPrice },
+            food_prep_area_nonac: { ...initialTieredPrice },
+            lawn_ac: { ...initialTieredPrice },
+            lawn_nonac: { ...initialTieredPrice },
+            room_rent_ac: { ...initialTieredPrice },
+            room_rent_nonac: { ...initialTieredPrice },
+            parking: { ...initialTieredPrice },
+            electricity_ac: { ...initialTieredPrice },
+            electricity_nonac: { ...initialTieredPrice },
+            cleaning: { ...initialTieredPrice },
         });
+        setEventPrices([{
+            event_type: '',
+            prices_per_sqft_ac: { ...initialTieredPrice },
+            prices_per_sqft_nonac: { ...initialTieredPrice }
+        }]);
         setShowHallForm(false);
     };
 
@@ -237,13 +421,13 @@ const AdminPanel = () => {
 
         if (window.confirm(`Are you sure you want to confirm booking ${bookingId}?`)) {
             try {
-                const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
+                const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ booking_status: 'Confirmed' }),
+                    body: JSON.stringify({ status: 'Confirmed' }),
                 });
 
                 if (!response.ok) {
@@ -251,7 +435,6 @@ const AdminPanel = () => {
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
-                // Refresh the booking list
                 fetchBookings();
 
             } catch (error) {
@@ -273,11 +456,10 @@ const AdminPanel = () => {
             try {
                 // Use the specific cancel endpoint
                 const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
-                    method: 'PUT', // Or DELETE, depending on how your backend defines the cancel route verb
+                    method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
-                     // No body needed for the cancel endpoint based on the backend code
                 });
 
                 if (!response.ok) {
@@ -285,12 +467,43 @@ const AdminPanel = () => {
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
-                // Refresh the booking list
                 fetchBookings();
 
             } catch (error) {
                 console.error('Error cancelling booking:', error);
                 alert(`Failed to cancel booking: ${error.message}`);
+            }
+        }
+    };
+
+    // Handle processing a refund
+    const handleProcessRefund = async (bookingId) => {
+        const token = getAuthToken();
+        if (!token) {
+            alert('Authentication token not found. Cannot perform this action.');
+            return;
+        }
+
+        if (window.confirm(`Are you sure you want to process the refund for booking ${bookingId}? This will mark the refund as 'Processed'.`)) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/process-refund`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                fetchBookings();
+
+            } catch (error) {
+                console.error('Error processing refund:', error);
+                alert(`Failed to process refund: ${error.message}`);
             }
         }
     };
@@ -303,8 +516,6 @@ const AdminPanel = () => {
               alert('Authentication token not found. Cannot perform this action.');
               return;
           }
-          // Note: This is a hard delete. Cancelling (above) is generally preferred
-          // as it updates status and handles refunds. Use this with caution.
         if (window.confirm(`WARNING: Are you sure you want to PERMANENTLY delete booking with ID: ${bookingId}? This action cannot be undone.`)) {
             try {
                 const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
@@ -319,7 +530,6 @@ const AdminPanel = () => {
                      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
-                // Refresh the booking list
                 fetchBookings();
 
             } catch (error) {
@@ -340,7 +550,7 @@ const AdminPanel = () => {
             case 'approved':
                 statusClass = 'admin-status-confirmed';
                 Icon = CheckCircle;
-                statusText = 'Confirmed'; // Use English for admin panel simplicity, or add localization if needed
+                statusText = 'Confirmed';
                 break;
             case 'rejected':
                 statusClass = 'admin-status-rejected';
@@ -357,6 +567,16 @@ const AdminPanel = () => {
                  Icon = XCircle;
                  statusText = 'Cancelled';
                  break;
+            case 'processed':
+                statusClass = 'admin-status-confirmed'; // Green for processed refund
+                Icon = CheckCircle;
+                statusText = 'Processed';
+                break;
+            case 'n/a':
+                statusClass = 'admin-status-na'; // Neutral color
+                Icon = null;
+                statusText = 'N/A';
+                break;
             default:
                 statusClass = '';
                 Icon = null;
@@ -372,9 +592,67 @@ const AdminPanel = () => {
                 </span>
             );
         } else {
-            return statusText;
+            return <span className={`admin-status-indicator ${statusClass}`}>{statusText}</span>;
         }
     };
+
+    // Helper to render tiered price inputs
+    const renderTieredPriceInputs = (blockName, label) => (
+        <div className="admin-form-group-tiered">
+            <label>{label}:</label>
+            <div className="tiered-inputs">
+                <input
+                    type="number"
+                    placeholder="Municipal"
+                    value={hallFormData[blockName]?.municipal ?? ''} // Use ?? to display 0
+                    onChange={(e) => handleTieredPriceChange(blockName, 'municipal', e.target.value)}
+                    required
+                />
+                <input
+                    type="number"
+                    placeholder="Municipality"
+                    value={hallFormData[blockName]?.municipality ?? ''} // Use ?? to display 0
+                    onChange={(e) => handleTieredPriceChange(blockName, 'municipality', e.target.value)}
+                    required
+                />
+                <input
+                    type="number"
+                    placeholder="Panchayat"
+                    value={hallFormData[blockName]?.panchayat ?? ''} // Use ?? to display 0
+                    onChange={(e) => handleTieredPriceChange(blockName, 'panchayat', e.target.value)}
+                    required
+                />
+            </div>
+        </div>
+    );
+
+    // Helper to render event specific tiered price inputs
+    const renderEventTieredPriceInputs = (index, tierType, label) => (
+        <div className="tiered-inputs">
+            <label>{label}:</label>
+            <input
+                type="number"
+                placeholder="Municipal"
+                value={eventPrices[index][tierType]?.municipal ?? ''}
+                onChange={(e) => handleEventPriceChange(index, tierType, 'municipal', e.target.value)}
+                required
+            />
+            <input
+                type="number"
+                placeholder="Municipality"
+                value={eventPrices[index][tierType]?.municipality ?? ''}
+                onChange={(e) => handleEventPriceChange(index, tierType, 'municipality', e.target.value)}
+                required
+            />
+            <input
+                type="number"
+                placeholder="Panchayat"
+                value={eventPrices[index][tierType]?.panchayat ?? ''}
+                onChange={(e) => handleEventPriceChange(index, tierType, 'panchayat', e.target.value)}
+                required
+            />
+        </div>
+    );
 
 
     return (
@@ -414,7 +692,7 @@ const AdminPanel = () => {
                             <div className="admin-form-container">
                                 <h3>{currentHall ? `Edit Hall (ID: ${currentHall.hall_id})` : 'Add Hall'}</h3>
                                 <form onSubmit={handleHallSubmit} className="admin-form-grid">
-                                    {/* Hall ID field removed as it's not needed for input/editing form */}
+                                    {/* Basic Hall Details */}
                                     <div className="admin-form-group">
                                         <label htmlFor="hall_name">Hall Name:</label>
                                         <input
@@ -442,7 +720,7 @@ const AdminPanel = () => {
                                             type="number"
                                             id="capacity"
                                             name="capacity"
-                                            value={hallFormData.capacity}
+                                            value={hallFormData.capacity ?? ''} // Use ?? to display 0
                                             onChange={handleHallInputChange}
                                         />
                                     </div>
@@ -452,13 +730,24 @@ const AdminPanel = () => {
                                             type="number"
                                             id="total_floors"
                                             name="total_floors"
-                                            value={hallFormData.total_floors}
+                                            value={hallFormData.total_floors ?? ''} // Use ?? to display 0
                                             onChange={handleHallInputChange}
                                             required
-                                            min="1"
+                                            min="0" // Allow 0 floors, though typically min would be 1
                                         />
                                     </div>
-                                     <div className="admin-form-group"> {/* Removed inline span style */}
+                                    <div className="admin-form-group">
+                                        <label htmlFor="total_area_sqft">Total Area (sq. ft.):</label>
+                                        <input
+                                            type="number"
+                                            id="total_area_sqft"
+                                            name="total_area_sqft"
+                                            value={hallFormData.total_area_sqft ?? ''}
+                                            onChange={handleHallInputChange}
+                                            min="0"
+                                        />
+                                    </div>
+                                     <div className="admin-form-group">
                                         <label htmlFor="description">Description:</label>
                                         <textarea
                                             id="description"
@@ -467,40 +756,48 @@ const AdminPanel = () => {
                                             onChange={handleHallInputChange}
                                         ></textarea>
                                     </div>
-                                    <div className="admin-form-group">
-                                        <label htmlFor="rent_commercial">Rent (Commercial):</label>
-                                        <input
-                                            type="text"
-                                            id="rent_commercial"
-                                            name="rent_commercial"
-                                            value={hallFormData.rent_commercial}
-                                            onChange={handleHallInputChange}
-                                            required
-                                        />
-                                    </div>
-                                     <div className="admin-form-group">
-                                        <label htmlFor="rent_social">Rent (Social):</label>
-                                        <input
-                                            type="text"
-                                            id="rent_social"
-                                            name="rent_social"
-                                            value={hallFormData.rent_social}
-                                            onChange={handleHallInputChange}
-                                            required
-                                        />
-                                    </div>
-                                     <div className="admin-form-group">
-                                        <label htmlFor="rent_non_commercial">Rent (Non-Commercial):</label>
-                                        <input
-                                            type="text"
-                                            id="rent_non_commercial"
-                                            name="rent_non_commercial"
-                                            value={hallFormData.rent_non_commercial}
-                                            onChange={handleHallInputChange}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="admin-form-buttons"> {/* Group buttons */}
+
+                                    {/* Fixed-Price Blocks */}
+                                    <h4>Fixed Price Blocks (Tiered Rates)</h4>
+                                    {renderTieredPriceInputs('conference_hall_ac', 'Conference Hall (AC)')}
+                                    {renderTieredPriceInputs('conference_hall_nonac', 'Conference Hall (Non-AC)')}
+                                    {renderTieredPriceInputs('food_prep_area_ac', 'Food Prep Area (AC)')}
+                                    {renderTieredPriceInputs('food_prep_area_nonac', 'Food Prep Area (Non-AC)')}
+                                    {renderTieredPriceInputs('lawn_ac', 'Lawn (AC)')}
+                                    {renderTieredPriceInputs('lawn_nonac', 'Lawn (Non-AC)')}
+                                    {renderTieredPriceInputs('room_rent_ac', 'Room Rent (AC)')}
+                                    {renderTieredPriceInputs('room_rent_nonac', 'Room Rent (Non-AC)')}
+                                    {renderTieredPriceInputs('parking', 'Parking')}
+                                    {renderTieredPriceInputs('electricity_ac', 'Electricity (AC)')}
+                                    {renderTieredPriceInputs('electricity_nonac', 'Electricity (Non-AC)')}
+                                    {renderTieredPriceInputs('cleaning', 'Cleaning')}
+
+                                    {/* Event Pricing */}
+                                    <h4>Event Pricing (Per Sq. Ft.)</h4>
+                                    {eventPrices.map((event, index) => (
+                                        <div key={index} className="admin-form-group-event">
+                                            <label>Event {index + 1}:</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Event Type (e.g., 'Wedding')"
+                                                value={event.event_type}
+                                                onChange={(e) => handleEventPriceChange(index, 'event_type', '', e.target.value)}
+                                                required
+                                            />
+                                            {renderEventTieredPriceInputs(index, 'prices_per_sqft_ac', 'AC Prices')}
+                                            {renderEventTieredPriceInputs(index, 'prices_per_sqft_nonac', 'Non-AC Prices')}
+
+                                            <button type="button" onClick={() => removeEventPrice(index)} className="admin-remove-event-button">
+                                                <MinusCircle size={18} /> Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button type="button" onClick={addEventPrice} className="admin-add-event-button">
+                                        <PlusCircle size={18} /> Add Event
+                                    </button>
+
+
+                                    <div className="admin-form-buttons">
                                         <button type="submit" className="admin-form-submit-button">
                                             {currentHall ? 'Update Hall' : 'Create Hall'}
                                         </button>
@@ -524,18 +821,16 @@ const AdminPanel = () => {
                         ) : hallError ? (
                             <p style={{ color: 'red' }}>{hallError}</p>
                         ) : (
-                            <div className="admin-table-container"> {/* Added container for scroll */}
-                                 <table className="admin-table"> {/* Applied table class */}
+                            <div className="admin-table-container">
+                                 <table className="admin-table">
                                     <thead>
                                         <tr>
-                                            <th>Hall ID</th> {/* Keep ID in table for reference */}
+                                            <th>Hall ID</th>
                                             <th>Name</th>
                                             <th>Location</th>
                                             <th>Capacity</th>
-                                             <th>Total Floors</th> {/* Added Total Floors header */}
-                                             <th>Rent (Comm.)</th>
-                                             <th>Rent (Social)</th>
-                                             <th>Rent (Non-Comm.)</th>
+                                             <th>Total Floors</th>
+                                             <th>Total Area (sq. ft.)</th> {/* Added column */}
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -546,20 +841,18 @@ const AdminPanel = () => {
                                                  <td>{hall.hall_name}</td>
                                                  <td>{hall.location}</td>
                                                  <td>{hall.capacity}</td>
-                                                  <td>{hall.total_floors}</td> {/* Display total_floors */}
-                                                  <td>{hall.rent_commercial}</td>
-                                                  <td>{hall.rent_social}</td>
-                                                  <td>{hall.rent_non_commercial}</td>
-                                                 <td className="admin-table-actions"> {/* Applied actions class */}
+                                                  <td>{hall.total_floors}</td>
+                                                  <td>{hall.total_area_sqft || 'N/A'}</td> {/* Display total_area_sqft */}
+                                                 <td className="admin-table-actions">
                                                       <button
                                                            onClick={() => startEditHall(hall)}
-                                                           className="admin-edit-button" // Applied button class
+                                                           className="admin-edit-button"
                                                       >
                                                            Edit
                                                       </button>
                                                       <button
                                                            onClick={() => deleteHall(hall.hall_id)}
-                                                           className="admin-delete-button" // Applied button class
+                                                           className="admin-delete-button"
                                                       >
                                                            Delete
                                                       </button>
@@ -582,18 +875,20 @@ const AdminPanel = () => {
                         ) : bookingError ? (
                             <p style={{ color: 'red' }}>{bookingError}</p>
                         ) : (
-                             <div className="admin-table-container"> {/* Added container for scroll */}
-                                  <table className="admin-table"> {/* Applied table class */}
+                             <div className="admin-table-container">
+                                  <table className="admin-table">
                                     <thead>
                                         <tr>
                                              <th>Booking ID</th>
                                              <th>Transaction ID</th>
                                             <th>Hall Name</th>
                                              <th>Booking Date</th>
-                                             <th>Floor</th> {/* Updated header */}
+                                             <th>Floor</th>
                                             <th>Function</th>
                                             <th>Amount</th>
-                                            <th>Status</th> {/* Status header */}
+                                            <th>Status</th>
+                                            <th>Refund Status</th> {/* New column */}
+                                            <th>Refund Amount</th> {/* New column */}
                                              <th>User ID</th>
                                             <th>Actions</th>
                                         </tr>
@@ -602,42 +897,47 @@ const AdminPanel = () => {
                                          {bookings.map((booking) => (
                                               <tr key={booking.booking_id}>
                                                   <td>{booking.booking_id}</td>
-                                                  <td>{booking.transaction_id || 'N/A'}</td> {/* Handle potential null */}
+                                                  <td>{booking.transaction_id || 'N/A'}</td>
                                                   <td>
                                                        {booking.hall_id ? booking.hall_id.hall_name : 'N/A'}
                                                   </td>
                                                    <td>
                                                         {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}
                                                    </td>
-                                                   {/* Display selected floors */}
                                                    <td>{booking.floor }</td>
-                                                   <td>{booking.function_type}</td>
-                                                   <td>{booking.booking_amount}</td>
-                                                   {/* Render status with color and icon */}
+                                                   <td>Rs. {booking.booking_amount}</td>
                                                    <td>{renderStatus(booking.booking_status)}</td>
+                                                   <td>{renderStatus(booking.refund_status)}</td> {/* Display refund status */}
+                                                   <td>{booking.refund_amount}</td> {/* Display refund amount */}
                                                     <td>{booking.user_id}</td>
-                                                   <td className="admin-table-actions"> {/* Applied actions class */}
-                                                       {/* Conditional rendering of buttons based on status */}
-                                                        {booking.booking_status === 'Pending' && (
+                                                   <td className="admin-table-actions">
+                                                       {booking.booking_status === 'Pending' && (
                                                             <>
                                                                 <button
                                                                     onClick={() => handleConfirmBooking(booking.booking_id)}
-                                                                    className="admin-confirm-button" // Applied button class
+                                                                    className="admin-confirm-button"
                                                                 >
                                                                     Confirm
                                                                 </button>
                                                                 <button
                                                                     onClick={() => handleCancelBooking(booking.booking_id)}
-                                                                    className="admin-cancel-button" // Applied button class
+                                                                    className="admin-cancel-button"
                                                                 >
                                                                     Cancel
                                                                 </button>
                                                             </>
                                                         )}
-                                                        {/* Delete button remains available for hard delete, outside of status checks */}
+                                                        {booking.refund_status === 'Pending' && (
+                                                            <button
+                                                                onClick={() => handleProcessRefund(booking.booking_id)}
+                                                                className="admin-process-refund-button"
+                                                            >
+                                                                Process Refund
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={() => deleteBooking(booking.booking_id)}
-                                                            className="admin-delete-button" // Applied button class
+                                                            className="admin-delete-button"
                                                          >
                                                              Delete
                                                         </button>
