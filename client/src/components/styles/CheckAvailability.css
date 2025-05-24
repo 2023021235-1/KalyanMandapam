@@ -26,6 +26,7 @@
   --status-booked-color: #2196F3; /* Brighter blue */
   --status-blocked-color: #f44336; /* Less harsh red */
   --status-special-color: #9c27b0; /* Rich purple */
+  --status-past-color: #f0f0f0; /* New: Light grey for past dates */
 
   /* Calendar-specific colors */
   --calendar-border-color: #eaeaea;
@@ -206,7 +207,8 @@
 .ca-legend-color-box-preliminary,
 .ca-legend-color-box-booked,
 .ca-legend-color-box-blocked,
-.ca-legend-color-box-special {
+.ca-legend-color-box-special,
+.ca-legend-color-box-past { /* Added for past status */
     display: inline-block;
     width: 22px;
     height: 22px;
@@ -221,6 +223,7 @@
 .ca-legend-color-box-booked { background-color: var(--status-booked-color); }
 .ca-legend-color-box-blocked { background-color: var(--status-blocked-color); }
 .ca-legend-color-box-special { background-color: var(--status-special-color); }
+.ca-legend-color-box-past { background-color: var(--status-past-color); } /* Style for past dates */
 
 /* Status classes with improved colors */
 .status-available { 
@@ -242,6 +245,12 @@
 .status-special { 
     background-color: var(--status-special-color); 
     color: white; 
+}
+.status-past { /* New: Style for past dates */
+    background-color: var(--status-past-color); 
+    color: var(--text-color); /* Darker text on light grey */
+    opacity: 0.6; /* Slightly faded */
+    pointer-events: none; /* Make them non-interactive */
 }
 
 .ca-availability-message {
@@ -330,9 +339,15 @@
     transition: all 0.3s ease;
 }
 
-.ca-nav-button:hover {
+.ca-nav-button:hover:not(:disabled) { /* Apply hover only when not disabled */
     color: var(--secondary-color);
     background-color: rgba(128, 0, 0, 0.05); /* Subtle background on hover */
+}
+
+.ca-nav-button:disabled { /* Style for disabled button */
+    color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .ca-calendar-weekdays {
@@ -370,7 +385,7 @@
     transition: transform 0.2s ease;
 }
 
-.ca-day-cell:hover {
+.ca-day-cell:hover:not(.status-past) { /* Apply hover only if not 'past' */
     transform: translateY(-2px); /* Subtle lift effect on hover */
     box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* Enhanced shadow on hover */
 }
@@ -410,6 +425,15 @@
     color: white;
     text-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }
+.ca-calendar-day.status-past { /* New: Style for past dates in calendar */
+    background-color: var(--status-past-color); 
+    color: var(--text-color);
+    opacity: 0.7; /* Slightly faded */
+    cursor: default; /* No pointer for past dates */
+    box-shadow: none; /* No shadow for past dates */
+    transform: none; /* No hover effect for past dates */
+}
+
 
 /* --- List View Styles --- */
 .ca-availability-list {
@@ -453,7 +477,7 @@
     transition: transform 0.2s ease;
 }
 
-.ca-list-item:hover {
+.ca-list-item:hover:not(.status-past) { /* Apply hover only if not 'past' */
     transform: translateY(-2px); /* Subtle lift effect on hover */
     box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Enhanced shadow on hover */
 }
@@ -472,16 +496,15 @@
     color: white;
     text-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }
-
-.ca-list-date {
-    font-weight: 600;
-    font-size: 1.1em;
+.ca-list-item.status-past { /* New: Style for past dates in list */
+    background-color: var(--status-past-color);
+    color: var(--text-color);
+    opacity: 0.7;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
 }
 
-.ca-list-status {
-    font-size: 0.9em;
-    font-weight: 500;
-}
 
 /* --- Responsive Design --- */
 @media (min-width: 769px) {

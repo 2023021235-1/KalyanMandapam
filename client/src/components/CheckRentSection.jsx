@@ -247,11 +247,11 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                                 <MapPin size={18} className="icon-inline" /> {currentContent.dropdownLabel}
                             </label>
                             {loadingHalls ? (
-                                <p className="rental-info-message">
+                                <p className="ca-availability-message">
                                     {currentContent.loadingHallsMessage}
                                 </p>
                             ) : hallsError ? (
-                                <p className="rental-info-message rental-message--error"><Info size={18} className="icon-inline" /> {hallsError}</p>
+                                <p className="rental-info-message rental-message--error"> {hallsError}</p>
                             ) : (
                                 <select
                                     id="baratghar-select"
@@ -271,21 +271,21 @@ const CheckRentSection = ({ languageType = 'en' }) => {
 
                         {/* Display messages based on state */}
                         {!selectedHallId && !loadingHalls && !hallsError && (
-                            <p className="rental-info-message rental-message--info"><Info size={18} className="icon-inline" /> {currentContent.selectHallMessage}</p>
+                            <p className="ca-availability-message"> {currentContent.selectHallMessage}</p>
                         )}
 
                         {loadingDetails && (
-                            <p className="rental-info-message rental-message--info"><Info size={18} className="icon-inline" /> {currentContent.fetchingDetailsMessage}</p>
+                            <p className="ca-availability-message"> {currentContent.fetchingDetailsMessage}</p>
                         )}
 
                         {detailsError && (
-                            <p className="rental-info-message rental-message--error"><Info size={18} className="icon-inline" /> {detailsError}</p>
+                            <p className="ca-availability-message"> {detailsError}</p>
                         )}
 
                         {/* Hall Details (Location, Capacity, Total Floors, Description) and Pricing Tables */}
                         {selectedHallDetails && !loadingDetails && !detailsError && (
                             <div className="rental-hall-details">
-                                <h4><Info size={20} className="icon-inline" /> {selectedHallDetails.hall_name} Details</h4>
+                                <h4> {selectedHallDetails.hall_name} Details</h4>
                                <div className='det'>
                                 <p><strong><MapPin size={16} className="icon-inline" /> {currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
                                 <p><strong><Users size={16} className="icon-inline" /> {currentContent.capacityLabel}:</strong> {selectedHallDetails.capacity}</p>
