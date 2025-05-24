@@ -35,7 +35,11 @@
     padding: 0 20px;
     height: fit-content;
 }
-
+.det{
+    display: flex;
+   
+    justify-content: space-evenly;
+}
 /* Section Heading */
 .rental-section__heading {
   font-size: 3em;
@@ -144,7 +148,7 @@
 .rental-hall-details {
     margin-top: 25px; /* Space above the details block */
     width: 100%;
-    max-width: 400px; /* Match the form group width */
+    /* max-width: 400px; REMOVED to allow tables to expand horizontally */
     text-align: left;
 }
 
@@ -180,12 +184,26 @@
     color: var(--rental-icon-color);
 }
 
+/* New wrapper for pricing tables */
+.rental-pricing-tables-wrapper {
+    display: flex;
+    flex-wrap: wrap; /* Allows items to wrap to the next line */
+    justify-content: center; /* Center tables when they wrap */
+    gap: 20px; /* Space between tables */
+    width: 100%; /* Take full width of its parent */
+    margin-top: 20px; /* Space from hall details */
+}
+
 
 /* Rent Details Chart Styling */
 .rental-details-chart {
-    margin-top: 20px; /* Space above the chart */
+    /* margin-top: 20px; REMOVED - gap handles spacing */
     width: 100%;
-    max-width: 400px; /* Match the form group width */
+    /* max-width: 400px; REMOVED - flex properties handle width */
+    box-sizing: border-box; /* Include padding/border in width */
+    flex: 1 1 45%; /* Allow tables to grow, shrink, and take ~45% width on larger screens */
+    min-width: 300px; /* Minimum width before wrapping */
+    max-width: 500px; /* Max width for a single table */
 }
 
 .rental-details-chart h4 {
@@ -219,9 +237,9 @@
 }
 
 .rental-details-chart__table th {
-    background-color: var(--rental-table-header-bg);
+    background-color: var(--rental-primary-color); /* Maroon background */
     font-weight: 600;
-    color: var(--rental-primary-color);
+    color: var(--rental-white-card-bg); /* White text */
 }
 
 
@@ -229,7 +247,7 @@
 .rental-notes-card {
     margin-top: 30px; /* Space above the notes */
     width: 100%;
-     
+
     text-align: left;
     padding-top: 20px;
     border-top: 1px solid var(--rental-hover-bg);
@@ -309,8 +327,7 @@
         max-width: 700px;
     }
      .rental-form-group,
-     .rental-hall-details,
-     .rental-details-chart
+     .rental-hall-details /* Removed max-width from here */
       { /* Apply max-width to messages too */
         max-width: 350px; /* Adjust max-width for smaller screens */
     }
@@ -330,8 +347,6 @@
   }
 
    .rental-form-group,
-   .rental-hall-details,
-   .rental-details-chart,
    .rental-notes-card,
    .rental-message { /* Ensure full width on very small screens */
       max-width: 100%;
@@ -340,6 +355,23 @@
    .rental-notes-card__heading {
        font-size: 1.2em;
    }
+
+   /* Stack tables vertically on smaller screens */
+    .rental-pricing-tables-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+    .rental-pricing-tables-wrapper .rental-details-chart {
+        flex: 1 1 100%; /* Take full width */
+        max-width: 100%; /* Ensure it doesn't exceed parent width */
+    }
+
+    /* Responsive font sizes for tables */
+    .rental-details-chart__table th,
+    .rental-details-chart__table td {
+        font-size: 0.85em; /* Slightly smaller font on tablets */
+        padding: 8px; /* Adjust padding */
+    }
 }
 
 @media (max-width: 480px) {
@@ -352,7 +384,11 @@
          height: 1.2em;
      }
 
-
+    .det{
+    flex-direction: column;
+    
+    justify-content: center;
+}
      .rental-form-block {
          min-height: 40vh;
          padding: 15px;
@@ -411,5 +447,12 @@
     .rental-message svg {
         width: 0.9em; /* Adjust icon size with text */
         height: 0.9em;
+    }
+
+    /* Responsive font sizes for tables on smallest screens */
+    .rental-details-chart__table th,
+    .rental-details-chart__table td {
+        font-size: 0.7em; /* Even smaller font on mobile */
+        padding: 5px; /* Further adjust padding */
     }
 }

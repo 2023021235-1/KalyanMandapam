@@ -25,10 +25,10 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             sectionHeading: 'Check Rent & Details',
             dropdownLabel: 'BaratGhar Name',
             selectHallPlaceholder: 'Select BaratGhar',
-            notesHeading: 'NOTES : Terms & Condition are also apply.',
-            note1: '(1). Commercial : 2.5 time multiple Extra charges on baratghar rent applied in Commercial Category.',
-            note2: '(2). Social : Normal Charges',
-            note3: '(3). Non-Commercial : Get 50% Extra Discount on Commercial baratghar rent charges.',
+            notesHeading: 'Terms & Conditions', // Updated heading
+            note1: 'The rates given above are different for AC booking and Non-AC booking and will be applicable as per the above list.', // Updated note
+            note2: 'The charges for AC hall will be as per the above table and the rate will be applicable for booking the entire hall. Partial booking of the hall will not be applicable.', // Updated note
+            note3: '', // Removed or left empty if only two notes
             locationLabel: 'Location',
             capacityLabel: 'Capacity',
             totalFloorsLabel: 'Total Floors', // New label
@@ -39,38 +39,35 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             hallNotFound: 'Details not found for the selected hall.',
 
             // New pricing labels
-            fixedPriceBlocksHeading: 'Fixed Price Blocks (Per Day)',
-            eventSpecificPricingHeading: 'Event Specific Pricing (Per Sq. Ft. Per Day)',
+            acPricesHeading: 'AC Prices', // Heading for AC table
+            nonAcPricesHeading: 'Non-AC Prices', // Heading for Non-AC table
             categoryHeader: 'Category',
             municipalHeader: 'Municipal',
             municipalityHeader: 'Municipality',
             panchayatHeader: 'Panchayat',
-            acPricesHeader: 'AC Prices', // New
-            nonAcPricesHeader: 'Non-AC Prices', // New
 
             // Fixed block names
-            conferenceHallAc: 'Conference Hall (AC)',
-            conferenceHallNonAc: 'Conference Hall (Non-AC)',
-            foodPrepAreaAc: 'Food Prep Area (AC)',
-            foodPrepAreaNonAc: 'Food Prep Area (Non-AC)',
-            lawnAc: 'Lawn (AC)',
-            lawnNonAc: 'Lawn (Non-AC)',
-            roomRentAc: 'Room Rent (AC)',
-            roomRentNonAc: 'Room Rent (Non-AC)',
+            conferenceHallAc: 'Conference Hall',
+            conferenceHallNonAc: 'Conference Hall',
+            foodPrepAreaAc: 'Food Prep Area',
+            foodPrepAreaNonAc: 'Food Prep Area',
+            lawnAc: 'Lawn',
+            lawnNonAc: 'Lawn',
+            roomRentAc: 'Room Rent',
+            roomRentNonAc: 'Room Rent',
             parking: 'Parking',
-            electricityAc: 'Electricity (AC)',
-            electricityNonAc: 'Electricity (Non-AC)',
+            electricityAc: 'Electricity',
+            electricityNonAc: 'Electricity',
             cleaning: 'Cleaning',
-            eventType: 'Event Type',
         },
         hi: {
             sectionHeading: 'किराया और विवरण जांचें',
             dropdownLabel: 'बारात घर का नाम',
             selectHallPlaceholder: 'बारात घर चुनें',
-            notesHeading: 'नोट्स : नियम और शर्तें भी लागू होती हैं।',
-            note1: '(१). वाणिज्यिक : वाणिज्यिक श्रेणी में लागू बारात घर किराए पर २.५ गुना अतिरिक्त शुल्क।',
-            note2: '(२). सामाजिक : सामान्य शुल्क',
-            note3: '(३). गैर-वाणिज्यिक : वाणिज्यिक बारात घर किराए पर ५०% अतिरिक्त छूट प्राप्त करें।',
+            notesHeading: 'नियम एवं शर्तें', // Updated heading
+            note1: 'ऊपर दी गई दरें ए०सी० बुकिंग के साथ - साथ नॉन ए०सी० बुकिंग के लिए अलग-अलग हैं एवं उपरोक्त सूची के अनुसार लागू होगी ।', // Updated note
+            note2: 'ए०सी० हॉल के लिए शुल्क उपरोक्त तालिका के अनुसार होगा और दर पूरे हॉल की बुकिंग पर लागू होगी । हॉल की आशिक बुकिंग लागू नहीं होगी ।', // Updated note
+            note3: '', // Removed or left empty if only two notes
             locationLabel: 'स्थान',
             capacityLabel: 'क्षमता',
             totalFloorsLabel: 'कुल मंजिलें', // New label
@@ -81,29 +78,26 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             hallNotFound: 'चयनित बारात घर के लिए विवरण नहीं मिला।',
 
             // New pricing labels
-            fixedPriceBlocksHeading: 'निश्चित मूल्य ब्लॉक (प्रति दिन)',
-            eventSpecificPricingHeading: 'इवेंट विशिष्ट मूल्य निर्धारण (प्रति वर्ग फुट प्रति दिन)',
+            acPricesHeading: 'एसी मूल्य', // Heading for AC table
+            nonAcPricesHeading: 'गैर-एसी मूल्य', // Heading for Non-AC table
             categoryHeader: 'श्रेणी',
             municipalHeader: 'नगरपालिका',
             municipalityHeader: 'नगर निगम',
             panchayatHeader: 'पंचायत',
-            acPricesHeader: 'एसी मूल्य', // New
-            nonAcPricesHeader: 'गैर-एसी मूल्य', // New
 
             // Fixed block names
-            conferenceHallAc: 'सम्मेलन कक्ष (एसी)',
-            conferenceHallNonAc: 'सम्मेलन कक्ष (गैर-एसी)',
-            foodPrepAreaAc: 'भोजन तैयारी क्षेत्र (एसी)',
-            foodPrepAreaNonAc: 'भोजन तैयारी क्षेत्र (गैर-एसी)',
-            lawnAc: 'लॉन (एसी)',
-            lawnNonAc: 'लॉन (गैर-एसी)',
-            roomRentAc: 'कमरे का किराया (एसी)',
-            roomRentNonAc: 'कमरे का किराया (गैर-एसी)',
+            conferenceHallAc: 'सम्मेलन कक्ष',
+            conferenceHallNonAc: 'सम्मेलन कक्ष',
+            foodPrepAreaAc: 'भोजन तैयारी क्षेत्र',
+            foodPrepAreaNonAc: 'भोजन तैयारी क्षेत्र',
+            lawnAc: 'लॉन',
+            lawnNonAc: 'लॉन',
+            roomRentAc: 'कमरे का किराया',
+            roomRentNonAc: 'कमरे का किराया',
             parking: 'पार्किंग',
-            electricityAc: 'बिजली (एसी)',
-            electricityNonAc: 'बिजली (गैर-एसी)',
+            electricityAc: 'बिजली',
+            electricityNonAc: 'बिजली',
             cleaning: 'सफाई',
-            eventType: 'इवेंट प्रकार',
         },
     };
 
@@ -162,16 +156,55 @@ const CheckRentSection = ({ languageType = 'en' }) => {
         }
     };
 
-    const renderPricingTable = (data, title) => {
-        if (!data || Object.keys(data).length === 0) {
-            return null; // Don't render if no data
+    // Helper function to render fixed price tables for AC or Non-AC, now including event pricing
+    const renderFixedPriceTable = (data, title, type, eventPricing) => {
+        let combinedData = [];
+
+        // Add event pricing first
+        if (eventPricing && eventPricing.length > 0) {
+            eventPricing.forEach(event => {
+                let prices;
+                if (type === 'AC') {
+                    prices = event.prices_per_sqft_ac;
+                } else if (type === 'Non-AC') {
+                    prices = event.prices_per_sqft_nonac;
+                }
+                if (prices) {
+                    // Store a flag to indicate it's an event for styling
+                    combinedData.push([event.event_type, prices, true]);
+                }
+            });
         }
+
+        // Add fixed price items
+        Object.entries(data).forEach(([key, prices]) => {
+            // Only add items relevant to the current table type (AC or Non-AC)
+            // and ensure common items like parking/cleaning are added only once
+            const isAcItem = key.endsWith('Ac');
+            const isNonAcItem = key.endsWith('NonAc');
+            const isCommonItem = ['parking', 'cleaning'].includes(key);
+
+            if (
+                (type === 'AC' && (isAcItem || isCommonItem || key === 'electricityAc')) ||
+                (type === 'Non-AC' && (isNonAcItem || isCommonItem || key === 'electricityNonAc'))
+            ) {
+                // Ensure unique entry for common items like parking/cleaning
+                if (!combinedData.some(item => item[0] === key)) {
+                    combinedData.push([key, prices, false]); // false indicates it's not an event
+                }
+            }
+        });
+
+        if (combinedData.length === 0) {
+            return null; // Don't render table if no items after filtering
+        }
+
         return (
-            <div className="rental-details-chart" style={{ marginTop: '20px' }}>
-                <h4>{title}</h4>
+            <div className="rental-details-chart">
+                <h4><DollarSign size={20} className="icon-inline" /> {title}</h4>
                 <table className="rental-details-chart__table">
                     <thead>
-                        <tr style={{ backgroundColor: '#f2f2f2' }}>
+                        <tr>
                             <th>{currentContent.categoryHeader}</th>
                             <th>{currentContent.municipalHeader}</th>
                             <th>{currentContent.municipalityHeader}</th>
@@ -179,54 +212,22 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {Object.entries(data).map(([key, prices]) => (
-                            <tr key={key}>
-                                <td>
-                                    {/* Dynamically get label based on key */}
-                                    {currentContent[key] || key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim()}
-                                </td>
-                                <td>Rs. {prices.municipal}</td>
-                                <td>Rs. {prices.municipality}</td>
-                                <td>Rs. {prices.panchayat}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
-    };
+                        {combinedData.map(([key, prices, isEvent], index) => {
+                            let displayKey = currentContent[key] || key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim();
+                            // Remove "(AC)" or "(Non-AC)" if present
+                            displayKey = displayKey.replace(/\s*\(AC\)\s*$/, '').replace(/\s*\(Non-AC\)\s*$/, '');
 
-    const renderEventPricingTable = (eventPricing) => {
-        if (!eventPricing || eventPricing.length === 0) {
-            return null;
-        }
-        return (
-            <div className="rental-details-chart" style={{ marginTop: '20px' }}>
-                <h4>{currentContent.eventSpecificPricingHeading}</h4>
-                <table className="rental-details-chart__table">
-                    <thead>
-                        <tr style={{ backgroundColor: '#f2f2f2' }}>
-                            <th>{currentContent.eventType}</th>
-                            <th>{currentContent.acPricesHeader}</th>
-                            <th>{currentContent.nonAcPricesHeader}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {eventPricing.map((event, index) => (
-                            <tr key={index}>
-                                <td>{event.event_type}</td>
-                                <td>
-                                    Municipal: Rs. {event.prices_per_sqft_ac.municipal}<br />
-                                    Municipality: Rs. {event.prices_per_sqft_ac.municipality}<br />
-                                    Panchayat: Rs. {event.prices_per_sqft_ac.panchayat}
-                                </td>
-                                <td>
-                                    Municipal: Rs. {event.prices_per_sqft_nonac.municipal}<br />
-                                    Municipality: Rs. {event.prices_per_sqft_nonac.municipality}<br />
-                                    Panchayat: Rs. {event.prices_per_sqft_nonac.panchayat}
-                                </td>
-                            </tr>
-                        ))}
+                            return (
+                                <tr key={index}>
+                                    <td>
+                                        {isEvent ? <strong>{displayKey}</strong> : displayKey}
+                                    </td>
+                                    <td>Rs. {prices.municipal}</td>
+                                    <td>Rs. {prices.municipality}</td>
+                                    <td>Rs. {prices.panchayat}</td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
@@ -250,7 +251,7 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                                     {currentContent.loadingHallsMessage}
                                 </p>
                             ) : hallsError ? (
-                                <p className="rental-info-message" style={{ color: 'red' }}>{hallsError}</p>
+                                <p className="rental-info-message rental-message--error"><Info size={18} className="icon-inline" /> {hallsError}</p>
                             ) : (
                                 <select
                                     id="baratghar-select"
@@ -270,49 +271,53 @@ const CheckRentSection = ({ languageType = 'en' }) => {
 
                         {/* Display messages based on state */}
                         {!selectedHallId && !loadingHalls && !hallsError && (
-                            <p className="rental-info-message">{currentContent.selectHallMessage}</p>
+                            <p className="rental-info-message rental-message--info"><Info size={18} className="icon-inline" /> {currentContent.selectHallMessage}</p>
                         )}
 
                         {loadingDetails && (
-                            <p className="rental-info-message">
-                                {currentContent.fetchingDetailsMessage}
-                            </p>
+                            <p className="rental-info-message rental-message--info"><Info size={18} className="icon-inline" /> {currentContent.fetchingDetailsMessage}</p>
                         )}
 
                         {detailsError && (
-                            <p className="rental-info-message" style={{ color: 'red' }}>{detailsError}</p>
+                            <p className="rental-info-message rental-message--error"><Info size={18} className="icon-inline" /> {detailsError}</p>
                         )}
 
                         {/* Hall Details (Location, Capacity, Total Floors, Description) and Pricing Tables */}
                         {selectedHallDetails && !loadingDetails && !detailsError && (
                             <div className="rental-hall-details">
                                 <h4><Info size={20} className="icon-inline" /> {selectedHallDetails.hall_name} Details</h4>
+                               <div className='det'>
                                 <p><strong><MapPin size={16} className="icon-inline" /> {currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
                                 <p><strong><Users size={16} className="icon-inline" /> {currentContent.capacityLabel}:</strong> {selectedHallDetails.capacity}</p>
                                 <p><strong><Building size={16} className="icon-inline" /> {currentContent.totalFloorsLabel}:</strong> {selectedHallDetails.total_floors}</p>
+                                </div>
                                 {selectedHallDetails.description && (
                                     <p><strong><BookOpen size={16} className="icon-inline" /> {currentContent.descriptionLabel}:</strong> {selectedHallDetails.description}</p>
                                 )}
 
-                                {/* Fixed Price Blocks Table */}
-                                {renderPricingTable({
-                                    conferenceHallAc: selectedHallDetails.conference_hall_ac,
-                                    conferenceHallNonAc: selectedHallDetails.conference_hall_nonac,
-                                    foodPrepAreaAc: selectedHallDetails.food_prep_area_ac,
-                                    foodPrepAreaNonAc: selectedHallDetails.food_prep_area_nonac,
-                                    lawnAc: selectedHallDetails.lawn_ac,
-                                    lawnNonAc: selectedHallDetails.lawn_nonac,
-                                    roomRentAc: selectedHallDetails.room_rent_ac,
-                                    roomRentNonAc: selectedHallDetails.room_rent_nonac,
-                                    parking: selectedHallDetails.parking,
-                                    electricityAc: selectedHallDetails.electricity_ac,
-                                    electricityNonAc: selectedHallDetails.electricity_nonac,
-                                    cleaning: selectedHallDetails.cleaning,
-                                }, currentContent.fixedPriceBlocksHeading)}
+                                <div className="rental-pricing-tables-wrapper">
+                                    {/* AC Fixed Price Blocks Table */}
+                                    {renderFixedPriceTable({
+                                        conferenceHallAc: selectedHallDetails.conference_hall_ac,
+                                        foodPrepAreaAc: selectedHallDetails.food_prep_area_ac,
+                                        lawnAc: selectedHallDetails.lawn_ac,
+                                        roomRentAc: selectedHallDetails.room_rent_ac,
+                                        parking: selectedHallDetails.parking, // Common item
+                                        electricityAc: selectedHallDetails.electricity_ac,
+                                        cleaning: selectedHallDetails.cleaning, // Common item
+                                    }, currentContent.acPricesHeading, 'AC', selectedHallDetails.event_pricing)}
 
-                                {/* Event Specific Pricing Table */}
-                                {renderEventPricingTable(selectedHallDetails.event_pricing)}
-
+                                    {/* Non-AC Fixed Price Blocks Table */}
+                                    {renderFixedPriceTable({
+                                        conferenceHallNonAc: selectedHallDetails.conference_hall_nonac,
+                                        foodPrepAreaNonAc: selectedHallDetails.food_prep_area_nonac,
+                                        lawnNonAc: selectedHallDetails.lawn_nonac,
+                                        roomRentNonAc: selectedHallDetails.room_rent_nonac,
+                                        parking: selectedHallDetails.parking, // Common item
+                                        electricityNonAc: selectedHallDetails.electricity_nonac,
+                                        cleaning: selectedHallDetails.cleaning, // Common item
+                                    }, currentContent.nonAcPricesHeading, 'Non-AC', selectedHallDetails.event_pricing)}
+                                </div>
                             </div>
                         )}
 
@@ -320,9 +325,10 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                         <div className="rental-notes-card" style={{ marginTop: '20px' }}>
                             <h3 className="rental-notes-card__heading"><BookOpen size={22} className="icon-inline" /> {currentContent.notesHeading}</h3>
                             <ul className="rental-notes-card__list">
-                                <li className="rental-notes-card__list-item">{currentContent.note1}</li>
-                                <li className="rental-notes-card__list-item">{currentContent.note2}</li>
-                                <li className="rental-notes-card__list-item">{currentContent.note3}</li>
+                                {/* Only render if note is not empty */}
+                                {currentContent.note1 && <li className="rental-notes-card__list-item">1. {currentContent.note1}</li>}
+                                {currentContent.note2 && <li className="rental-notes-card__list-item">2. {currentContent.note2}</li>}
+                                {currentContent.note3 && <li className="rental-notes-card__list-item">3. {currentContent.note3}</li>}
                             </ul>
                         </div>
 
