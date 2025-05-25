@@ -1,100 +1,161 @@
-// BookingCertificate.jsx
 import React from 'react';
-import './styles/Certificate.css'; // Assuming Certificate.css is in a 'styles' subdirectory relative to this component
+import './styles/Certificate.css'; 
 
-const BookingCertificate = React.forwardRef(({ bookingDetails, userDetails, logoLeftUrl, logoRightUrl }, ref) => {
-    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }); // DD/MM/YYYY
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+  return date.toLocaleDateString("en-GB"); // DD/MM/YYYY format
+};
 
-    if (!bookingDetails || !userDetails) {
-        return <div ref={ref} className="cert-container error-message">Missing booking or user details for certificate.</div>;
-    }
-    const hall = bookingDetails.hall_id || {}; // hall_id is an object with hall details
+const BookingCertificate = ({ bookingDetails, userName }) => {
+  if (!bookingDetails) {
+    return <div className="user-dl-empty-data-state">No booking details provided.</div>;
+  }
 
-    return (
-        <div ref={ref} className="cert-container">
-            <div className="cert-header">
-                <div className="cert-logo-container cert-logo-left">
-                    {logoLeftUrl ? <img src={logoLeftUrl} alt="Left Logo" /> : <div className="logo-placeholder">Logo</div>}
+  const currentDateOnCertificate = new Date().toLocaleDateString('en-GB');
+
+  const {
+    hall_id_string, 
+    booking_id,
+    transaction_id,
+    booking_date,
+    floor,
+    function_type,
+    area_sqft,
+    booking_type, 
+    is_parking,
+    is_conference_hall,
+    is_food_prep_area,
+    is_lawn,
+    is_ac, 
+    add_parking, 
+    add_room,    
+    booking_status,
+    booking_amount,
+    createdAt, 
+    refund_status,
+    refund_amount,
+    refund_processed_date
+  } = bookingDetails;
+
+  const bookedFacilitiesList = [];
+  if (is_parking) bookedFacilitiesList.push("Parking");
+  if (is_conference_hall) bookedFacilitiesList.push("Conference Hall");
+  if (is_food_prep_area) bookedFacilitiesList.push("Food Preparation Area");
+  if (is_lawn) bookedFacilitiesList.push("Lawn");
+
+  if (add_parking && !is_parking) { 
+    bookedFacilitiesList.push("Additional Parking");
+  }
+  if (add_room) {
+    bookedFacilitiesList.push("Additional Room(s)");
+  }
+  const facilitiesText = bookedFacilitiesList.length > 0 ? bookedFacilitiesList.join(', ') : "None";
+
+  return (
+    <div className="user-dl-certificate-display-area"> 
+      <div id={`booking-certificate-${booking_id}`} className="user-dl-pdf-layout"> 
+        <div className="user-dl-outer-pdf-border">
+          <div className="user-dl-pdf-border"> 
+            
+            {/* Certificate Header */}
+            <div className="user-dl-pdf-header">
+                <div className="user-dl-pdf-header-left">
+                    <img src='/logo.webp' alt="Nagar Nigam Gorakhpur Logo" className="user-dl-pdf-logo" />
                 </div>
-                <div className="cert-title-center">
-                    <h1 className="cert-hindi-title">नगर निगम गोरखपुर</h1>
-                    <h2>Nagar Nigam Gorakhpur</h2>
+                <div className="user-dl-pdf-header-center">
+                    <div className="user-dl-pdf-org-name">
+                        <h2>Nagar Nigam Gorakhpur</h2>
+                        <h3>नगर निगम गोरखपुर</h3>
+                    </div>
                 </div>
-                <div className="cert-logo-container cert-logo-right">
-                    {logoRightUrl ? <img src={logoRightUrl} alt="Right Logo" /> : <div className="logo-placeholder">Logo</div>}
+                <div className="user-dl-pdf-header-right">
+                    <img src='./up.webp' alt="Uttar Pradesh Government Logo" className="user-dl-pdf-gov-logo" />
                 </div>
             </div>
 
-            <div className="cert-body">
-                <h3 className="cert-main-heading">Certificate of Booking</h3>
-                <p className="cert-issued-date">Date of Issue: {today}</p>
+            <div className="user-dl-pdf-certificate-title">
+              <h2>HALL BOOKING CONFIRMATION</h2>
+              <h3>हॉल बुकिंग पुष्टि</h3>
+            </div>
 
-                <div className="cert-details-grid">
-                    <div className="cert-detail-item">
-                        <span className="cert-label">Booking ID:</span>
-                        <span className="cert-value">{bookingDetails.booking_id}</span>
-                    </div>
-                    <div className="cert-detail-item">
-                        <span className="cert-label">Booked By:</span>
-                        {/* Use userDetails.name, userDetails.fullName, or fallback as available */}
-                        <span className="cert-value">{userDetails.fullName || userDetails.name || userDetails.username || 'N/A'}</span>
-                    </div>
-                    <div className="cert-detail-item">
-                        <span className="cert-label">Hall Name:</span>
-                        <span className="cert-value">{hall.hall_name || 'N/A'}</span>
-                    </div>
-                    <div className="cert-detail-item">
-                        <span className="cert-label">Location:</span>
-                        <span className="cert-value">{hall.location || 'N/A'}</span>
-                    </div>
-                    <div className="cert-detail-item">
-                        <span className="cert-label">Booking Date:</span>
-                        <span className="cert-value">{bookingDetails.booking_date ? new Date(bookingDetails.booking_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : 'N/A'}</span>
-                    </div>
-                    <div className="cert-detail-item">
-                        <span className="cert-label">Function Type:</span>
-                        <span className="cert-value">{bookingDetails.function_type || 'N/A'}</span>
-                    </div>
-                    <div className="cert-detail-item">
-                        <span className="cert-label">AC/Non-AC:</span>
-                        <span className="cert-value">{bookingDetails.is_ac ? 'AC' : 'Non-AC'}</span>
-                    </div>
-                    <div className="cert-detail-item">
-                        <span className="cert-label">Floor:</span>
-                        <span className="cert-value">{bookingDetails.floor || 'N/A'}</span>
-                    </div>
-                     {bookingDetails.area_sqft && parseFloat(bookingDetails.area_sqft) > 0 && (
-                        <div className="cert-detail-item">
-                            <span className="cert-label">Area Booked:</span>
-                            <span className="cert-value">{bookingDetails.area_sqft} sq. ft.</span>
-                        </div>
+            {/* Main Content Body of the Certificate */}
+            <div className="user-dl-pdf-body">
+
+              {/* Section 1: Core Booking Information */}
+              <div className="user-dl-pdf-info-block">
+                <div className="user-dl-pdf-info-row"><div className="user-dl-pdf-info-label">Booking ID / बुकिंग आईडी</div><div className="user-dl-pdf-info-value">: {booking_id || "N/A"}</div></div>
+                <div className="user-dl-pdf-info-row"><div className="user-dl-pdf-info-label">Transaction ID / लेनदेन आईडी</div><div className="user-dl-pdf-info-value">: {transaction_id || "N/A"}</div></div>
+                <div className="user-dl-pdf-info-row"><div className="user-dl-pdf-info-label">Issued Date / जारी दिनांक</div><div className="user-dl-pdf-info-value">: {formatDate(createdAt)}</div></div>
+                <div className="user-dl-pdf-info-row"><div className="user-dl-pdf-info-label">Booking Date / बुकिंग दिनांक</div><div className="user-dl-pdf-info-value">: {formatDate(booking_date)}</div></div>
+              </div>
+
+              {/* Section 2: Applicant Details */}
+              <div className="user-dl-pdf-details-section">
+                <div className="user-dl-pdf-section-title">Applicant Details / आवेदक का विवरण</div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Applicant Name / आवेदक का नाम</div><div className="user-dl-pdf-details-value">: {userName || "N/A"}</div></div>
+              </div>
+
+              {/* Section 3: Hall & Function Details */}
+              <div className="user-dl-pdf-details-section">
+                <div className="user-dl-pdf-section-title">Hall & Function Details / हॉल और समारोह का विवरण</div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Hall Name / हॉल का नाम</div><div className="user-dl-pdf-details-value">: {hall_id_string || "N/A"}</div></div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Floor / मंजिल</div><div className="user-dl-pdf-details-value">: {floor || "N/A"}</div></div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Function Type / समारोह का प्रकार</div><div className="user-dl-pdf-info-value">: {function_type || "N/A"}</div></div>
+                {area_sqft && area_sqft > 0 && (
+                  <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Area (sq. ft.) / क्षेत्रफल (वर्ग फुट)</div><div className="user-dl-pdf-details-value">: {area_sqft}</div></div>
+                )}
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Booking Category / बुकिंग श्रेणी</div><div className="user-dl-pdf-details-value">: {booking_type || "N/A"}</div></div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Hall Configuration / हॉल कॉन्फ़िगरेशन</div><div className="user-dl-pdf-details-value">: {is_ac ? "AC" : "Non-AC"}</div></div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Booked Facilities / बुक की गई सुविधाएं</div><div className="user-dl-pdf-details-value">: {facilitiesText}</div></div>
+              </div>
+              
+              {/* Section 4: Financial & Status Details */}
+              <div className="user-dl-pdf-details-section">
+                <div className="user-dl-pdf-section-title">Financial & Status Details / वित्तीय और स्थिति विवरण</div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Booking Amount / बुकिंग राशि</div><div className="user-dl-pdf-details-value">: ₹{booking_amount ? booking_amount.toFixed(2) : "0.00"}</div></div>
+                <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Booking Status / बुकिंग स्थिति</div><div className="user-dl-pdf-details-value">: {booking_status || "N/A"}</div></div>
+                {/* Conditional display for refund information */}
+                {refund_status && refund_status !== 'N/A' && (
+                  <>
+                    <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Refund Status / धनवापसी स्थिति</div><div className="user-dl-pdf-details-value">: {refund_status}</div></div>
+                    <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Refund Amount / धनवापसी राशि</div><div className="user-dl-pdf-details-value">: {refund_amount || "Rs. 0"}</div></div>
+                    {refund_processed_date && (
+                      <div className="user-dl-pdf-details-row"><div className="user-dl-pdf-details-label">Refund Processed Date / धनवापसी संसाधित तिथि</div><div className="user-dl-pdf-details-value">: {formatDate(refund_processed_date)}</div></div>
                     )}
-                     <div className="cert-detail-item">
-                        <span className="cert-label">Booking Amount:</span>
-                        <span className="cert-value">Rs. {bookingDetails.booking_amount ? bookingDetails.booking_amount.toFixed(2) : 'N/A'}</span>
-                    </div>
-                    <div className="cert-detail-item full-span">
-                        <span className="cert-label">Booking Status:</span>
-                        <span className="cert-value booking-status-confirmed">{bookingDetails.booking_status}</span>
-                    </div>
+                  </>
+                )}
+              </div>
+              
+              {/* Footer elements: QR Code (left), Issuing Authority Signature & Stamp (right) */}
+              <div className="user-dl-pdf-footer-elements-container">
+                <div className="user-dl-pdf-qr-placeholder">
+                  QR Code
                 </div>
-
-                <div className="cert-footer-message">
-                    <p>This is a computer-generated certificate and does not require a physical signature.</p>
-                    <p>Please present this certificate at the venue. Ensure all terms and conditions are adhered to.</p>
-                    <p>For any queries, contact the Welfare Department, Nagar Nigam Gorakhpur.</p>
+                <div className="user-dl-pdf-issuing-authority-block">
+                      <div className="user-dl-pdf-stamp-placeholder">
+                    <p>Stamp</p>
+                  </div>
+                  <div className="user-dl-pdf-signature-line"></div>
+                  <p>Issuing Authority / जारीकर्ता अधिकारी</p>
+                
                 </div>
+              </div>
+            </div> {/* End .user-dl-pdf-body */}
+            
+            {/* Very Bottom Footer: Generated Date */}
+            <div className="user-dl-pdf-contact-footer">
+              Certificate Generated on: {currentDateOnCertificate}
             </div>
 
-            <div className="cert-signature-area">
-                <div className="cert-authority-signature">
-                    <p>_________________________</p>
-                    <p>(Authorized Signatory)</p>
-                    <p>Welfare Department, Nagar Nigam Gorakhpur</p>
-                </div>
-            </div>
-        </div>
-    );
-});
+          </div> {/* End .user-dl-pdf-border */}
+        </div> {/* End .user-dl-outer-pdf-border */}
+      </div> {/* End .user-dl-pdf-layout */}
+    </div> 
+  );
+};
 
 export default BookingCertificate;

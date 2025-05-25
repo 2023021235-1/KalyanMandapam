@@ -310,7 +310,7 @@
   font-weight: 500;
   text-transform: capitalize;
 }
-.bn-status-confirmed { background-color: rgba(39, 174, 96, 0.15); color: var(--success); }
+.bn-status-confirmed,.bn-download-button { background-color: rgba(39, 174, 96, 0.15); color: var(--success); }
 .bn-status-rejected { background-color: rgba(231, 76, 60, 0.15); color: var(--danger); }
 .bn-status-pending { background-color: rgba(243, 156, 18, 0.15); color: var(--warning); }
 

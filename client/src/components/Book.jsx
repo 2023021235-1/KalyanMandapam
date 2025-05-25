@@ -1,7 +1,9 @@
-import React, { useState, useEffect, Fragment, useMemo } from 'react';
+import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/BookNow.css'; // Assuming BookNow.css is in a 'styles' subfolder
-import { CircleCheck, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon } from 'lucide-react';
+import { CircleCheck, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
+import BookingCertificate from './BookingCertificate'; // Import the new certificate component
 
 const BookNowSection = ({ languageType = 'en', user }) => {
     const navigate = useNavigate();
@@ -41,6 +43,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const [editingBookingId, setEditingBookingId] = useState(null);
 
+    // State for certificate PREVIEW modal
+    const [showCertificatePreviewModal, setShowCertificatePreviewModal] = useState(false);
+    const [currentBookingForCertificate, setCurrentBookingForCertificate] = useState(null);
+    const certificatePreviewRef = useRef(); // Ref for the certificate content in the preview modal
+
     // Toast State
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
@@ -48,7 +55,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const getAuthToken = () => localStorage.getItem('token');
 
-    // Function to show toast notifications
     const showToast = (message, type = 'info', duration = 4000) => {
         setToast({ show: true, message, type });
         setTimeout(() => {
@@ -58,7 +64,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const closeToast = () => {
         setToast(prevToast => ({ ...prevToast, show: false }));
     };
-
 
     const content = useMemo(() => ({
         en: {
@@ -80,6 +85,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             tableHeaders: ['S.No.', 'Booking ID', 'Hall Name', 'Floor', 'Function', 'Amount', 'Status', 'AC', 'Date', 'Actions'],
             editButton: 'Edit',
             cancelButton: 'Cancel',
+            downloadButton: 'Download Certificate',
             noBookingsMessage: 'No bookings found. Click "New Booking" to get started!',
             loadingMessage: 'Loading...',
             errorMessage: 'An error occurred.',
@@ -143,6 +149,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             authError: 'Authentication failed. Please log in again.',
             hallNotFound: (id) => `Hall with ID ${id} not found.`,
             bookingNotFound: 'Booking not found.',
+            // New translations for certificate preview modal
+            previewModalTitle: 'Certificate Preview',
+            previewModalDownloadButton: 'Download PDF',
+            previewModalCloseButton: 'Close',
         },
         hi: {
             sectionHeading: 'सामुदायिक भवन बुक करें',
@@ -163,6 +173,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             tableHeaders: ['क्र.सं.', 'बुकिंग आईडी', 'हॉल का नाम', 'मंजिल', 'समारोह', 'राशि', 'स्थिति', 'एसी', 'तिथि', 'कार्रवाई'],
             editButton: 'संपादित करें',
             cancelButton: 'रद्द करें',
+            downloadButton: 'प्रमाणपत्र डाउनलोड करें',
             noBookingsMessage: 'कोई बुकिंग नहीं मिली। आरंभ करने के लिए "नई बुकिंग" पर क्लिक करें!',
             loadingMessage: 'लोड हो रहा है...',
             errorMessage: 'एक त्रुटि हुई।',
@@ -226,6 +237,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             authError: 'प्रमाणीकरण विफल। कृपया पुनः लॉग इन करें।',
             hallNotFound: (id) => `हॉल आईडी ${id} नहीं मिला।`,
             bookingNotFound: 'बुकिंग नहीं मिली।',
+            // New translations for certificate preview modal
+            previewModalTitle: 'प्रमाणपत्र पूर्वावलोकन',
+            previewModalDownloadButton: 'पीडीएफ डाउनलोड करें',
+            previewModalCloseButton: 'बंद करें',
         },
     }), [languageType]);
 
@@ -238,7 +253,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             fetchBookings();
             fetchAllHalls();
         }
-    }, [user, navigate, languageType]); // Added languageType as dependency for content
+    }, [user, navigate, languageType]);
 
     useEffect(() => {
         if (bookingFormData.hall_id_string) {
@@ -250,8 +265,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 ...prevData,
                 function_type: '',
                 area_sqft: '',
-                booking_type: '', // Reset booking type when hall changes
-                is_parking: false, // Reset addons
+                booking_type: '',
+                is_parking: false,
                 is_conference_hall: false,
                 is_food_prep_area: false,
                 is_lawn: false,
@@ -277,6 +292,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         bookingFormData.is_conference_hall,
         bookingFormData.is_food_prep_area,
         bookingFormData.is_lawn,
+        // calculateBookingAmount dependency removed as it itself uses these states
     ]);
 
     const fetchBookings = async () => {
@@ -302,7 +318,16 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            setBookings(data);
+            const bookingsWithHallNames = await Promise.all(data.map(async (booking) => {
+                if (booking.hall_id && typeof booking.hall_id === 'string') {
+                    const hallDetails = availableHalls.find(hall => hall.hall_id === booking.hall_id);
+                    return { ...booking, hall_id: hallDetails ? { hall_id: hallDetails.hall_id, hall_name: hallDetails.hall_name } : { hall_id: booking.hall_id, hall_name: 'N/A' } };
+                } else if (booking.hall_id && typeof booking.hall_id === 'object' && booking.hall_id.hall_name) {
+                    return booking;
+                }
+                return { ...booking, hall_id: { hall_name: 'N/A' } };
+            }));
+            setBookings(bookingsWithHallNames);
         } catch (error) {
             console.error('Error fetching bookings:', error);
             setBookingError(`${currentContent.errorPrefix}${error.message}`);
@@ -339,11 +364,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             }
             const data = await response.json();
             setSelectedHallFullDetails(data);
-            return data; 
+            return data;
         } catch (error) {
             console.error('Error fetching hall details:', error);
             setHallDetailsError(currentContent.detailsErrorMessage);
-            return null; 
+            return null;
         } finally {
             setLoadingHallDetails(false);
         }
@@ -438,8 +463,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             const totalArea = selectedHallFullDetails?.total_area_sqft || 0;
             if (value === 'full' && totalArea > 0) calculatedArea = totalArea;
             else if (value === 'half' && totalArea > 0) calculatedArea = totalArea / 2;
-            else if (value === 'partial') calculatedArea = bookingFormData.area_sqft; 
-            else calculatedArea = ''; 
+            else if (value === 'partial') calculatedArea = bookingFormData.area_sqft;
+            else calculatedArea = '';
             setBookingFormData(prevData => ({ ...prevData, area_sqft: calculatedArea }));
         } else if (name === 'area_sqft') {
             setBookingFormData(prevData => ({ ...prevData, [name]: value === '' ? '' : Number(value) }));
@@ -519,8 +544,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             is_food_prep_area: booking.is_food_prep_area || false,
             is_lawn: booking.is_lawn || false,
             is_ac: booking.is_ac || false,
-            add_parking: booking.add_parking || false,
-            add_room: booking.add_room || false,
+            add_parking: booking.add_parking || false, // These seem unused, but kept for data integrity
+            add_room: booking.add_room || false,     // These seem unused, but kept for data integrity
         });
         setIsAcSelected(booking.is_ac || false);
     
@@ -541,7 +566,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         const token = getAuthToken();
         if (!token) { showToast(currentContent.authError, 'error'); navigate('/login'); return; }
 
-        if (window.confirm(currentContent.confirmCancelMessage)) { // Keep confirm for this interaction
+        if (window.confirm(currentContent.confirmCancelMessage)) {
             try {
                 const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToCancel}/cancel`, {
                     method: 'PUT', headers: { 'Authorization': `Bearer ${token}` },
@@ -561,11 +586,46 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         }
     };
 
+    // Opens the certificate preview modal
+    const openCertificatePreview = (booking) => {
+        setCurrentBookingForCertificate(booking);
+        setShowCertificatePreviewModal(true);
+    };
+
+    // Handles the actual PDF download from the preview modal
+    const downloadCertificateFromPreview = () => {
+        if (certificatePreviewRef.current && currentBookingForCertificate) {
+            const elementToCapture = certificatePreviewRef.current.querySelector('.user-dl-pdf-layout');
+            if (elementToCapture) {
+                html2pdf().from(elementToCapture).set({
+                    margin: 0, // Set to 0 as the layout itself should define margins/padding
+                    filename: `Certificate_Booking_${currentBookingForCertificate.booking_id}.pdf`,
+                    html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                }).save().then(() => {
+                    showToast('Certificate download started!', 'success');
+                     setShowCertificatePreviewModal(false);
+                     setCurrentBookingForCertificate(null);
+                }).catch(err => {
+                    console.error("PDF generation failed:", err);
+                    showToast('Certificate download failed.', 'error');
+                });
+            } else {
+                console.error("Certificate content (.user-dl-pdf-layout) not found for PDF generation.");
+                showToast('Error preparing certificate for download.', 'error');
+            }
+        } else {
+            console.error("Certificate preview ref or booking details missing.");
+            showToast('Error: Cannot download certificate.', 'error');
+        }
+    };
+
+
     const renderPriceTable = (title, data, acStatus, isEventTable = false) => {
         if (!selectedHallFullDetails || (isEventTable && (!data || data.length === 0))) return null;
     
         const getRowData = (itemKey, item) => {
-            if (isEventTable) { 
+            if (isEventTable) {
                 const prices = acStatus ? item.prices_per_sqft_ac : item.prices_per_sqft_nonac;
                 return !prices ? null : (
                     <Fragment key={item.event_type}>
@@ -575,7 +635,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                         <td>Rs. {getTieredPrice(prices, 'panchayat')}</td>
                     </Fragment>
                 );
-            } else { 
+            } else {
                 const blockLabels = {
                     conferenceHall: currentContent.conferenceHallAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
                     foodPrepArea: currentContent.foodPrepAreaAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
@@ -585,7 +645,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     electricity: currentContent.electricityAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
                     cleaning: currentContent.cleaning,
                 };
-                const prices = item; 
+                const prices = item;
                  return !prices ? null : (
                     <Fragment key={itemKey}>
                         <td>{blockLabels[itemKey]}</td>
@@ -631,17 +691,15 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         );
     };
     
-    // Derived states for disabling form elements
     const isHallSelected = !!bookingFormData.hall_id_string;
     const isFunctionTypeSelected = !!bookingFormData.function_type;
     const isBookingTypeSelected = !!bookingFormData.booking_type;
-    const isFunctionTypeEvent = selectedHallFullDetails?.event_pricing?.some(event => 
+    const isFunctionTypeEvent = selectedHallFullDetails?.event_pricing?.some(event =>
         event.event_type.toLowerCase() === bookingFormData.function_type?.toLowerCase()
     );
 
     return (
         <section className="bn-section">
-            {/* Toast Notification Area */}
             {toast.show && (
                 <div className={`bn-toast-wrapper ${toast.type} ${toast.show ? 'show' : ''}`}>
                     <div className="bn-toast-content">
@@ -709,7 +767,16 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                 )}
                                                 {booking.booking_status !== 'Cancelled' && (
                                                     <button className="bn-button bn-cancel-button" onClick={() => handleCancelBooking(booking.booking_id)} aria-label={`${currentContent.cancelButton} booking ${booking.booking_id}`}>
-                                         {currentContent.cancelButton}
+                                                        {currentContent.cancelButton}
+                                                    </button>
+                                                )}
+                                                {booking.booking_status === 'Confirmed' && (
+                                                    <button
+                                                        className="bn-button bn-download-button"
+                                                        onClick={() => openCertificatePreview(booking)} // <-- MODIFIED HERE
+                                                        aria-label={`${currentContent.downloadButton} for booking ${booking.booking_id}`}
+                                                    >
+                                                        <DownloadIcon size={16} />
                                                     </button>
                                                 )}
                                                 </div>
@@ -725,12 +792,12 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
             {showModal && (
                 <Fragment>
-                    <div className="bn-modal-overlay" onClick={handleCloseModal}> 
-                        <div className="bn-modal-content" onClick={(e) => e.stopPropagation()}> 
+                    <div className="bn-modal-overlay" onClick={handleCloseModal}>
+                        <div className="bn-modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="bn-modal-header">
                                 <h3>
-                                    {modalStep === 1 ? currentContent.disclaimerHeading : 
-                                     isEditing ? (languageType === 'hi' ? 'बुकिंग संपादित करें' : 'Edit Booking') : 
+                                    {modalStep === 1 ? currentContent.disclaimerHeading :
+                                     isEditing ? (languageType === 'hi' ? 'बुकिंग संपादित करें' : 'Edit Booking') :
                                      (languageType === 'hi' ? 'नई बुकिंग' : 'New Booking')}
                                 </h3>
                                 <button className="bn-modal-close-button" onClick={handleCloseModal} aria-label={currentContent.closeModalButton}>&times;</button>
@@ -814,16 +881,15 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             </select>
                                         </div>
                                         
-                                        {/* Area options are dependent on function_type being an event type */}
                                         <Fragment>
                                             <div className="bn-form-group">
                                                 <label htmlFor="selected_area_option">{currentContent.areaOptionLabel}</label>
-                                                <select 
-                                                    id="selected_area_option" 
-                                                    name="selected_area_option" 
-                                                    value={selectedAreaOption} 
-                                                    onChange={handleBookingFormChange} 
-                                                    required={isFunctionTypeEvent} // only required if it's an event function
+                                                <select
+                                                    id="selected_area_option"
+                                                    name="selected_area_option"
+                                                    value={selectedAreaOption}
+                                                    onChange={handleBookingFormChange}
+                                                    required={isFunctionTypeEvent}
                                                     className="bn-select"
                                                     disabled={!isHallSelected || !isFunctionTypeSelected || !isFunctionTypeEvent}
                                                 >
@@ -835,23 +901,22 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             </div>
                                             <div className="bn-form-group">
                                                 <label htmlFor="area_sqft">{currentContent.areaSqftLabel}</label>
-                                                <input 
-                                                    type="number" 
-                                                    id="area_sqft" 
-                                                    name="area_sqft" 
-                                                    value={bookingFormData.area_sqft} 
-                                                    onChange={handleBookingFormChange} 
-                                                    min="1" 
-                                                    required={isFunctionTypeEvent && selectedAreaOption !== 'none'} 
-                                                    readOnly={selectedAreaOption === 'full' || selectedAreaOption === 'half'} 
-                                                    className="bn-input" 
+                                                <input
+                                                    type="number"
+                                                    id="area_sqft"
+                                                    name="area_sqft"
+                                                    value={bookingFormData.area_sqft}
+                                                    onChange={handleBookingFormChange}
+                                                    min="1"
+                                                    required={isFunctionTypeEvent && selectedAreaOption !== 'none'}
+                                                    readOnly={selectedAreaOption === 'full' || selectedAreaOption === 'half'}
+                                                    className="bn-input"
                                                     placeholder={selectedAreaOption === 'partial' ? 'Enter area in sq.ft.' : ''}
                                                     disabled={!isHallSelected || !isFunctionTypeSelected || !isFunctionTypeEvent || selectedAreaOption === 'none'}
                                                 />
                                             </div>
                                         </Fragment>
                                         
-
                                         <div className="bn-form-group bn-form-group-full">
                                             <label>{currentContent.bookingTypeLabel}</label>
                                             <div className="bn-radio-group-container bn-booking-type-options">
@@ -902,7 +967,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 )}
                                 {modalStep === 2 && (
                                     <Fragment>
-                                        <button className="bn-button bn-modal-action-button bn-modal-cancel-button" onClick={handleCloseModal}>{languageType === 'hi' ? 'रद्द करें' : 'Cancel'}</button>
+                                        <button className="bn-button bn-modal-action-button bn-modal-cancel-button" onClick={handleCloseModal}>
+                                            {languageType === 'hi' ? content.hi.cancelButton : content.en.cancelButton}
+                                        </button>
                                         <button type="submit" className="bn-button bn-modal-action-button bn-submit-button" form="booking-form-id">
                                             {isEditing ? (languageType === 'hi' ? 'अपडेट करें' : 'Update Booking') : (languageType === 'hi' ? 'बुक करें' : 'Create Booking')}
                                         </button>
@@ -912,6 +979,59 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                         </div>
                     </div>
                 </Fragment>
+            )}
+
+            {/* Certificate Preview Modal */}
+            {showCertificatePreviewModal && currentBookingForCertificate && (
+                <div 
+                    className="bn-modal-overlay" 
+                    onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); }}
+                >
+                    <div 
+                        className="bn-modal-content bn-certificate-preview-modal" // You might want to add specific styles for this class
+                        onClick={(e) => e.stopPropagation()} 
+                        style={{maxWidth: '850px', maxHeight: '95vh'}} // Adjust size as needed for A4 preview
+                    >
+                        <div className="bn-modal-header">
+                            <h3>{currentContent.previewModalTitle}</h3>
+                            <button 
+                                className="bn-modal-close-button" 
+                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); }} 
+                                aria-label={currentContent.previewModalCloseButton}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <div 
+                            className="bn-modal-body" 
+                            style={{ padding: 0, overflowY: 'auto', backgroundColor: 'var(--user-dl-gray-lightest)' }} // Ensure body allows certificate background
+                            ref={certificatePreviewRef}
+                        >
+                            <BookingCertificate
+                                bookingDetails={{
+                                    ...currentBookingForCertificate,
+                                    hall_id_string: currentBookingForCertificate.hall_id?.hall_name || 'N/A',
+                                    createdAt: currentBookingForCertificate.createdAt 
+                                }}
+                                userName={user?.name || 'N/A'}
+                            />
+                        </div>
+                        <div className="bn-modal-footer">
+                            <button 
+                                className="bn-button bn-modal-action-button bn-modal-cancel-button" 
+                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); }}
+                            >
+                                {currentContent.previewModalCloseButton}
+                            </button>
+                            <button
+                                className="bn-button bn-modal-action-button bn-submit-button" // Using submit style for primary action
+                                onClick={downloadCertificateFromPreview}
+                            >
+                                <DownloadIcon size={16} /> {currentContent.previewModalDownloadButton}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </section>
     );
