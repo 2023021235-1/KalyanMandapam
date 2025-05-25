@@ -44,7 +44,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     // Toast State
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
 
     const getAuthToken = () => localStorage.getItem('token');
 
