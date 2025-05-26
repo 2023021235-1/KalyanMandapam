@@ -53,6 +53,10 @@ const hallSchema = new mongoose.Schema({
   total_area_sqft:       { type: Number, min: 0 }, // Added total_area_sqft
   description:           { type: String, trim: true },
 
+  // Number of AC and Non-AC rooms available in the hall
+  num_ac_rooms:          { type: Number, default: 0, min: 0 },
+  num_non_ac_rooms:      { type: Number, default: 0, min: 0 },
+
   // fixed-price blocks with AC & Non-AC tiered rates
   conference_hall_ac:    { type: tieredSchema, required: true },
   conference_hall_nonac: { type: tieredSchema, required: true },
@@ -63,8 +67,8 @@ const hallSchema = new mongoose.Schema({
   lawn_ac:               { type: tieredSchema, required: true },
   lawn_nonac:            { type: tieredSchema, required: true },
 
-  room_rent_ac:          { type: tieredSchema, required: true },
-  room_rent_nonac:       { type: tieredSchema, required: true },
+  room_rent_ac:          { type: tieredSchema, required: true }, // Price per AC room
+  room_rent_nonac:       { type: tieredSchema, required: true }, // Price per Non-AC room
 
   parking:               { type: tieredSchema, required: true },
 

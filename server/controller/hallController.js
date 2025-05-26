@@ -15,14 +15,16 @@ const createHall = async (req, res) => {
             description,
             total_floors,
             total_area_sqft, // Added total_area_sqft
+            num_ac_rooms, // New
+            num_non_ac_rooms, // New
             conference_hall_ac,
             conference_hall_nonac,
             food_prep_area_ac,
             food_prep_area_nonac,
             lawn_ac,
             lawn_nonac,
-            room_rent_ac,
-            room_rent_nonac,
+            room_rent_ac, // Price per AC room
+            room_rent_nonac, // Price per Non-AC room
             parking,
             electricity_ac,
             electricity_nonac,
@@ -36,12 +38,12 @@ const createHall = async (req, res) => {
             !conference_hall_ac || !conference_hall_nonac ||
             !food_prep_area_ac || !food_prep_area_nonac ||
             !lawn_ac || !lawn_nonac ||
-            !room_rent_ac || !room_rent_nonac ||
+            !room_rent_ac || !room_rent_nonac || // Ensure these price objects are provided
             !parking ||
             !electricity_ac || !electricity_nonac ||
             !cleaning
         ) {
-            return res.status(400).json({ message: 'Please provide all required hall details and pricing information.' });
+            return res.status(400).json({ message: 'Please provide all required hall details and pricing information, including room rents.' });
         }
 
         // Validate that each tiered price object has all three types
@@ -54,12 +56,12 @@ const createHall = async (req, res) => {
             !validateTieredPrice(conference_hall_ac) || !validateTieredPrice(conference_hall_nonac) ||
             !validateTieredPrice(food_prep_area_ac) || !validateTieredPrice(food_prep_area_nonac) ||
             !validateTieredPrice(lawn_ac) || !validateTieredPrice(lawn_nonac) ||
-            !validateTieredPrice(room_rent_ac) || !validateTieredPrice(room_rent_nonac) ||
+            !validateTieredPrice(room_rent_ac) || !validateTieredPrice(room_rent_nonac) || // Validate room rents
             !validateTieredPrice(parking) ||
             !validateTieredPrice(electricity_ac) || !validateTieredPrice(electricity_nonac) ||
             !validateTieredPrice(cleaning)
         ) {
-            return res.status(400).json({ message: 'All fixed price blocks must have municipal, municipality, and panchayat rates.' });
+            return res.status(400).json({ message: 'All fixed price blocks, including room rents, must have municipal, municipality, and panchayat rates.' });
         }
 
         // Validate event_pricing: must be an array and each item must conform to eventPriceSchema
@@ -100,15 +102,17 @@ const createHall = async (req, res) => {
             capacity,
             description,
             total_floors,
-            total_area_sqft, // Added total_area_sqft
+            total_area_sqft,
+            num_ac_rooms: num_ac_rooms || 0,
+            num_non_ac_rooms: num_non_ac_rooms || 0,
             conference_hall_ac,
             conference_hall_nonac,
             food_prep_area_ac,
             food_prep_area_nonac,
             lawn_ac,
             lawn_nonac,
-            room_rent_ac,
-            room_rent_nonac,
+            room_rent_ac, // Price per AC room
+            room_rent_nonac, // Price per Non-AC room
             parking,
             electricity_ac,
             electricity_nonac,
@@ -164,15 +168,17 @@ const updateHall = async (req, res) => {
             capacity,
             description,
             total_floors,
-            total_area_sqft, // Added total_area_sqft
+            total_area_sqft,
+            num_ac_rooms, // New
+            num_non_ac_rooms, // New
             conference_hall_ac,
             conference_hall_nonac,
             food_prep_area_ac,
             food_prep_area_nonac,
             lawn_ac,
             lawn_nonac,
-            room_rent_ac,
-            room_rent_nonac,
+            room_rent_ac, // Price per AC room
+            room_rent_nonac, // Price per Non-AC room
             parking,
             electricity_ac,
             electricity_nonac,
@@ -190,7 +196,10 @@ const updateHall = async (req, res) => {
             hall.capacity = capacity !== undefined ? capacity : hall.capacity;
             hall.description = description !== undefined ? description : hall.description;
             hall.total_floors = total_floors !== undefined ? total_floors : hall.total_floors;
-            hall.total_area_sqft = total_area_sqft !== undefined ? total_area_sqft : hall.total_area_sqft; // Updated
+            hall.total_area_sqft = total_area_sqft !== undefined ? total_area_sqft : hall.total_area_sqft;
+            
+            hall.num_ac_rooms = num_ac_rooms !== undefined ? Number(num_ac_rooms) : hall.num_ac_rooms;
+            hall.num_non_ac_rooms = num_non_ac_rooms !== undefined ? Number(num_non_ac_rooms) : hall.num_non_ac_rooms;
 
             // Update all fixed-price blocks if provided
             if (conference_hall_ac) hall.conference_hall_ac = conference_hall_ac;
@@ -199,8 +208,8 @@ const updateHall = async (req, res) => {
             if (food_prep_area_nonac) hall.food_prep_area_nonac = food_prep_area_nonac;
             if (lawn_ac) hall.lawn_ac = lawn_ac;
             if (lawn_nonac) hall.lawn_nonac = lawn_nonac;
-            if (room_rent_ac) hall.room_rent_ac = room_rent_ac;
-            if (room_rent_nonac) hall.room_rent_nonac = room_rent_nonac;
+            if (room_rent_ac) hall.room_rent_ac = room_rent_ac; // Price per AC room
+            if (room_rent_nonac) hall.room_rent_nonac = room_rent_nonac; // Price per Non-AC room
             if (parking) hall.parking = parking;
             if (electricity_ac) hall.electricity_ac = electricity_ac;
             if (electricity_nonac) hall.electricity_nonac = electricity_nonac;
@@ -289,8 +298,6 @@ const checkAvailability = async (req, res) => {
             return detailDate.getMonth() === monthInt - 1 && detailDate.getFullYear() === yearInt;
         });
 
-        // For checkAvailability, you might want to return availability grouped by date,
-        // where each date lists the availability of its floors.
         const groupedAvailability = {};
         availabilityForMonth.forEach(detail => {
             const dateString = detail.date.toISOString().split('T')[0]; //YYYY-MM-DD format
@@ -298,9 +305,9 @@ const checkAvailability = async (req, res) => {
                 groupedAvailability[dateString] = [];
             }
             groupedAvailability[dateString].push({
-                floor: detail.floor, // Use 'floor' as per bookModel.js and hallModel.js availability_details
+                floor: detail.floor, 
                 status: detail.status,
-                booking_id: detail.booking_id, // Include booking_id if needed
+                booking_id: detail.booking_id, 
             });
         });
 

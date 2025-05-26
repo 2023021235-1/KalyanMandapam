@@ -11,8 +11,6 @@ const AdminPanel = () => {
     const [showHallForm, setShowHallForm] = useState(false);
     const [currentHall, setCurrentHall] = useState(null); // For editing - holds full hall object including ID
 
-    // Initial state for tiered pricing - using empty strings for new inputs,
-    // but ensuring existing 0s are displayed correctly in the form.
     const initialTieredPrice = { municipal: '', municipality: '', panchayat: '' };
 
     const [hallFormData, setHallFormData] = useState({
@@ -20,7 +18,9 @@ const AdminPanel = () => {
         location: '',
         capacity: '',
         total_floors: '',
-        total_area_sqft: '', // Added total_area_sqft
+        total_area_sqft: '',
+        num_ac_rooms: '', // New
+        num_non_ac_rooms: '', // New
         description: '',
         // Fixed-price blocks
         conference_hall_ac: { ...initialTieredPrice },
@@ -29,8 +29,8 @@ const AdminPanel = () => {
         food_prep_area_nonac: { ...initialTieredPrice },
         lawn_ac: { ...initialTieredPrice },
         lawn_nonac: { ...initialTieredPrice },
-        room_rent_ac: { ...initialTieredPrice },
-        room_rent_nonac: { ...initialTieredPrice },
+        room_rent_ac: { ...initialTieredPrice }, // Price per AC room
+        room_rent_nonac: { ...initialTieredPrice }, // Price per Non-AC room
         parking: { ...initialTieredPrice },
         electricity_ac: { ...initialTieredPrice },
         electricity_nonac: { ...initialTieredPrice },
@@ -55,6 +55,7 @@ const AdminPanel = () => {
 
     // Base URL for API calls
     const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    //const API_BASE_URL = 'http://localhost:5000/api';
 
     // Function to get the JWT token (replace with your actual logic)
     const getAuthToken = () => {
@@ -188,11 +189,8 @@ const AdminPanel = () => {
         const method = currentHall ? 'PUT' : 'POST';
         const url = currentHall ? `${API_BASE_URL}/halls/${currentHall.hall_id}` : `${API_BASE_URL}/halls`;
 
-        // Combine hallFormData and eventPrices for the payload
-        // Ensure all numerical values are converted to numbers, empty strings become 0 if required by backend
         const payload = {
             ...hallFormData,
-            // Convert all tiered price values to numbers, treating empty strings as 0 for submission
             conference_hall_ac: {
                 municipal: Number(hallFormData.conference_hall_ac.municipal || 0),
                 municipality: Number(hallFormData.conference_hall_ac.municipality || 0),
@@ -223,12 +221,12 @@ const AdminPanel = () => {
                 municipality: Number(hallFormData.lawn_nonac.municipality || 0),
                 panchayat: Number(hallFormData.lawn_nonac.panchayat || 0),
             },
-            room_rent_ac: {
+            room_rent_ac: { // Price per AC room
                 municipal: Number(hallFormData.room_rent_ac.municipal || 0),
                 municipality: Number(hallFormData.room_rent_ac.municipality || 0),
                 panchayat: Number(hallFormData.room_rent_ac.panchayat || 0),
             },
-            room_rent_nonac: {
+            room_rent_nonac: { // Price per Non-AC room
                 municipal: Number(hallFormData.room_rent_nonac.municipal || 0),
                 municipality: Number(hallFormData.room_rent_nonac.municipality || 0),
                 panchayat: Number(hallFormData.room_rent_nonac.panchayat || 0),
@@ -253,12 +251,11 @@ const AdminPanel = () => {
                 municipality: Number(hallFormData.cleaning.municipality || 0),
                 panchayat: Number(hallFormData.cleaning.panchayat || 0),
             },
-            // Convert capacity and total_floors to numbers, treating empty strings as 0
             capacity: Number(hallFormData.capacity || 0),
             total_floors: Number(hallFormData.total_floors || 0),
-            total_area_sqft: Number(hallFormData.total_area_sqft || 0), // Added total_area_sqft
-
-            // Map event prices, ensuring AC and Non-AC tiers are correctly converted
+            total_area_sqft: Number(hallFormData.total_area_sqft || 0),
+            num_ac_rooms: Number(hallFormData.num_ac_rooms || 0), 
+            num_non_ac_rooms: Number(hallFormData.num_non_ac_rooms || 0), 
             event_pricing: eventPrices.map(event => ({
                 event_type: event.event_type,
                 prices_per_sqft_ac: {
@@ -306,7 +303,9 @@ const AdminPanel = () => {
             location: hall.location ?? '',
             capacity: hall.capacity ?? '',
             total_floors: hall.total_floors ?? '',
-            total_area_sqft: hall.total_area_sqft ?? '', // Added total_area_sqft
+            total_area_sqft: hall.total_area_sqft ?? '',
+            num_ac_rooms: hall.num_ac_rooms ?? '', 
+            num_non_ac_rooms: hall.num_non_ac_rooms ?? '', 
             description: hall.description ?? '',
             conference_hall_ac: hall.conference_hall_ac ?? { ...initialTieredPrice },
             conference_hall_nonac: hall.conference_hall_nonac ?? { ...initialTieredPrice },
@@ -314,14 +313,13 @@ const AdminPanel = () => {
             food_prep_area_nonac: hall.food_prep_area_nonac ?? { ...initialTieredPrice },
             lawn_ac: hall.lawn_ac ?? { ...initialTieredPrice },
             lawn_nonac: hall.lawn_nonac ?? { ...initialTieredPrice },
-            room_rent_ac: hall.room_rent_ac ?? { ...initialTieredPrice },
-            room_rent_nonac: hall.room_rent_nonac ?? { ...initialTieredPrice },
+            room_rent_ac: hall.room_rent_ac ?? { ...initialTieredPrice }, 
+            room_rent_nonac: hall.room_rent_nonac ?? { ...initialTieredPrice }, 
             parking: hall.parking ?? { ...initialTieredPrice },
             electricity_ac: hall.electricity_ac ?? { ...initialTieredPrice },
             electricity_nonac: hall.electricity_nonac ?? { ...initialTieredPrice },
             cleaning: hall.cleaning ?? { ...initialTieredPrice },
         });
-        // Map existing event pricing for editing - now includes AC and Non-AC tiers
         setEventPrices(hall.event_pricing && hall.event_pricing.length > 0 ?
             hall.event_pricing.map(event => ({
                 event_type: event.event_type ?? '',
@@ -336,7 +334,7 @@ const AdminPanel = () => {
                     panchayat: event.prices_per_sqft_nonac?.panchayat ?? '',
                 }
             })) :
-            [{ // Default if no events
+            [{ 
                 event_type: '',
                 prices_per_sqft_ac: { ...initialTieredPrice },
                 prices_per_sqft_nonac: { ...initialTieredPrice }
@@ -387,7 +385,9 @@ const AdminPanel = () => {
             location: '',
             capacity: '',
             total_floors: '',
-            total_area_sqft: '', // Added total_area_sqft
+            total_area_sqft: '',
+            num_ac_rooms: '', 
+            num_non_ac_rooms: '', 
             description: '',
             conference_hall_ac: { ...initialTieredPrice },
             conference_hall_nonac: { ...initialTieredPrice },
@@ -411,6 +411,7 @@ const AdminPanel = () => {
     };
 
 
+   
     // Handle confirming a booking
     const handleConfirmBooking = async (bookingId) => {
         const token = getAuthToken();
@@ -604,21 +605,21 @@ const AdminPanel = () => {
                 <input
                     type="number"
                     placeholder="Municipal"
-                    value={hallFormData[blockName]?.municipal ?? ''} // Use ?? to display 0
+                    value={hallFormData[blockName]?.municipal ?? ''}
                     onChange={(e) => handleTieredPriceChange(blockName, 'municipal', e.target.value)}
                     required
                 />
                 <input
                     type="number"
                     placeholder="Municipality"
-                    value={hallFormData[blockName]?.municipality ?? ''} // Use ?? to display 0
+                    value={hallFormData[blockName]?.municipality ?? ''}
                     onChange={(e) => handleTieredPriceChange(blockName, 'municipality', e.target.value)}
                     required
                 />
                 <input
                     type="number"
                     placeholder="Panchayat"
-                    value={hallFormData[blockName]?.panchayat ?? ''} // Use ?? to display 0
+                    value={hallFormData[blockName]?.panchayat ?? ''}
                     onChange={(e) => handleTieredPriceChange(blockName, 'panchayat', e.target.value)}
                     required
                 />
@@ -695,66 +696,51 @@ const AdminPanel = () => {
                                     {/* Basic Hall Details */}
                                     <div className="admin-form-group">
                                         <label htmlFor="hall_name">Hall Name:</label>
-                                        <input
-                                            type="text"
-                                            id="hall_name"
-                                            name="hall_name"
-                                            value={hallFormData.hall_name}
-                                            onChange={handleHallInputChange}
-                                            required
-                                        />
+                                        <input type="text" id="hall_name" name="hall_name" value={hallFormData.hall_name} onChange={handleHallInputChange} required />
                                     </div>
                                      <div className="admin-form-group">
                                         <label htmlFor="location">Location:</label>
-                                        <input
-                                            type="text"
-                                            id="location"
-                                            name="location"
-                                            value={hallFormData.location}
-                                            onChange={handleHallInputChange}
-                                        />
+                                        <input type="text" id="location" name="location" value={hallFormData.location} onChange={handleHallInputChange}/>
                                     </div>
                                      <div className="admin-form-group">
                                         <label htmlFor="capacity">Capacity:</label>
-                                        <input
-                                            type="number"
-                                            id="capacity"
-                                            name="capacity"
-                                            value={hallFormData.capacity ?? ''} // Use ?? to display 0
-                                            onChange={handleHallInputChange}
-                                        />
+                                        <input type="number" id="capacity" name="capacity" value={hallFormData.capacity ?? ''} onChange={handleHallInputChange} />
                                     </div>
                                     <div className="admin-form-group">
                                         <label htmlFor="total_floors">Total Floors:</label>
-                                        <input
-                                            type="number"
-                                            id="total_floors"
-                                            name="total_floors"
-                                            value={hallFormData.total_floors ?? ''} // Use ?? to display 0
-                                            onChange={handleHallInputChange}
-                                            required
-                                            min="0" // Allow 0 floors, though typically min would be 1
-                                        />
+                                        <input type="number" id="total_floors" name="total_floors" value={hallFormData.total_floors ?? ''} onChange={handleHallInputChange} required min="0"/>
                                     </div>
                                     <div className="admin-form-group">
                                         <label htmlFor="total_area_sqft">Total Area (sq. ft.):</label>
+                                        <input type="number" id="total_area_sqft" name="total_area_sqft" value={hallFormData.total_area_sqft ?? ''} onChange={handleHallInputChange} min="0"/>
+                                    </div>
+                                     <div className="admin-form-group">
+                                        <label htmlFor="description">Description:</label>
+                                        <textarea id="description" name="description" value={hallFormData.description} onChange={handleHallInputChange}></textarea>
+                                    </div>
+
+                                    {/* Number of Rooms - New Fields */}
+                                    <div className="admin-form-group">
+                                        <label htmlFor="num_ac_rooms">Number of AC Rooms:</label>
                                         <input
                                             type="number"
-                                            id="total_area_sqft"
-                                            name="total_area_sqft"
-                                            value={hallFormData.total_area_sqft ?? ''}
+                                            id="num_ac_rooms"
+                                            name="num_ac_rooms"
+                                            value={hallFormData.num_ac_rooms ?? ''}
                                             onChange={handleHallInputChange}
                                             min="0"
                                         />
                                     </div>
-                                     <div className="admin-form-group">
-                                        <label htmlFor="description">Description:</label>
-                                        <textarea
-                                            id="description"
-                                            name="description"
-                                            value={hallFormData.description}
+                                    <div className="admin-form-group">
+                                        <label htmlFor="num_non_ac_rooms">Number of Non-AC Rooms:</label>
+                                        <input
+                                            type="number"
+                                            id="num_non_ac_rooms"
+                                            name="num_non_ac_rooms"
+                                            value={hallFormData.num_non_ac_rooms ?? ''}
                                             onChange={handleHallInputChange}
-                                        ></textarea>
+                                            min="0"
+                                        />
                                     </div>
 
                                     {/* Fixed-Price Blocks */}
@@ -765,8 +751,8 @@ const AdminPanel = () => {
                                     {renderTieredPriceInputs('food_prep_area_nonac', 'Food Prep Area (Non-AC)')}
                                     {renderTieredPriceInputs('lawn_ac', 'Lawn (AC)')}
                                     {renderTieredPriceInputs('lawn_nonac', 'Lawn (Non-AC)')}
-                                    {renderTieredPriceInputs('room_rent_ac', 'Room Rent (AC)')}
-                                    {renderTieredPriceInputs('room_rent_nonac', 'Room Rent (Non-AC)')}
+                                    {renderTieredPriceInputs('room_rent_ac', 'Rent per AC Room')}
+                                    {renderTieredPriceInputs('room_rent_nonac', 'Rent per Non-AC Room')}
                                     {renderTieredPriceInputs('parking', 'Parking')}
                                     {renderTieredPriceInputs('electricity_ac', 'Electricity (AC)')}
                                     {renderTieredPriceInputs('electricity_nonac', 'Electricity (Non-AC)')}
@@ -829,8 +815,10 @@ const AdminPanel = () => {
                                             <th>Name</th>
                                             <th>Location</th>
                                             <th>Capacity</th>
-                                             <th>Total Floors</th>
-                                             <th>Total Area (sq. ft.)</th> {/* Added column */}
+                                            <th>Total Floors</th>
+                                            <th>Total Area (sq. ft.)</th>
+                                            <th>AC Rooms</th>
+                                            <th>Non-AC Rooms</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -841,8 +829,10 @@ const AdminPanel = () => {
                                                  <td>{hall.hall_name}</td>
                                                  <td>{hall.location}</td>
                                                  <td>{hall.capacity}</td>
-                                                  <td>{hall.total_floors}</td>
-                                                  <td>{hall.total_area_sqft || 'N/A'}</td> {/* Display total_area_sqft */}
+                                                 <td>{hall.total_floors}</td>
+                                                 <td>{hall.total_area_sqft || 'N/A'}</td>
+                                                 <td>{hall.num_ac_rooms ?? 'N/A'}</td> 
+                                                 <td>{hall.num_non_ac_rooms ?? 'N/A'}</td> 
                                                  <td className="admin-table-actions">
                                                       <button
                                                            onClick={() => startEditHall(hall)}
@@ -885,10 +875,12 @@ const AdminPanel = () => {
                                              <th>Booking Date</th>
                                              <th>Floor</th>
                                             <th>Function</th>
+                                            <th>AC Rooms Booked</th> {/* New */}
+                                            <th>Non-AC Rooms Booked</th> {/* New */}
                                             <th>Amount</th>
                                             <th>Status</th>
-                                            <th>Refund Status</th> {/* New column */}
-                                            <th>Refund Amount</th> {/* New column */}
+                                            <th>Refund Status</th> 
+                                            <th>Refund Amount</th> 
                                              <th>User ID</th>
                                             <th>Actions</th>
                                         </tr>
@@ -905,10 +897,13 @@ const AdminPanel = () => {
                                                         {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}
                                                    </td>
                                                    <td>{booking.floor }</td>
+                                                   <td>{booking.function_type}</td>
+                                                   <td>{booking.num_ac_rooms_booked ?? 0}</td> 
+                                                   <td>{booking.num_non_ac_rooms_booked ?? 0}</td> 
                                                    <td>Rs. {booking.booking_amount}</td>
                                                    <td>{renderStatus(booking.booking_status)}</td>
-                                                   <td>{renderStatus(booking.refund_status)}</td> {/* Display refund status */}
-                                                   <td>{booking.refund_amount}</td> {/* Display refund amount */}
+                                                   <td>{renderStatus(booking.refund_status)}</td> 
+                                                   <td>{booking.refund_amount}</td> 
                                                     <td>{booking.user_id}</td>
                                                    <td className="admin-table-actions">
                                                        {booking.booking_status === 'Pending' && (

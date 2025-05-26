@@ -44,29 +44,56 @@
   margin-top: 1rem;
 }
 
-/* A4 Layout Container */
+/* A4 Layout Container - now primarily controls the overall wrapper, its children will be pages */
 .user-dl-pdf-layout {
   width: 210mm; /* A4 width */
-  height: auto; /* Allow height to be determined by content for screen display */
+  height: 290; /* Allow height to be determined by content for screen display */
   background-color: var(--user-dl-white);
   box-shadow: 0 2px 10px rgba(0,0,0,0.15);
   overflow: hidden; /* Important for preventing horizontal scroll */
   box-sizing: border-box;
   position: relative;
-  margin: 0 auto 20px auto;
+  display: flex; /* Flex container to stack pages vertically on screen */
+  flex-direction: column;
 }
+
+/* New: Defines a single A4 page container on screen */
+.user-dl-pdf-page {
+  width: 100%; /* Takes full width of .user-dl-pdf-layout */
+  height: 295mm; /* Fixed A4 height for visual separation on screen */
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevent shrinking in flex container */
+  flex-grow: 0;  /* Prevent growing in flex container */
+
+}
+
+.user-dl-pdf-page:last-child {
+    margin-bottom: 0; /* No margin after the last page */
+}
+
+/* Outer PDF Border (padding around the inner border) */
+.user-dl-outer-pdf-border {
+    width: 100%;
+    height: 100%; /* Takes full height of its parent .user-dl-pdf-page */
+    box-sizing: border-box;
+    display: flex; /* Make this a flex container too to center .user-dl-pdf-border */
+    justify-content: center;
+    align-items: center;
+    padding: 8mm;
+}
+
 
 /* Main Certificate Border (now the "outermost" visible border) */
 .user-dl-pdf-border {
   border: 0.75mm solid var(--user-dl-pdf-border-color); /* Your desired border */
-  padding: 8mm; /* Padding inside the border */
+  padding: 3mm; /* Padding inside the border */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   color: var(--user-dl-pdf-text-main);
   font-family: var(--user-dl-font-main);
-  /* The height will be controlled by its flex parent (.user-dl-pdf-layout) when printing */
-  height: 100%; /* Keep 100% to fill its parent in print media */
+  width: 100%; /* Take full width of its padding container */
+  height: 100%; /* Take full height of its padding container */
 }
 
 /* Header Section */
@@ -76,7 +103,7 @@
   align-items: center;
   border-bottom: 1px solid var(--user-dl-pdf-border-color);
   padding-bottom: 5mm;
-
+  margin-bottom: 5mm; /* Added margin-bottom for spacing */
 }
 
 .user-dl-pdf-header-left,
@@ -190,7 +217,7 @@
 /* Footer Elements Container (QR, Signature, Stamp) */
 .user-dl-pdf-footer-elements-container {
   margin-top: auto; /* Pushes to the bottom within the flex container */
-  padding-top: 10mm;
+ 
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -254,41 +281,33 @@
   color: var(--user-dl-gray-dark);
   padding-top: 5mm;
   border-top: 1px solid var(--user-dl-gray-light);
+  margin-top: auto; /* Pushes to the very bottom */
   page-break-before: avoid; /* Ensures footer stays with preceding content if possible */
 }
 
-/* A5 Media Query */
-@media (max-width: 148mm) {
-  .user-dl-pdf-layout {
-    width: 148mm; /* A5 width */
-    height: auto; /* Allow height to be determined by content for screen display */
-  }
-
-  .user-dl-pdf-border {
-    padding: 6mm;
-  }
-
-  .user-dl-pdf-header { padding-bottom: 3mm; margin-bottom: 3mm; }
-  .user-dl-pdf-org-name h3 { font-size: 14px; }
-  .user-dl-pdf-org-name h4 { font-size: 12px; }
-
-  .user-dl-pdf-certificate-title { margin-bottom: 6mm; }
-  .user-dl-pdf-certificate-title h2 { font-size: 18px; }
-  .user-dl-pdf-certificate-title h3 { font-size: 16px; }
-
-  .user-dl-pdf-body { font-size: 9pt; line-height: 1.5; }
-  .user-dl-pdf-info-block, .user-dl-pdf-details-section { margin-bottom: 4mm; }
-  .user-dl-pdf-section-title { font-size: 10pt; margin-bottom: 2mm; }
-  .user-dl-pdf-info-row, .user-dl-pdf-details-row { margin-bottom: 1.5mm; }
-
-  .user-dl-pdf-footer-elements-container { padding-top: 6mm; flex-direction: column; align-items: center; gap: 5mm; }
-  .user-dl-pdf-qr-placeholder { width: 50px; height: 50px; }
-  .user-dl-pdf-issuing-authority-block { width: 100%; }
-  .user-dl-pdf-issuing-authority-block .user-dl-pdf-signature-line { width: 120px; max-height:30px; }
-  .user-dl-pdf-stamp-placeholder { width: 60px; height: 60px; font-size: 8pt; }
-
-  .user-dl-pdf-contact-footer { font-size: 8pt; padding-top: 3mm; margin-top: 3mm; }
+/* Styles for Terms and Conditions Page */
+.user-dl-pdf-terms-content {
+  font-size: 10pt; /* Adjust font size for terms */
+  line-height: 1.5;
+  flex-grow: 1; /* Allow content to take up available space */
+  display: flex;
+  flex-direction: column; /* For proper spacing of list items */
 }
+
+.user-dl-pdf-terms-content ol {
+  padding-left: 5mm; /* Indent for ordered list */
+  margin: 0;
+}
+
+.user-dl-pdf-terms-content li {
+  margin-bottom: 3mm; /* Space between list items */
+  text-align: justify; /* Justify text for a formal look */
+}
+
+.user-dl-terms-title {
+    margin-top: 5mm; /* Adjust margin for terms title if needed */
+}
+
 
 /* Print specific styles */
 @media print {
@@ -302,32 +321,128 @@
   .user-dl-pdf-layout {
     box-shadow: none;
     margin: 0;
-    position: absolute; /* Position absolutely to control placement on page */
-    top: 0;
-    left: 0;
+    position: static; /* Change from absolute to static for natural page flow */
     width: 210mm; /* A4 width */
-    height: 297mm; /* Force A4 height */
-    max-height: 297mm; /* Ensure it doesn't exceed A4 height */
-    overflow: hidden; /* CRUCIAL: Clip any content that overflows */
-    transform-origin: top left;
+    height:295mm; /* Let content dictate height */
+    overflow: visible; /* Allow content to flow to next page */
+    display: block; /* Ensure it behaves as a block for print flow */
   }
 
-  /* .user-dl-outer-pdf-border is removed entirely from the CSS */
+  .user-dl-pdf-page {
+    width: 210mm; /* A4 width */
+    height: 295mm; /* Force A4 height for each printed page */
+    box-sizing: border-box;
+    page-break-after: always; /* Force a page break after each page div */
+    margin: 0; /* Remove screen margin for print */
+    padding: 0; /* Remove screen padding for print */
+  }
+
+  .user-dl-pdf-page:last-child {
+    page-break-after: avoid; /* No page break after the last page */
+  }
+
+  .user-dl-outer-pdf-border {
+    width: 100%;
+    height: 100%; /* Takes full height of .user-dl-pdf-page */
+   /* Consistent padding for print */
+    box-sizing: border-box;
+    display: block; /* Ensure it behaves as a block for print */
+  }
 
   .user-dl-pdf-border {
-    height: 100%; /* Ensure it stretches to full height of .user-dl-pdf-layout */
+    height: 100%; /* Ensure it stretches to full height of .user-dl-outer-pdf-border */
     overflow: hidden; /* CRUCIAL: Clip any content that overflows within this border */
+  }
+
+  /* Ensure footer elements are not split across pages */
+  .user-dl-pdf-footer-elements-container,
+  .user-dl-pdf-contact-footer {
+    page-break-inside: avoid;
   }
 
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-
-  /* Uncomment and adjust if needed as a last resort for scaling */
-  /*
-  .user-dl-pdf-layout {
-    transform: scale(0.98);
+}/* In the print media query */
+@media print {
+  .user-dl-pdf-terms-content {
+    font-size: 9pt !important; /* Reduce font size for print */
+    padding-top: 2mm; /* Reduce top padding */
   }
-  */
+
+  .user-dl-pdf-terms-content li {
+    margin-bottom: 2mm; /* Reduce spacing between list items */
+    page-break-inside: avoid; /* Prevent list items from splitting */
+  }
+
+  .user-dl-pdf-contact-footer {
+    padding-top: 2mm; /* Reduce footer padding */
+    margin-top: 2mm;
+  }
+}
+/* Certificate.css */
+
+/* ... (previous CSS rules) ... */
+
+/* Styles for Terms and Conditions Page */
+.user-dl-pdf-terms-content {
+  font-size: 10pt; /* Adjust font size for terms */
+  line-height: 1.5;
+  flex-grow: 1; /* Allow content to take up available space */
+  display: flex;
+  flex-direction: column; /* For proper spacing of list items */
+  /* New styles for the rounded box light grey background */
+  background-color: var(--user-dl-gray-light); /* Light grey background */
+  border-radius: var(--user-dl-border-radius); /* Rounded corners */
+  padding: 10mm; /* Add some padding inside the box */
+  margin-top: 5mm; /* Add some margin above the box */
+  box-sizing: border-box; /* Ensure padding is included in the element's total width and height */
+}
+
+.user-dl-pdf-terms-content ol {
+  padding-left: 5mm; /* Indent for ordered list */
+  margin: 0;
+}
+
+.user-dl-pdf-terms-content li {
+  margin-bottom: 3mm; /* Space between list items */
+  text-align: justify; /* Justify text for a formal look */
+  font-weight: bold; /* Make the text prompted (more prominent) */
+  color: var(--user-dl-primary); /* A darker color for prominence */
+}
+
+.user-dl-terms-title {
+    margin-top: 5mm; /* Adjust margin for terms title if needed */
+    /* Make the title more prominent */
+    font-size: 24px !important;
+    color: var(--user-dl-primary) !important;
+    text-decoration: none !important; /* Remove underline if desired for a cleaner look */
+}
+
+/* ... (rest of your CSS rules) ... */
+
+/* Print specific styles */
+@media print {
+  /* ... (existing print styles) ... */
+
+  .user-dl-pdf-terms-content {
+    font-size: 9pt !important; /* Reduce font size for print */
+    padding-top: 2mm; /* Reduce top padding */
+    background-color: var(--user-dl-gray-light) !important; /* Ensure background prints */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .user-dl-pdf-terms-content li {
+    margin-bottom: 2mm; /* Reduce spacing between list items */
+    page-break-inside: avoid; /* Prevent list items from splitting */
+    font-weight: bold !important; /* Ensure prominence in print */
+    color: var(--user-dl-primary) !important; /* Ensure color prints */
+  }
+
+  .user-dl-pdf-contact-footer {
+    padding-top: 2mm; /* Reduce footer padding */
+    margin-top: 2mm;
+  }
 }

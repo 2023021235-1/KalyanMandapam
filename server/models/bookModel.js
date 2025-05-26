@@ -23,16 +23,20 @@ const bookSchema = new mongoose.Schema({
     required: true
   },
 
+  // Number of AC and Non-AC rooms booked by the user
+  num_ac_rooms_booked:   { type: Number, default: 0, min: 0 },
+  num_non_ac_rooms_booked: { type: Number, default: 0, min: 0 },
+
   // flags for fixed-price blocks
   is_parking:          { type: Boolean, default: false },
   is_conference_hall:  { type: Boolean, default: false },
   is_food_prep_area:   { type: Boolean, default: false },
   is_lawn:             { type: Boolean, default: false },
-  is_ac:          { type: Boolean, default: false }, // Indicates if AC prices were applied
+  is_ac:               { type: Boolean, default: false }, // Indicates if AC prices were applied for general areas/sqft events
 
   // legacy add-ons (if you still want extra beyond fixed blocks)
   add_parking:         { type: Boolean, default: false },
-  add_room:            { type: Boolean, default: false },
+  // add_room:            { type: Boolean, default: false }, // Removed, replaced by specific room counts
 
   booking_status: {
     type: String,

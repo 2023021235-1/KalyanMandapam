@@ -2,7 +2,7 @@
 const Booking = require('../models/bookModel');
 const Hall = require('../models/hallModel');
 
-// Helper function to generate a unique ID (can be used for booking_id and transaction_id)
+// Helper function to generate a unique ID
 const generateUniqueId = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -12,7 +12,6 @@ const generateUniqueId = () => {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-    // Add a random component to further ensure uniqueness, especially for transaction_id
     const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
     return `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}${random}`;
 };
@@ -27,14 +26,14 @@ const calculateBookingAmount = (hall, bookingData) => {
     is_conference_hall,
     is_food_prep_area,
     is_lawn,
-    is_ac,
-    add_parking,
-    add_room
+    is_ac, // This flag now applies to general/sqft pricing, not rooms specifically
+    add_parking, // Legacy
+    num_ac_rooms_booked, // New
+    num_non_ac_rooms_booked // New
   } = bookingData;
 
   let totalAmount = 0;
 
-  // Helper to get price based on booking_type (municipal, municipality, panchayat)
   const getTieredPrice = (priceObject) => {
     if (!priceObject) return 0; // Handle cases where a price object might be missing
     switch (booking_type) {
@@ -59,9 +58,14 @@ const calculateBookingAmount = (hall, bookingData) => {
     totalAmount += getTieredPrice(is_ac ? hall.lawn_ac : hall.lawn_nonac);
   }
 
-  // Add room rent (assuming 'room_rent_ac' or 'room_rent_nonac' applies per booking, not per room)
-  if (add_room) { // Assuming add_room means booking a room
-      totalAmount += getTieredPrice(is_ac ? hall.room_rent_ac : hall.room_rent_nonac);
+  // Calculate cost for AC rooms booked
+  if (num_ac_rooms_booked && num_ac_rooms_booked > 0) {
+    totalAmount += num_ac_rooms_booked * getTieredPrice(hall.room_rent_ac);
+  }
+
+  // Calculate cost for Non-AC rooms booked
+  if (num_non_ac_rooms_booked && num_non_ac_rooms_booked > 0) {
+    totalAmount += num_non_ac_rooms_booked * getTieredPrice(hall.room_rent_nonac);
   }
 
   // Add legacy add-ons if they represent distinct charges not covered by fixed blocks
@@ -75,12 +79,14 @@ const calculateBookingAmount = (hall, bookingData) => {
   if (function_type && area_sqft) {
     const eventPricing = hall.event_pricing.find(ep => ep.event_type === function_type);
     if (eventPricing) {
+      // is_ac flag determines if AC per-sqft prices are used
       const perSqftPrice = getTieredPrice(is_ac ? eventPricing.prices_per_sqft_ac : eventPricing.prices_per_sqft_nonac);
       totalAmount += (area_sqft * perSqftPrice);
     }
   }
 
   // Add electricity and cleaning charges
+  // is_ac flag determines if AC electricity charges are applied
   totalAmount += getTieredPrice(is_ac ? hall.electricity_ac : hall.electricity_nonac);
   totalAmount += getTieredPrice(hall.cleaning);
 
@@ -106,9 +112,10 @@ const createBooking = async (req, res) => {
       is_conference_hall,
       is_food_prep_area,
       is_lawn,
-      is_ac,
-      add_parking, // Legacy add-ons
-      add_room // Legacy add-ons
+      is_ac, // General AC flag for sqft events / main areas
+      add_parking, // Legacy
+      num_ac_rooms_booked, // New
+      num_non_ac_rooms_booked // New
     } = req.body;
     //console.log(hall_id_string);
     // Required fields validation - explicitly check for empty strings for hall_id_string
@@ -126,6 +133,19 @@ const createBooking = async (req, res) => {
         return res.status(400).json({ message: `Invalid floor number. This hall has ${hall.total_floors} floors.` });
     }
 
+    // Basic check for room availability (more sophisticated checks might be needed for concurrent bookings)
+    // Ensure num_ac_rooms_booked and num_non_ac_rooms_booked are numbers before comparison
+    const numAcRoomsToBook = Number(num_ac_rooms_booked) || 0;
+    const numNonAcRoomsToBook = Number(num_non_ac_rooms_booked) || 0;
+
+    if (numAcRoomsToBook > hall.num_ac_rooms) {
+        return res.status(400).json({ message: `Cannot book ${numAcRoomsToBook} AC rooms. Only ${hall.num_ac_rooms} AC rooms available in this hall.` });
+    }
+    if (numNonAcRoomsToBook > hall.num_non_ac_rooms) {
+        return res.status(400).json({ message: `Cannot book ${numNonAcRoomsToBook} Non-AC rooms. Only ${hall.num_non_ac_rooms} Non-AC rooms available in this hall.` });
+    }
+
+
     // Check availability for the specific date and floor
     const desiredBookingDate = new Date(booking_date);
     desiredBookingDate.setUTCHours(0, 0, 0, 0); // Normalize to start of the day UTC
@@ -142,7 +162,13 @@ const createBooking = async (req, res) => {
     }
 
     // Calculate booking amount
-    const calculatedBookingAmount = calculateBookingAmount(hall, req.body);
+    // Pass the numeric values for rooms to calculateBookingAmount
+    const calculatedBookingAmount = calculateBookingAmount(hall, {
+        ...req.body,
+        num_ac_rooms_booked: numAcRoomsToBook,
+        num_non_ac_rooms_booked: numNonAcRoomsToBook
+    });
+
 
     const booking_id = generateUniqueId();
     const transaction_id = generateUniqueId(); // Assuming a transaction ID is generated on booking
@@ -159,13 +185,15 @@ const createBooking = async (req, res) => {
       area_sqft: area_sqft || (function_type && hall.total_area_sqft ? hall.total_area_sqft : undefined), // Set total_area_sqft if function_type is present and area_sqft is not provided
       booking_amount: calculatedBookingAmount,
       booking_type,
+      num_ac_rooms_booked: numAcRoomsToBook,
+      num_non_ac_rooms_booked: numNonAcRoomsToBook,
       is_parking: is_parking || false,
       is_conference_hall: is_conference_hall || false,
       is_food_prep_area: is_food_prep_area || false,
       is_lawn: is_lawn || false,
-      is_ac: is_ac || false,
+      is_ac: is_ac || false, // General AC status
       add_parking: add_parking || false,
-      add_room: add_room || false,
+      // add_room removed
       booking_status: 'Pending', // Default status for new bookings
     });
 
@@ -212,10 +240,8 @@ const getAllBookings = async (req, res) => {
     if (req.user.userType != 'Admin') {
       query.user_id = req.user._id;
     }
-    console.log(query)
-    console.log(query)
     // Populate hall_id to get hall details, but only necessary fields
-    const bookings = await Booking.find(query).populate('hall_id', 'hall_id hall_name location total_floors'); // Populate only relevant hall fields
+    const bookings = await Booking.find(query).populate('hall_id', 'hall_id hall_name location total_floors num_ac_rooms num_non_ac_rooms'); // Populate relevant hall fields
     res.json(bookings);
   } catch (error) {
     console.error('Error fetching bookings:', error);
@@ -229,7 +255,7 @@ const getAllBookings = async (req, res) => {
 // @access  Private (Authenticated User/Admin)
 const getBookingById = async (req, res) => {
   try {
-    const booking = await Booking.findOne({ booking_id: req.params.id }).populate('hall_id', 'hall_id hall_name location total_floors');
+    const booking = await Booking.findOne({ booking_id: req.params.id }).populate('hall_id', 'hall_id hall_name location total_floors num_ac_rooms num_non_ac_rooms');
 
     if (booking) {
       // Ensure user is authorized to view this booking
@@ -252,7 +278,7 @@ const getBookingById = async (req, res) => {
 // @access  Private (Authenticated User/Admin)
 const updateBooking = async (req, res) => {
   try {
-    const { booking_id } = req.params;
+    const { booking_id } = req.params; // This is the custom booking_id string
     const {
       hall_id_string,
       booking_date,
@@ -264,10 +290,11 @@ const updateBooking = async (req, res) => {
       is_conference_hall,
       is_food_prep_area,
       is_lawn,
-      is_ac,
+      is_ac, // General AC flag
       add_parking,
-      add_room,
-      booking_amount // Ensure this is also handled in update
+      num_ac_rooms_booked, // New
+      num_non_ac_rooms_booked, // New
+      // booking_amount // Amount will be recalculated
     } = req.body;
 
     // --- Input Validation ---
@@ -300,6 +327,17 @@ const updateBooking = async (req, res) => {
     // Check if the floor exists in the hall
     if (floor < 1 || floor > hall.total_floors) {
         return res.status(400).json({ message: `Invalid floor number. This hall has ${hall.total_floors} floors.` });
+    }
+    
+    const numAcRoomsToBook = Number(num_ac_rooms_booked) || 0;
+    const numNonAcRoomsToBook = Number(num_non_ac_rooms_booked) || 0;
+
+    // Basic check for room availability on update
+    if (numAcRoomsToBook > hall.num_ac_rooms) {
+        return res.status(400).json({ message: `Cannot book ${numAcRoomsToBook} AC rooms. Only ${hall.num_ac_rooms} AC rooms available.` });
+    }
+    if (numNonAcRoomsToBook > hall.num_non_ac_rooms) {
+        return res.status(400).json({ message: `Cannot book ${numNonAcRoomsToBook} Non-AC rooms. Only ${hall.num_non_ac_rooms} Non-AC rooms available.` });
     }
 
     const desiredBookingDate = new Date(booking_date);
@@ -358,7 +396,12 @@ const updateBooking = async (req, res) => {
 
 
     // Recalculate booking amount if relevant fields have changed
-    const recalculatedBookingAmount = calculateBookingAmount(hall, req.body);
+    const recalculatedBookingAmount = calculateBookingAmount(hall, {
+        ...req.body,
+        num_ac_rooms_booked: numAcRoomsToBook,
+        num_non_ac_rooms_booked: numNonAcRoomsToBook
+    });
+
 
     // Update booking fields
     existingBooking.hall_id_string = hall_id_string;
@@ -368,13 +411,17 @@ const updateBooking = async (req, res) => {
     existingBooking.function_type = function_type;
     existingBooking.booking_type = booking_type;
     existingBooking.area_sqft = area_sqft || (function_type && hall.total_area_sqft ? hall.total_area_sqft : undefined);
+    
+    existingBooking.num_ac_rooms_booked = numAcRoomsToBook;
+    existingBooking.num_non_ac_rooms_booked = numNonAcRoomsToBook;
+    
     existingBooking.is_parking = is_parking !== undefined ? is_parking : existingBooking.is_parking;
     existingBooking.is_conference_hall = is_conference_hall !== undefined ? is_conference_hall : existingBooking.is_conference_hall;
     existingBooking.is_food_prep_area = is_food_prep_area !== undefined ? is_food_prep_area : existingBooking.is_food_prep_area;
     existingBooking.is_lawn = is_lawn !== undefined ? is_lawn : existingBooking.is_lawn;
-    existingBooking.is_ac = is_ac !== undefined ? is_ac : existingBooking.is_ac;
+    existingBooking.is_ac = is_ac !== undefined ? is_ac : existingBooking.is_ac; // General AC flag
     existingBooking.add_parking = add_parking !== undefined ? add_parking : existingBooking.add_parking;
-    existingBooking.add_room = add_room !== undefined ? add_room : existingBooking.add_room;
+    // existingBooking.add_room removed
     existingBooking.booking_amount = recalculatedBookingAmount; // Update with recalculated amount
 
     const updatedBooking = await existingBooking.save();
@@ -501,11 +548,6 @@ const updateBookingStatus = async (req, res) => {
         booking.booking_status = status;
         const updatedBooking = await booking.save();
 
-        // If status changes to Confirmed, you might want to ensure hall availability is marked 'booked'
-        // If status changes to Cancelled, you might want to handle availability update (already done in cancelBooking)
-        // If status changes to Pending, no specific availability action needed as it's already 'booked' or 'preliminary'
-
-        // Only update hall availability if status is Confirmed AND it's not already marked as booked for that booking_id
         if (status === 'Confirmed') {
             const hall = await Hall.findById(updatedBooking.hall_id);
             if (hall) {
@@ -517,11 +559,8 @@ const updateBookingStatus = async (req, res) => {
                 );
 
                 if (availabilityIndex > -1) {
-                    // Update existing entry status to 'booked' if it was something else (e.g., 'preliminary')
                     hall.availability_details[availabilityIndex].status = 'booked';
                 } else {
-                    // This case should ideally not happen if a booking was created and an availability slot was made
-                    // But as a safeguard, add it if not found (e.g., if a booking was manually added)
                     hall.availability_details.push({
                         date: updatedBooking.booking_date,
                         floor: updatedBooking.floor,
@@ -531,7 +570,22 @@ const updateBookingStatus = async (req, res) => {
                 }
                 await hall.save();
             }
+        } else if (status === 'Cancelled') { // If admin changes status to Cancelled directly
+            const hall = await Hall.findById(updatedBooking.hall_id);
+            if (hall) {
+                const availabilityIndex = hall.availability_details.findIndex(
+                    (detail) =>
+                    detail.date.toISOString().split('T')[0] === updatedBooking.booking_date.toISOString().split('T')[0] &&
+                    detail.floor === updatedBooking.floor &&
+                    detail.booking_id && detail.booking_id.toString() === updatedBooking._id.toString()
+                );
+                if (availabilityIndex > -1) {
+                    hall.availability_details.splice(availabilityIndex, 1);
+                    await hall.save();
+                }
+            }
         }
+
 
         res.json({ message: 'Booking status updated successfully!', booking: updatedBooking });
     } catch (error) {
@@ -592,11 +646,6 @@ const getRefundStatus = async (req, res) => {
         const booking = await Booking.findOne({ booking_id: req.params.id }).select('+transaction_id');
 
         if (booking) {
-             // Optional: Ensure user is authorized to view this booking's refund status
-            // if (!req.user.userType === 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
-            //     return res.status(403).json({ message: 'Not authorized to view this refund status' });
-            // }
-
             res.json({
                 booking_id: booking.booking_id,
                 transaction_id: booking.transaction_id, // Include transaction_id

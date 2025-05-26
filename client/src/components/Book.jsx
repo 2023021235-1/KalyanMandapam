@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/BookNow.css'; // Assuming BookNow.css is in a 'styles' subfolder
-import { CircleCheck, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon } from 'lucide-react';
+import { CircleCheck, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon } from 'lucide-react'; // Added HomeIcon for rooms
 import html2pdf from 'html2pdf.js';
 import BookingCertificate from './BookingCertificate'; // Import the new certificate component
 
@@ -36,9 +36,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         is_conference_hall: false,
         is_food_prep_area: false,
         is_lawn: false,
-        is_ac: false,
-        add_parking: false,
-        add_room: false,
+        is_ac: false, // General AC flag
+        add_parking: false, // Legacy, review if still needed
+        // add_room: false, // Removed as per bookModel.js
+        num_ac_rooms_booked: 0, // New field for number of AC rooms
+        num_non_ac_rooms_booked: 0, // New field for number of Non-AC rooms
     });
 
     const [editingBookingId, setEditingBookingId] = useState(null);
@@ -46,12 +48,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     // State for certificate PREVIEW modal
     const [showCertificatePreviewModal, setShowCertificatePreviewModal] = useState(false);
     const [currentBookingForCertificate, setCurrentBookingForCertificate] = useState(null);
-    const certificatePreviewRef = useRef(); // Ref for the certificate content in the preview modal
+    const certificatePreviewRef = useRef();
 
     // Toast State
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
-    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    // API Base URL Configuration
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Original API
+    //const API_BASE_URL = 'http://localhost:5000/api'; // New localhost API
 
     const getAuthToken = () => localStorage.getItem('token');
 
@@ -127,12 +131,17 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             foodPrepAreaNonAc: 'Food Prep Area (Non-AC)',
             lawnAc: 'Lawn (AC)',
             lawnNonAc: 'Lawn (Non-AC)',
-            roomRentAc: 'Room Rent (AC)',
-            roomRentNonAc: 'Room Rent (Non-AC)',
+            // Updated labels for room rents in price table
+            perAcRoomLabel: 'AC Room (Per Room/Day)',
+            perNonAcRoomLabel: 'Non-AC Room (Per Room/Day)',
             parking: 'Parking',
             electricityAc: 'Electricity (AC)',
             electricityNonAc: 'Electricity (Non-AC)',
             cleaning: 'Cleaning Charges',
+            // New labels for room input fields
+            numAcRoomsLabel: 'AC Rooms Required:',
+            numNonAcRoomsLabel: 'Non-AC Rooms Required:',
+            availableRoomsText: (count) => `(Max: ${count} Available)`,
             confirmCancelMessage: 'Are you sure you want to cancel this booking? This action cannot be undone.',
             selectFunctionPlaceholder: 'Select Function Type',
             formValidation: {
@@ -141,6 +150,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 functionTypeRequired: 'Please select a function type.',
                 bookingTypeRequired: 'Please select a booking category.',
                 areaRequired: 'Area (sq. ft.) is required for this function and must be greater than 0.',
+                roomsRequired: 'Number of rooms must be 0 or a positive integer.',
             },
             bookingSuccess: 'Booking created successfully!',
             updateSuccess: 'Booking updated successfully!',
@@ -149,7 +159,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             authError: 'Authentication failed. Please log in again.',
             hallNotFound: (id) => `Hall with ID ${id} not found.`,
             bookingNotFound: 'Booking not found.',
-            // New translations for certificate preview modal
             previewModalTitle: 'Certificate Preview',
             previewModalDownloadButton: 'Download PDF',
             previewModalCloseButton: 'Close',
@@ -215,12 +224,17 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             foodPrepAreaNonAc: 'भोजन तैयारी क्षेत्र (गैर-एसी)',
             lawnAc: 'लॉन (एसी)',
             lawnNonAc: 'लॉन (गैर-एसी)',
-            roomRentAc: 'कमरे का किराया (एसी)',
-            roomRentNonAc: 'कमरे का किराया (गैर-एसी)',
+            // Updated labels for room rents in price table
+            perAcRoomLabel: 'एसी कमरा (प्रति कमरा/दिन)',
+            perNonAcRoomLabel: 'गैर-एसी कमरा (प्रति कमरा/दिन)',
             parking: 'पार्किंग',
             electricityAc: 'बिजली (एसी)',
             electricityNonAc: 'बिजली (गैर-एसी)',
             cleaning: 'सफाई शुल्क',
+            // New labels for room input fields
+            numAcRoomsLabel: 'एसी कमरे आवश्यक:',
+            numNonAcRoomsLabel: 'गैर-एसी कमरे आवश्यक:',
+            availableRoomsText: (count) => `(अधिकतम: ${count} उपलब्ध)`,
             confirmCancelMessage: 'क्या आप वाकई इस बुकिंग को रद्द करना चाहते हैं? यह कार्रवाई पूर्ववत नहीं की जा सकती।',
             selectFunctionPlaceholder: 'समारोह प्रकार चुनें',
             formValidation: {
@@ -229,6 +243,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 functionTypeRequired: 'कृपया एक समारोह प्रकार चुनें।',
                 bookingTypeRequired: 'कृपया एक बुकिंग श्रेणी चुनें।',
                 areaRequired: 'इस समारोह के लिए क्षेत्र (वर्ग फुट) आवश्यक है और 0 से अधिक होना चाहिए।',
+                roomsRequired: 'कमरों की संख्या 0 या एक सकारात्मक पूर्णांक होनी चाहिए।',
             },
             bookingSuccess: 'बुकिंग सफलतापूर्वक बनाई गई!',
             updateSuccess: 'बुकिंग सफलतापूर्वक अपडेट की गई!',
@@ -237,7 +252,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             authError: 'प्रमाणीकरण विफल। कृपया पुनः लॉग इन करें।',
             hallNotFound: (id) => `हॉल आईडी ${id} नहीं मिला।`,
             bookingNotFound: 'बुकिंग नहीं मिली।',
-            // New translations for certificate preview modal
             previewModalTitle: 'प्रमाणपत्र पूर्वावलोकन',
             previewModalDownloadButton: 'पीडीएफ डाउनलोड करें',
             previewModalCloseButton: 'बंद करें',
@@ -253,7 +267,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             fetchBookings();
             fetchAllHalls();
         }
-    }, [user, navigate, languageType]);
+    }, [user, navigate, languageType]); // fetchBookings and fetchAllHalls can be removed if they don't depend on languageType directly
 
     useEffect(() => {
         if (bookingFormData.hall_id_string) {
@@ -261,39 +275,94 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         } else {
             setSelectedHallFullDetails(null);
             setHallDetailsError(null);
+            // Reset fields that depend on hall details
             setBookingFormData(prevData => ({
                 ...prevData,
                 function_type: '',
                 area_sqft: '',
-                booking_type: '',
+                booking_type: '', // Reset booking type as pricing depends on it too
                 is_parking: false,
                 is_conference_hall: false,
                 is_food_prep_area: false,
                 is_lawn: false,
+                num_ac_rooms_booked: 0,
+                num_non_ac_rooms_booked: 0,
             }));
             setSelectedAreaOption('none');
         }
     }, [bookingFormData.hall_id_string]);
 
+    const getTieredPrice = (priceObject, bookingType) => { // Moved out of calculateBookingAmount as it's a general utility
+        if (!priceObject || !bookingType) return 0;
+        return priceObject[bookingType] || 0;
+    };
+
+    const calculateBookingAmount = useMemo(() => () => {
+        let totalAmount = 0;
+        if (!selectedHallFullDetails || !bookingFormData.booking_type) return 0;
+
+        const hall = selectedHallFullDetails;
+        const bookingType = bookingFormData.booking_type;
+
+        // Fixed-price blocks
+        if (bookingFormData.is_parking && hall.parking) totalAmount += getTieredPrice(hall.parking, bookingType);
+        if (bookingFormData.is_conference_hall && (isAcSelected ? hall.conference_hall_ac : hall.conference_hall_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.conference_hall_ac : hall.conference_hall_nonac, bookingType);
+        if (bookingFormData.is_food_prep_area && (isAcSelected ? hall.food_prep_area_ac : hall.food_prep_area_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.food_prep_area_ac : hall.food_prep_area_nonac, bookingType);
+        if (bookingFormData.is_lawn && (isAcSelected ? hall.lawn_ac : hall.lawn_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.lawn_ac : hall.lawn_nonac, bookingType);
+        
+        // Room costs based on number of rooms booked
+        if (bookingFormData.num_ac_rooms_booked > 0 && hall.room_rent_ac) {
+            totalAmount += Number(bookingFormData.num_ac_rooms_booked) * getTieredPrice(hall.room_rent_ac, bookingType);
+        }
+        if (bookingFormData.num_non_ac_rooms_booked > 0 && hall.room_rent_nonac) {
+            totalAmount += Number(bookingFormData.num_non_ac_rooms_booked) * getTieredPrice(hall.room_rent_nonac, bookingType);
+        }
+
+        // Electricity and Cleaning
+        if (isAcSelected ? hall.electricity_ac : hall.electricity_nonac) totalAmount += getTieredPrice(isAcSelected ? hall.electricity_ac : hall.electricity_nonac, bookingType);
+        if (hall.cleaning) totalAmount += getTieredPrice(hall.cleaning, bookingType);
+
+        // Event-specific pricing (per sq. ft.)
+        if (bookingFormData.function_type && Number(bookingFormData.area_sqft) > 0) {
+            const eventPrice = hall.event_pricing?.find(event =>
+                event.event_type.toLowerCase() === bookingFormData.function_type.toLowerCase()
+            );
+            if (eventPrice) {
+                const perSqftPrices = isAcSelected ? eventPrice.prices_per_sqft_ac : eventPrice.prices_per_sqft_nonac;
+                if (perSqftPrices) {
+                    const perSqftRate = getTieredPrice(perSqftPrices, bookingType);
+                    totalAmount += (Number(bookingFormData.area_sqft) * perSqftRate);
+                }
+            }
+        }
+        return parseFloat(totalAmount.toFixed(2));
+    }, [
+        selectedHallFullDetails, 
+        isAcSelected, 
+        bookingFormData.booking_type, 
+        bookingFormData.function_type, 
+        bookingFormData.area_sqft, 
+        bookingFormData.is_parking, 
+        bookingFormData.is_conference_hall, 
+        bookingFormData.is_food_prep_area, 
+        bookingFormData.is_lawn,
+        bookingFormData.num_ac_rooms_booked,
+        bookingFormData.num_non_ac_rooms_booked,
+        // getTieredPrice is defined outside and is stable
+    ]);
+    
     useEffect(() => {
         const calculatedAmount = calculateBookingAmount();
         setBookingFormData(prevData => ({
             ...prevData,
             booking_amount: calculatedAmount,
-            is_ac: isAcSelected,
+            is_ac: isAcSelected, // ensure is_ac in form data is also kept in sync with the radio button state
         }));
     }, [
-        selectedHallFullDetails,
-        isAcSelected,
-        bookingFormData.booking_type,
-        bookingFormData.function_type,
-        bookingFormData.area_sqft,
-        bookingFormData.is_parking,
-        bookingFormData.is_conference_hall,
-        bookingFormData.is_food_prep_area,
-        bookingFormData.is_lawn,
-        // calculateBookingAmount dependency removed as it itself uses these states
+        isAcSelected, // Primary trigger for is_ac related price changes
+        calculateBookingAmount // calculateBookingAmount itself is memoized with its own extensive dependencies
     ]);
+
 
     const fetchBookings = async () => {
         setLoadingBookings(true);
@@ -318,14 +387,36 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            // Ensure availableHalls is populated before trying to map hall names
+            const populatedAvailableHalls = availableHalls.length > 0 ? availableHalls : await fetchAllHalls(true);
+
+
             const bookingsWithHallNames = await Promise.all(data.map(async (booking) => {
-                if (booking.hall_id && typeof booking.hall_id === 'string') {
-                    const hallDetails = availableHalls.find(hall => hall.hall_id === booking.hall_id);
-                    return { ...booking, hall_id: hallDetails ? { hall_id: hallDetails.hall_id, hall_name: hallDetails.hall_name } : { hall_id: booking.hall_id, hall_name: 'N/A' } };
-                } else if (booking.hall_id && typeof booking.hall_id === 'object' && booking.hall_id.hall_name) {
-                    return booking;
+                let hallName = 'N/A';
+                let hallObjectId = null; // To store the ObjectId for consistency if needed elsewhere
+
+                // The backend populates hall_id with hall details directly sometimes.
+                // booking.hall_id might be an object like { hall_id: "1", hall_name: "Main Hall" } or just an ObjectId string
+                // booking.hall_id_string should be the custom string ID like "1", "2"
+                
+                if (booking.hall_id && typeof booking.hall_id === 'object' && booking.hall_id.hall_name) {
+                    hallName = booking.hall_id.hall_name;
+                    hallObjectId = booking.hall_id._id || booking.hall_id.hall_id; // Prefer _id if it's a populated mongoose doc
+                } else if (booking.hall_id_string) { // Fallback to hall_id_string if full hall_id object not present
+                    const hallDetails = populatedAvailableHalls.find(hall => hall.hall_id === booking.hall_id_string);
+                    if (hallDetails) {
+                        hallName = hallDetails.hall_name;
+                        hallObjectId = hallDetails._id; // Store Mongoose ObjectId if available
+                    }
                 }
-                return { ...booking, hall_id: { hall_name: 'N/A' } };
+                
+                return { 
+                    ...booking, 
+                    // Standardize how hall info is accessed in the list
+                    hall_display_name: hallName, 
+                    // Keep original hall_id (ObjectId reference from backend) and hall_id_string (custom string ID) if needed
+                    // For the table, we just need hall_display_name
+                };
             }));
             setBookings(bookingsWithHallNames);
         } catch (error) {
@@ -336,7 +427,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         }
     };
 
-    const fetchAllHalls = async () => {
+    const fetchAllHalls = async (returnData = false) => { // Added returnData flag
         setLoadingHalls(true);
         setHallsError(null);
         try {
@@ -344,69 +435,53 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             setAvailableHalls(data);
+            if (returnData) return data; // Return data if flag is true
         } catch (error) {
             console.error('Error fetching halls:', error);
             setHallsError(currentContent.hallsErrorMessage);
+            if (returnData) return []; // Return empty array on error if expecting data
         } finally {
             setLoadingHalls(false);
         }
     };
 
-    const fetchHallFullDetails = async (hallId) => {
+
+    const fetchHallFullDetails = async (hallIdString) => {
         setLoadingHallDetails(true);
         setHallDetailsError(null);
-        setSelectedHallFullDetails(null);
+        setSelectedHallFullDetails(null); // Clear previous details
         try {
-            const response = await fetch(`${API_BASE_URL}/halls/${hallId}`);
+            const response = await fetch(`${API_BASE_URL}/halls/${hallIdString}`); // Use hallIdString
             if (!response.ok) {
-                if (response.status === 404) throw new Error(currentContent.hallNotFound(hallId));
+                if (response.status === 404) throw new Error(currentContent.hallNotFound(hallIdString));
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
             setSelectedHallFullDetails(data);
+            // Reset dependent form fields when new hall details are fetched
+            setBookingFormData(prev => ({
+                ...prev,
+                function_type: '',
+                area_sqft: '',
+                // booking_type: '', // Don't reset booking_type, user might have set it
+                is_parking: false,
+                is_conference_hall: false,
+                is_food_prep_area: false,
+                is_lawn: false,
+                num_ac_rooms_booked: 0,
+                num_non_ac_rooms_booked: 0,
+            }));
+            setSelectedAreaOption('none'); // Reset area option
             return data;
         } catch (error) {
             console.error('Error fetching hall details:', error);
             setHallDetailsError(currentContent.detailsErrorMessage);
+            setSelectedHallFullDetails(null); // Ensure it's null on error
             return null;
         } finally {
             setLoadingHallDetails(false);
         }
     };
-
-    const getTieredPrice = (priceObject, bookingType) => {
-        if (!priceObject || !bookingType) return 0;
-        return priceObject[bookingType] || 0;
-    };
-
-    const calculateBookingAmount = useMemo(() => () => {
-        let totalAmount = 0;
-        if (!selectedHallFullDetails || !bookingFormData.booking_type) return 0;
-
-        const hall = selectedHallFullDetails;
-        const bookingType = bookingFormData.booking_type;
-
-        if (bookingFormData.is_parking) totalAmount += getTieredPrice(hall.parking, bookingType);
-        if (bookingFormData.is_conference_hall) totalAmount += getTieredPrice(isAcSelected ? hall.conference_hall_ac : hall.conference_hall_nonac, bookingType);
-        if (bookingFormData.is_food_prep_area) totalAmount += getTieredPrice(isAcSelected ? hall.food_prep_area_ac : hall.food_prep_area_nonac, bookingType);
-        if (bookingFormData.is_lawn) totalAmount += getTieredPrice(isAcSelected ? hall.lawn_ac : hall.lawn_nonac, bookingType);
-        
-        totalAmount += getTieredPrice(isAcSelected ? hall.electricity_ac : hall.electricity_nonac, bookingType);
-        totalAmount += getTieredPrice(hall.cleaning, bookingType);
-
-        if (bookingFormData.function_type && Number(bookingFormData.area_sqft) > 0) {
-            const eventPrice = hall.event_pricing?.find(event =>
-                event.event_type.toLowerCase() === bookingFormData.function_type.toLowerCase()
-            );
-            if (eventPrice) {
-                const perSqftPrice = isAcSelected
-                    ? getTieredPrice(eventPrice.prices_per_sqft_ac, bookingType)
-                    : getTieredPrice(eventPrice.prices_per_sqft_nonac, bookingType);
-                totalAmount += (Number(bookingFormData.area_sqft) * perSqftPrice);
-            }
-        }
-        return parseFloat(totalAmount.toFixed(2));
-    }, [selectedHallFullDetails, isAcSelected, bookingFormData.booking_type, bookingFormData.function_type, bookingFormData.area_sqft, bookingFormData.is_parking, bookingFormData.is_conference_hall, bookingFormData.is_food_prep_area, bookingFormData.is_lawn]);
 
 
     const handleDisclaimerAgreedInModal = () => setModalStep(2);
@@ -416,11 +491,13 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             booking_id: '', hall_id_string: '', booking_date: '', floor: 1, function_type: '',
             area_sqft: '', booking_amount: 0, booking_type: '', is_parking: false,
             is_conference_hall: false, is_food_prep_area: false, is_lawn: false, is_ac: false,
-            add_parking: false, add_room: false,
+            add_parking: false, 
+            num_ac_rooms_booked: 0, 
+            num_non_ac_rooms_booked: 0,
         });
         setSelectedHallFullDetails(null);
         setHallDetailsError(null);
-        setIsAcSelected(false);
+        setIsAcSelected(false); // Reset AC selection explicitly
         setSelectedAreaOption('none');
     };
     
@@ -436,7 +513,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         setIsEditing(false);
         setEditingBookingId(null);
         resetFormData();
-        setModalStep(1);
+        setModalStep(1); // Start with disclaimer
         setShowModal(true);
     };
 
@@ -444,30 +521,54 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         const { name, value, type, checked } = e.target;
 
         if (name === 'hall_id_string') {
+            // When hall changes, reset dependent fields and fetch new hall details
             setBookingFormData(prevData => ({
-                ...prevData, [name]: value, booking_type: '', function_type: '', area_sqft: '',
-                is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
-                is_ac: false, booking_amount: 0,
+                ...prevData,
+                [name]: value,
+                // Reset fields that depend on hall specifics or pricing
+                function_type: '',
+                area_sqft: '',
+                // booking_type: '', // User might set this before hall, or we can reset it
+                is_parking: false,
+                is_conference_hall: false,
+                is_food_prep_area: false,
+                is_lawn: false,
+                num_ac_rooms_booked: 0,
+                num_non_ac_rooms_booked: 0,
+                booking_amount: 0, // Amount will be recalculated
             }));
-            setIsAcSelected(false);
+            setIsAcSelected(false); // Default to Non-AC or based on hall? For now, reset.
             setSelectedAreaOption('none');
+            // fetchHallFullDetails will be called by the useEffect watching hall_id_string
         } else if (name === 'is_ac_radio') {
             const newAcSelected = value === 'true';
             setIsAcSelected(newAcSelected);
-            setBookingFormData(prevData => ({ ...prevData, is_ac: newAcSelected }));
+            setBookingFormData(prevData => ({ ...prevData, is_ac: newAcSelected })); // Update is_ac in formData
         } else if (name === 'booking_type_radio') {
             setBookingFormData(prevData => ({ ...prevData, booking_type: value }));
         } else if (name === 'selected_area_option') {
             setSelectedAreaOption(value);
             let calculatedArea = '';
             const totalArea = selectedHallFullDetails?.total_area_sqft || 0;
-            if (value === 'full' && totalArea > 0) calculatedArea = totalArea;
-            else if (value === 'half' && totalArea > 0) calculatedArea = totalArea / 2;
-            else if (value === 'partial') calculatedArea = bookingFormData.area_sqft;
-            else calculatedArea = '';
+            if (value === 'full' && totalArea > 0) calculatedArea = totalArea.toString();
+            else if (value === 'half' && totalArea > 0) calculatedArea = (totalArea / 2).toString();
+            else if (value === 'partial') calculatedArea = bookingFormData.area_sqft; // Keep existing if user typed
+            else calculatedArea = ''; // For 'none' or if totalArea is 0
             setBookingFormData(prevData => ({ ...prevData, area_sqft: calculatedArea }));
         } else if (name === 'area_sqft') {
-            setBookingFormData(prevData => ({ ...prevData, [name]: value === '' ? '' : Number(value) }));
+            setBookingFormData(prevData => ({ ...prevData, [name]: value })); // Keep as string, validation will handle number
+        } else if (name === 'num_ac_rooms_booked' || name === 'num_non_ac_rooms_booked') {
+            let numValue = value === '' ? 0 : parseInt(value, 10);
+            if (isNaN(numValue) || numValue < 0) numValue = 0;
+            
+            // Optional: Cap at available rooms (client-side reminder, backend enforces)
+            const maxRooms = name === 'num_ac_rooms_booked' 
+                ? selectedHallFullDetails?.num_ac_rooms 
+                : selectedHallFullDetails?.num_non_ac_rooms;
+            if (maxRooms !== undefined && numValue > maxRooms) {
+                // numValue = maxRooms; // Or show a toast/warning
+            }
+            setBookingFormData(prevData => ({ ...prevData, [name]: numValue }));
         } else if (type === 'checkbox') {
             setBookingFormData(prevData => ({ ...prevData, [name]: checked }));
         } else {
@@ -484,6 +585,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             return;
         }
 
+        // Form Validation
         if (!bookingFormData.hall_id_string) { showToast(currentContent.formValidation.hallRequired, 'error'); return; }
         if (!bookingFormData.booking_date) { showToast(currentContent.formValidation.dateRequired, 'error'); return; }
         if (!bookingFormData.function_type) { showToast(currentContent.formValidation.functionTypeRequired, 'error'); return; }
@@ -496,10 +598,20 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             showToast(currentContent.formValidation.areaRequired, 'error');
             return;
         }
+        if (Number(bookingFormData.num_ac_rooms_booked) < 0 || Number(bookingFormData.num_non_ac_rooms_booked) < 0) {
+            showToast(currentContent.formValidation.roomsRequired, 'error'); return;
+        }
+
 
         const method = isEditing ? 'PUT' : 'POST';
         const url = isEditing ? `${API_BASE_URL}/bookings/${editingBookingId}` : `${API_BASE_URL}/bookings`;
-        const requestBody = { ...bookingFormData, area_sqft: isEventFunction ? Number(bookingFormData.area_sqft) : undefined };
+        
+        const requestBody = { 
+            ...bookingFormData, 
+            area_sqft: isEventFunction ? Number(bookingFormData.area_sqft) : undefined,
+            num_ac_rooms_booked: Number(bookingFormData.num_ac_rooms_booked), // Ensure numbers
+            num_non_ac_rooms_booked: Number(bookingFormData.num_non_ac_rooms_booked), // Ensure numbers
+        };
 
         try {
             const response = await fetch(url, {
@@ -512,7 +624,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 const errorData = await response.json();
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
-            fetchBookings();
+            await fetchBookings(); // Refetch bookings to update the list
             handleCloseModal();
             showToast(isEditing ? currentContent.updateSuccess : currentContent.bookingSuccess, 'success');
         } catch (error) {
@@ -523,42 +635,52 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const startEditBooking = async (booking) => {
         setIsEditing(true);
-        setEditingBookingId(booking.booking_id);
+        setEditingBookingId(booking.booking_id); // Store the custom booking_id string for the API call
             
+        // Fetch full hall details for the booking being edited
+        // booking.hall_id might be an object from populate or just an ID string. We need hall_id_string.
+        const hallIdForEdit = booking.hall_id_string || (booking.hall_id ? booking.hall_id.hall_id : null);
+
         let hallDetails = null;
-        if (booking.hall_id && booking.hall_id.hall_id) {
-            hallDetails = await fetchHallFullDetails(booking.hall_id.hall_id);
+        if (hallIdForEdit) {
+            hallDetails = await fetchHallFullDetails(hallIdForEdit); // This sets selectedHallFullDetails
         }
     
         setBookingFormData({
-            booking_id: booking.booking_id,
-            hall_id_string: booking.hall_id ? booking.hall_id.hall_id : '',
+            booking_id: booking.booking_id, // Custom string ID
+            hall_id_string: hallIdForEdit || '', // Custom string ID of the hall
             booking_date: booking.booking_date ? new Date(booking.booking_date).toISOString().split('T')[0] : '',
             floor: booking.floor || 1,
             function_type: booking.function_type || '',
-            area_sqft: booking.area_sqft || '',
-            booking_amount: booking.booking_amount || 0,
+            area_sqft: booking.area_sqft?.toString() || '', // Ensure it's a string for input field
+            booking_amount: booking.booking_amount || 0, // Will be recalculated but good to have initial
             booking_type: booking.booking_type || '',
             is_parking: booking.is_parking || false,
             is_conference_hall: booking.is_conference_hall || false,
             is_food_prep_area: booking.is_food_prep_area || false,
             is_lawn: booking.is_lawn || false,
-            is_ac: booking.is_ac || false,
-            add_parking: booking.add_parking || false, // These seem unused, but kept for data integrity
-            add_room: booking.add_room || false,     // These seem unused, but kept for data integrity
+            is_ac: booking.is_ac || false, // General AC flag
+            num_ac_rooms_booked: booking.num_ac_rooms_booked || 0,
+            num_non_ac_rooms_booked: booking.num_non_ac_rooms_booked || 0,
+            add_parking: booking.add_parking || false,
         });
-        setIsAcSelected(booking.is_ac || false);
+        setIsAcSelected(booking.is_ac || false); // Sync the AC radio button state
     
+        // Determine selected area option based on fetched hall details and booking area
         if (hallDetails && booking.area_sqft) {
             const totalArea = hallDetails.total_area_sqft || 0;
-            if (Number(booking.area_sqft) === totalArea) setSelectedAreaOption('full');
-            else if (Number(booking.area_sqft) === totalArea / 2) setSelectedAreaOption('half');
-            else setSelectedAreaOption('partial');
+            if (totalArea > 0) { // Only set if totalArea is meaningful
+                if (Number(booking.area_sqft) === totalArea) setSelectedAreaOption('full');
+                else if (Number(booking.area_sqft) === totalArea / 2) setSelectedAreaOption('half');
+                else setSelectedAreaOption('partial');
+            } else {
+                 setSelectedAreaOption(booking.area_sqft ? 'partial' : 'none'); // If no total area, but area exists, assume partial
+            }
         } else {
-            setSelectedAreaOption('none');
+            setSelectedAreaOption(booking.area_sqft ? 'partial' : 'none');
         }
     
-        setModalStep(2);
+        setModalStep(2); // Go directly to form
         setShowModal(true);
     };
 
@@ -568,7 +690,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
         if (window.confirm(currentContent.confirmCancelMessage)) {
             try {
-                const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToCancel}/cancel`, {
+                const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToCancel}/cancel`, { // Uses booking_id string
                     method: 'PUT', headers: { 'Authorization': `Bearer ${token}` },
                 });
                 if (!response.ok) {
@@ -577,7 +699,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-                fetchBookings();
+                await fetchBookings(); // Refetch
                 showToast(currentContent.cancelSuccess, 'success');
             } catch (error) {
                 console.error('Error cancelling booking:', error);
@@ -586,19 +708,17 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         }
     };
 
-    // Opens the certificate preview modal
     const openCertificatePreview = (booking) => {
         setCurrentBookingForCertificate(booking);
         setShowCertificatePreviewModal(true);
     };
 
-    // Handles the actual PDF download from the preview modal
     const downloadCertificateFromPreview = () => {
         if (certificatePreviewRef.current && currentBookingForCertificate) {
             const elementToCapture = certificatePreviewRef.current.querySelector('.user-dl-pdf-layout');
             if (elementToCapture) {
                 html2pdf().from(elementToCapture).set({
-                    margin: 0, // Set to 0 as the layout itself should define margins/padding
+                    margin: 0, 
                     filename: `Certificate_Booking_${currentBookingForCertificate.booking_id}.pdf`,
                     html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -611,66 +731,82 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     showToast('Certificate download failed.', 'error');
                 });
             } else {
-                console.error("Certificate content (.user-dl-pdf-layout) not found for PDF generation.");
                 showToast('Error preparing certificate for download.', 'error');
             }
         } else {
-            console.error("Certificate preview ref or booking details missing.");
             showToast('Error: Cannot download certificate.', 'error');
         }
     };
-
 
     const renderPriceTable = (title, data, acStatus, isEventTable = false) => {
         if (!selectedHallFullDetails || (isEventTable && (!data || data.length === 0))) return null;
     
         const getRowData = (itemKey, item) => {
+            let label = '';
+            let prices = null;
+
             if (isEventTable) {
-                const prices = acStatus ? item.prices_per_sqft_ac : item.prices_per_sqft_nonac;
-                return !prices ? null : (
-                    <Fragment key={item.event_type}>
-                        <td>{item.event_type}</td>
-                        <td>Rs. {getTieredPrice(prices, 'municipal')}</td>
-                        <td>Rs. {getTieredPrice(prices, 'municipality')}</td>
-                        <td>Rs. {getTieredPrice(prices, 'panchayat')}</td>
-                    </Fragment>
-                );
+                label = item.event_type;
+                prices = acStatus ? item.prices_per_sqft_ac : item.prices_per_sqft_nonac;
             } else {
                 const blockLabels = {
-                    conferenceHall: currentContent.conferenceHallAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
-                    foodPrepArea: currentContent.foodPrepAreaAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
-                    lawn: currentContent.lawnAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
-                    roomRent: currentContent.roomRentAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
+                    conferenceHall: currentContent.conferenceHallOption, // Simpler label
+                    foodPrepArea: currentContent.foodPrepAreaOption,
+                    lawn: currentContent.lawnOption,
+                    // Specific labels for per-room rates from translations
+                    roomRentAc: currentContent.perAcRoomLabel,
+                    roomRentNonAc: currentContent.perNonAcRoomLabel,
                     parking: currentContent.parking,
-                    electricity: currentContent.electricityAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
+                    electricity: currentContent.electricityAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''), // Base label
                     cleaning: currentContent.cleaning,
                 };
-                const prices = item;
-                 return !prices ? null : (
-                    <Fragment key={itemKey}>
-                        <td>{blockLabels[itemKey]}</td>
-                        <td>Rs. {getTieredPrice(prices, 'municipal')}</td>
-                        <td>Rs. {getTieredPrice(prices, 'municipality')}</td>
-                        <td>Rs. {getTieredPrice(prices, 'panchayat')}</td>
-                    </Fragment>
-                );
+                label = blockLabels[itemKey];
+                prices = item; 
             }
+            
+            if (!prices || !label) return null;
+
+            return (
+                <Fragment>
+                    <td>{label} {itemKey === 'electricity' || itemKey === 'conferenceHall' || itemKey === 'foodPrepArea' || itemKey === 'lawn' ? `(${acStatus ? currentContent.acOption : currentContent.nonAcOption})` : ''}</td>
+                    <td>Rs. {getTieredPrice(prices, 'municipal')}</td>
+                    <td>Rs. {getTieredPrice(prices, 'municipality')}</td>
+                    <td>Rs. {getTieredPrice(prices, 'panchayat')}</td>
+                </Fragment>
+            );
         };
     
-        const fixedBlocksData = {
-            conferenceHall: acStatus ? selectedHallFullDetails.conference_hall_ac : selectedHallFullDetails.conference_hall_nonac,
-            foodPrepArea: acStatus ? selectedHallFullDetails.food_prep_area_ac : selectedHallFullDetails.food_prep_area_nonac,
-            lawn: acStatus ? selectedHallFullDetails.lawn_ac : selectedHallFullDetails.lawn_nonac,
-            parking: selectedHallFullDetails.parking,
-            electricity: acStatus ? selectedHallFullDetails.electricity_ac : selectedHallFullDetails.electricity_nonac,
-            cleaning: selectedHallFullDetails.cleaning,
-        };
+        const fixedBlocksDataEntries = () => {
+            const blocks = {};
+            if (selectedHallFullDetails.conference_hall_ac && selectedHallFullDetails.conference_hall_nonac) {
+                blocks.conferenceHall = acStatus ? selectedHallFullDetails.conference_hall_ac : selectedHallFullDetails.conference_hall_nonac;
+            }
+            if (selectedHallFullDetails.food_prep_area_ac && selectedHallFullDetails.food_prep_area_nonac) {
+                blocks.foodPrepArea = acStatus ? selectedHallFullDetails.food_prep_area_ac : selectedHallFullDetails.food_prep_area_nonac;
+            }
+            if (selectedHallFullDetails.lawn_ac && selectedHallFullDetails.lawn_nonac) {
+                blocks.lawn = acStatus ? selectedHallFullDetails.lawn_ac : selectedHallFullDetails.lawn_nonac;
+            }
+            // Display per-room rates based on AC status
+            if (acStatus && selectedHallFullDetails.room_rent_ac) {
+                blocks.roomRentAc = selectedHallFullDetails.room_rent_ac;
+            }
+            if (!acStatus && selectedHallFullDetails.room_rent_nonac) {
+                blocks.roomRentNonAc = selectedHallFullDetails.room_rent_nonac;
+            }
+            if (selectedHallFullDetails.parking) blocks.parking = selectedHallFullDetails.parking;
+            if (selectedHallFullDetails.electricity_ac && selectedHallFullDetails.electricity_nonac) {
+                 blocks.electricity = acStatus ? selectedHallFullDetails.electricity_ac : selectedHallFullDetails.electricity_nonac;
+            }
+            if (selectedHallFullDetails.cleaning) blocks.cleaning = selectedHallFullDetails.cleaning;
+            return Object.entries(blocks);
+        }
 
-        const itemsToRender = isEventTable ? data : Object.entries(fixedBlocksData);
+        const itemsToRender = isEventTable ? data : fixedBlocksDataEntries();
     
         return (
             <div className="bn-price-table-container">
-                <h5>{title} ({acStatus ? currentContent.acOption : currentContent.nonAcOption})</h5>
+                <h5>{title}</h5>
                 <table className="bn-price-table">
                     <thead>
                         <tr>
@@ -682,8 +818,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     </thead>
                     <tbody>
                         {itemsToRender.map(itemOrEntry => {
-                            const rowContent = isEventTable ? getRowData(null, itemOrEntry) : getRowData(itemOrEntry[0], itemOrEntry[1]);
-                            return rowContent ? <tr key={isEventTable ? itemOrEntry.event_type : itemOrEntry[0]}>{rowContent}</tr> : null;
+                            const key = isEventTable ? itemOrEntry.event_type : itemOrEntry[0];
+                            const itemData = isEventTable ? itemOrEntry : itemOrEntry[1];
+                            const itemKeyForGetData = isEventTable ? null : itemOrEntry[0];
+                            const rowContent = getRowData(itemKeyForGetData, itemData);
+                            return rowContent ? <tr key={key}>{rowContent}</tr> : null;
                         })}
                     </tbody>
                 </table>
@@ -746,10 +885,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                         <tr key={booking.booking_id}>
                                             <td data-label={currentContent.tableHeaders[0]}>{index + 1}</td>
                                             <td data-label={currentContent.tableHeaders[1]}>{booking.booking_id}</td>
-                                            <td data-label={currentContent.tableHeaders[2]}>{booking.hall_id ? booking.hall_id.hall_name : 'N/A'}</td>
+                                            <td data-label={currentContent.tableHeaders[2]}>{booking.hall_display_name || 'N/A'}</td>
                                             <td data-label={currentContent.tableHeaders[3]}>{booking.floor || 'N/A'}</td>
                                             <td data-label={currentContent.tableHeaders[4]}>{booking.function_type}</td>
-                                            <td data-label={currentContent.tableHeaders[5]}>Rs. {booking.booking_amount}</td>
+                                            <td data-label={currentContent.tableHeaders[5]}>Rs. {booking.booking_amount?.toFixed(2)}</td>
                                             <td data-label={currentContent.tableHeaders[6]} className="bn-table-status-cell">
                                                 {booking.booking_status === 'Confirmed' && <span className="bn-status-indicator bn-status-confirmed"><CircleCheck size={16} />{booking.booking_status}</span>}
                                                 {booking.booking_status === 'Cancelled' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{booking.booking_status}</span>}
@@ -773,7 +912,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                 {booking.booking_status === 'Confirmed' && (
                                                     <button
                                                         className="bn-button bn-download-button"
-                                                        onClick={() => openCertificatePreview(booking)} // <-- MODIFIED HERE
+                                                        onClick={() => openCertificatePreview(booking)}
                                                         aria-label={`${currentContent.downloadButton} for booking ${booking.booking_id}`}
                                                     >
                                                         <DownloadIcon size={16} />
@@ -815,8 +954,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                     <form id="booking-form-id" onSubmit={handleBookingSubmit} className="bn-booking-form">
                                         {isEditing && (
                                             <div className="bn-form-group bn-form-group-full">
-                                                <label htmlFor="booking_id">Booking ID:</label>
-                                                <input type="text" id="booking_id" name="booking_id" value={bookingFormData.booking_id} disabled className="bn-input" />
+                                                <label htmlFor="booking_id_display">Booking ID:</label>
+                                                <input type="text" id="booking_id_display" name="booking_id_display" value={bookingFormData.booking_id} disabled className="bn-input" />
                                             </div>
                                         )}
 
@@ -837,7 +976,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
                                         <div className="bn-form-group">
                                             <label htmlFor="floor">{currentContent.tableHeaders[3]}:</label>
-                                            <input type="number" id="floor" name="floor" value={bookingFormData.floor} onChange={handleBookingFormChange} className="bn-input" min="1" />
+                                            <input type="number" id="floor" name="floor" value={bookingFormData.floor} onChange={handleBookingFormChange} className="bn-input" min="1" disabled={!isHallSelected || !selectedHallFullDetails} max={selectedHallFullDetails?.total_floors} />
                                         </div>
                                         
                                         <div className="bn-form-group">
@@ -864,58 +1003,116 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     <span><MapPinIcon size={14}/> {selectedHallFullDetails.location}</span>
                                                     <span><UsersIcon size={14}/> Capacity: {selectedHallFullDetails.capacity}</span>
                                                     <span><BuildingIcon size={14}/> Floors: {selectedHallFullDetails.total_floors}</span>
-                                                    {selectedHallFullDetails.total_area_sqft && <span><i className="fas fa-ruler-combined"></i> Area: {selectedHallFullDetails.total_area_sqft} sq.ft</span>}
+                                                    {selectedHallFullDetails.total_area_sqft && <span><i className="fas fa-ruler-combined" style={{marginRight: '5px'}}></i> Area: {selectedHallFullDetails.total_area_sqft} sq.ft</span>}
+                                                    {typeof selectedHallFullDetails.num_ac_rooms === 'number' && <span><HomeIcon size={14}/> AC Rooms: {selectedHallFullDetails.num_ac_rooms}</span>}
+                                                    {typeof selectedHallFullDetails.num_non_ac_rooms === 'number' && <span><HomeIcon size={14}/> Non-AC Rooms: {selectedHallFullDetails.num_non_ac_rooms}</span>}
                                                 </div>
                                                 {selectedHallFullDetails.description && <p className="bn-hall-description">{selectedHallFullDetails.description}</p>}
 
                                                 {renderPriceTable(currentContent.fixedPriceBlocksHeading, selectedHallFullDetails, isAcSelected, false)}
-                                                {renderPriceTable(currentContent.eventSpecificPricingHeading, selectedHallFullDetails.event_pricing, isAcSelected, true)}
+                                                {selectedHallFullDetails.event_pricing && selectedHallFullDetails.event_pricing.length > 0 && renderPriceTable(currentContent.eventSpecificPricingHeading, selectedHallFullDetails.event_pricing, isAcSelected, true)}
                                             </div>
                                         )}
 
+                                        {/* Number of AC Rooms Input */}
+                                        {selectedHallFullDetails && typeof selectedHallFullDetails.num_ac_rooms === 'number' && selectedHallFullDetails.num_ac_rooms > 0 && (
+                                            <div className="bn-form-group">
+                                                <label htmlFor="num_ac_rooms_booked">
+                                                    <HomeIcon size={16} /> {currentContent.numAcRoomsLabel}{' '}
+                                                    <span className="bn-form-hint">
+                                                        {currentContent.availableRoomsText(selectedHallFullDetails.num_ac_rooms)}
+                                                    </span>
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    id="num_ac_rooms_booked"
+                                                    name="num_ac_rooms_booked"
+                                                    value={bookingFormData.num_ac_rooms_booked}
+                                                    onChange={handleBookingFormChange}
+                                                    className="bn-input"
+                                                    min="0"
+                                                    max={selectedHallFullDetails.num_ac_rooms}
+                                                    disabled={!isHallSelected}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Number of Non-AC Rooms Input */}
+                                        {selectedHallFullDetails && typeof selectedHallFullDetails.num_non_ac_rooms === 'number' && selectedHallFullDetails.num_non_ac_rooms > 0 && (
+                                            <div className="bn-form-group">
+                                                <label htmlFor="num_non_ac_rooms_booked">
+                                                    <HomeIcon size={16} /> {currentContent.numNonAcRoomsLabel}{' '}
+                                                    <span className="bn-form-hint">
+                                                        {currentContent.availableRoomsText(selectedHallFullDetails.num_non_ac_rooms)}
+                                                    </span>
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    id="num_non_ac_rooms_booked"
+                                                    name="num_non_ac_rooms_booked"
+                                                    value={bookingFormData.num_non_ac_rooms_booked}
+                                                    onChange={handleBookingFormChange}
+                                                    className="bn-input"
+                                                    min="0"
+                                                    max={selectedHallFullDetails.num_non_ac_rooms}
+                                                    disabled={!isHallSelected}
+                                                />
+                                            </div>
+                                        )}
+
+
                                         <div className="bn-form-group">
                                             <label htmlFor="function_type">{currentContent.tableHeaders[4]}:</label>
-                                            <select id="function_type" name="function_type" value={bookingFormData.function_type} onChange={handleBookingFormChange} required className="bn-select" disabled={!isHallSelected}>
+                                            <select 
+                                                id="function_type" 
+                                                name="function_type" 
+                                                value={bookingFormData.function_type} 
+                                                onChange={handleBookingFormChange} 
+                                                required 
+                                                className="bn-select" 
+                                                disabled={!isHallSelected || !selectedHallFullDetails?.event_pricing || selectedHallFullDetails.event_pricing.length === 0}
+                                            >
                                                 <option value="">{currentContent.selectFunctionPlaceholder}</option>
                                                 {selectedHallFullDetails?.event_pricing?.map((event) => (<option key={event.event_type} value={event.event_type}>{event.event_type}</option>))}
                                             </select>
                                         </div>
                                         
-                                        <Fragment>
-                                            <div className="bn-form-group">
-                                                <label htmlFor="selected_area_option">{currentContent.areaOptionLabel}</label>
-                                                <select
-                                                    id="selected_area_option"
-                                                    name="selected_area_option"
-                                                    value={selectedAreaOption}
-                                                    onChange={handleBookingFormChange}
-                                                    required={isFunctionTypeEvent}
-                                                    className="bn-select"
-                                                    disabled={!isHallSelected || !isFunctionTypeSelected || !isFunctionTypeEvent}
-                                                >
-                                                    <option value="none">Select Option</option>
-                                                    <option value="full">{currentContent.areaOptionFull}</option>
-                                                    <option value="half">{currentContent.areaOptionHalf}</option>
-                                                    <option value="partial">{currentContent.areaOptionPartial}</option>
-                                                </select>
-                                            </div>
-                                            <div className="bn-form-group">
-                                                <label htmlFor="area_sqft">{currentContent.areaSqftLabel}</label>
-                                                <input
-                                                    type="number"
-                                                    id="area_sqft"
-                                                    name="area_sqft"
-                                                    value={bookingFormData.area_sqft}
-                                                    onChange={handleBookingFormChange}
-                                                    min="1"
-                                                    required={isFunctionTypeEvent && selectedAreaOption !== 'none'}
-                                                    readOnly={selectedAreaOption === 'full' || selectedAreaOption === 'half'}
-                                                    className="bn-input"
-                                                    placeholder={selectedAreaOption === 'partial' ? 'Enter area in sq.ft.' : ''}
-                                                    disabled={!isHallSelected || !isFunctionTypeSelected || !isFunctionTypeEvent || selectedAreaOption === 'none'}
-                                                />
-                                            </div>
-                                        </Fragment>
+                                        {isFunctionTypeEvent && ( // Only show area options if function type requires area (is an event)
+                                            <Fragment>
+                                                <div className="bn-form-group">
+                                                    <label htmlFor="selected_area_option">{currentContent.areaOptionLabel}</label>
+                                                    <select
+                                                        id="selected_area_option"
+                                                        name="selected_area_option"
+                                                        value={selectedAreaOption}
+                                                        onChange={handleBookingFormChange}
+                                                        className="bn-select"
+                                                        disabled={!isHallSelected || !isFunctionTypeSelected}
+                                                    >
+                                                        <option value="none">Select Option</option>
+                                                        {selectedHallFullDetails?.total_area_sqft > 0 && <option value="full">{currentContent.areaOptionFull}</option>}
+                                                        {selectedHallFullDetails?.total_area_sqft > 0 && <option value="half">{currentContent.areaOptionHalf}</option>}
+                                                        <option value="partial">{currentContent.areaOptionPartial}</option>
+                                                    </select>
+                                                </div>
+                                                <div className="bn-form-group">
+                                                    <label htmlFor="area_sqft">{currentContent.areaSqftLabel}</label>
+                                                    <input
+                                                        type="number"
+                                                        id="area_sqft"
+                                                        name="area_sqft"
+                                                        value={bookingFormData.area_sqft}
+                                                        onChange={handleBookingFormChange}
+                                                        min="1"
+                                                        required={selectedAreaOption !== 'none'} // Required if an area option is chosen
+                                                        readOnly={selectedAreaOption === 'full' || selectedAreaOption === 'half'}
+                                                        className="bn-input"
+                                                        placeholder={selectedAreaOption === 'partial' ? 'Enter area in sq.ft.' : ''}
+                                                        disabled={!isHallSelected || !isFunctionTypeSelected || selectedAreaOption === 'none'}
+                                                    />
+                                                </div>
+                                            </Fragment>
+                                        )}
                                         
                                         <div className="bn-form-group bn-form-group-full">
                                             <label>{currentContent.bookingTypeLabel}</label>
@@ -937,11 +1134,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             <label>{currentContent.optionalAddonsLabel}</label>
                                             <div className="bn-checkbox-group-container">
                                                 {[
-                                                    { name: 'is_parking', label: currentContent.parkingOption },
-                                                    { name: 'is_conference_hall', label: currentContent.conferenceHallOption },
-                                                    { name: 'is_food_prep_area', label: currentContent.foodPrepAreaOption },
-                                                    { name: 'is_lawn', label: currentContent.lawnOption }
-                                                ].map(addon => (
+                                                    { name: 'is_parking', label: currentContent.parkingOption, available: selectedHallFullDetails?.parking },
+                                                    { name: 'is_conference_hall', label: currentContent.conferenceHallOption, available: selectedHallFullDetails?.conference_hall_ac || selectedHallFullDetails?.conference_hall_nonac },
+                                                    { name: 'is_food_prep_area', label: currentContent.foodPrepAreaOption, available: selectedHallFullDetails?.food_prep_area_ac || selectedHallFullDetails?.food_prep_area_nonac },
+                                                    { name: 'is_lawn', label: currentContent.lawnOption, available: selectedHallFullDetails?.lawn_ac || selectedHallFullDetails?.lawn_nonac }
+                                                ].filter(addon => addon.available).map(addon => ( // Only show addons if available in the hall
                                                     <div className="bn-checkbox-group" key={addon.name}>
                                                         <input type="checkbox" id={addon.name} name={addon.name} checked={bookingFormData[addon.name]} onChange={handleBookingFormChange} disabled={!isHallSelected || !isBookingTypeSelected} />
                                                         <label htmlFor={addon.name}>{addon.label}</label>
@@ -970,7 +1167,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                         <button className="bn-button bn-modal-action-button bn-modal-cancel-button" onClick={handleCloseModal}>
                                             {languageType === 'hi' ? content.hi.cancelButton : content.en.cancelButton}
                                         </button>
-                                        <button type="submit" className="bn-button bn-modal-action-button bn-submit-button" form="booking-form-id">
+                                        <button type="submit" className="bn-button bn-modal-action-button bn-submit-button" form="booking-form-id" disabled={loadingHallDetails || !selectedHallFullDetails}>
                                             {isEditing ? (languageType === 'hi' ? 'अपडेट करें' : 'Update Booking') : (languageType === 'hi' ? 'बुक करें' : 'Create Booking')}
                                         </button>
                                     </Fragment>
@@ -988,9 +1185,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); }}
                 >
                     <div 
-                        className="bn-modal-content bn-certificate-preview-modal" // You might want to add specific styles for this class
+                        className="bn-modal-content bn-certificate-preview-modal"
                         onClick={(e) => e.stopPropagation()} 
-                        style={{maxWidth: '850px', maxHeight: '95vh'}} // Adjust size as needed for A4 preview
+                        style={{maxWidth: '850px', maxHeight: '95vh'}}
                     >
                         <div className="bn-modal-header">
                             <h3>{currentContent.previewModalTitle}</h3>
@@ -1004,13 +1201,13 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                         </div>
                         <div 
                             className="bn-modal-body" 
-                            style={{ padding: 0, overflowY: 'auto', backgroundColor: 'var(--user-dl-gray-lightest)' }} // Ensure body allows certificate background
+                            style={{ padding: 0, overflowY: 'auto', backgroundColor: 'var(--user-dl-gray-lightest)' }}
                             ref={certificatePreviewRef}
                         >
                             <BookingCertificate
                                 bookingDetails={{
                                     ...currentBookingForCertificate,
-                                    hall_id_string: currentBookingForCertificate.hall_id?.hall_name || 'N/A',
+                                    hall_id_string: currentBookingForCertificate.hall_display_name || 'N/A', // Use display name
                                     createdAt: currentBookingForCertificate.createdAt 
                                 }}
                                 userName={user?.name || 'N/A'}
@@ -1024,7 +1221,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 {currentContent.previewModalCloseButton}
                             </button>
                             <button
-                                className="bn-button bn-modal-action-button bn-submit-button" // Using submit style for primary action
+                                className="bn-button bn-modal-action-button bn-submit-button"
                                 onClick={downloadCertificateFromPreview}
                             >
                                 <DownloadIcon size={16} /> {currentContent.previewModalDownloadButton}
