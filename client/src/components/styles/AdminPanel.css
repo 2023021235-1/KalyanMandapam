@@ -17,6 +17,11 @@
     --admin-status-pending-text: #FFFFFF;
     --admin-status-cancelled-bg: #dc3545; /* Red (using danger color) */
     --admin-status-cancelled-text: #FFFFFF;
+
+    /* Darker shades for hover effects */
+    --admin-secondary-color-darker: #e68a00; /* Darker orange */
+    --admin-status-rejected-bg-darker: #d32f2f; /* Darker red */
+    --admin-primary-color-darker: #600000; /* Darker maroon */
 }
 
 .admin-panel-container {
@@ -64,7 +69,6 @@
 }
 
 .admin-tab-content {
-    /* Styles for the content area */
     border: 1px solid var(--admin-border-color);
     padding: 20px;
     border-radius: 8px;
@@ -72,6 +76,7 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+/* Styles for the main section headers like "Hall Management", "Booking Management" */
 .admin-tab-content h2 {
     margin-top: 0;
     margin-bottom: 20px;
@@ -80,39 +85,63 @@
     padding-bottom: 10px;
 }
 
+/* Flex container for section headers that include a button (e.g., Hall Management + Add New Hall button) */
+.admin-section-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px; /* Standard margin for section headers */
+    border-bottom: 1px solid var(--admin-border-color); /* Standard border for section headers */
+    padding-bottom: 10px; /* Standard padding for section headers */
+}
+
+.admin-section-header-with-button h2 {
+    margin-bottom: 0; /* Reset margin as parent div handles spacing */
+    border-bottom: none; /* Reset border as parent div handles it */
+    padding-bottom: 0; /* Reset padding as parent div handles it */
+    color: var(--admin-primary-color); /* Ensure color consistency */
+}
+
+.admin-section-header-with-button .admin-form-toggle-button {
+    margin-bottom: 0; /* Remove bottom margin when button is inline with header */
+}
+
+
 /* Form Styles */
 .admin-form-toggle-button {
     padding: 10px 15px;
-    background-color: #007bff; /* Bootstrap-like primary blue */
+    background-color: var(--admin-primary-color); 
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* Default margin, overridden if inline with header */
     transition: background-color 0.3s ease;
 }
 
 .admin-form-toggle-button:hover {
-    background-color: #0056b3;
+    background-color: var(--admin-primary-color-darker);
 }
 
 .admin-form-container {
     margin-bottom: 20px;
-    padding: 15px;
-    border: 1px dashed var(--admin-border-color);
-    border-radius: 5px;
+    padding: 20px;
+    border: 1px solid var(--admin-border-color);
+    border-radius: 8px;
     background-color: var(--admin-light-grey);
 }
 
-.admin-form-container h3 {
+.admin-form-container h3 { /* For "Edit Hall" or "Create New Hall" */
     margin-top: 0;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     color: var(--admin-primary-color);
+    text-align: center;
+    font-size: 1.5em;
 }
 
 .admin-form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjusted minmax for larger form fields */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 15px;
 }
 
@@ -130,17 +159,16 @@
 .admin-form-group input[type="text"],
 .admin-form-group input[type="number"],
 .admin-form-group textarea {
-    padding: 8px;
+    padding: 10px; 
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1em;
-    box-sizing: border-box; /* Ensure padding doesn't affect width */
+    box-sizing: border-box;
 }
 
 .admin-form-group textarea {
-    min-height: 80px;
-    resize: vertical; /* Allow vertical resizing */
-    grid-column: span 2; /* Make textarea span two columns on larger screens */
+    min-height: 100px; 
+    resize: vertical;
 }
 
 .admin-form-group input[type="text"]:disabled {
@@ -152,18 +180,19 @@
 .admin-form-buttons {
     display: flex;
     gap: 10px;
-    margin-top: 10px;
-    grid-column: span 2; /* Make buttons span two columns */
+    margin-top: 20px; 
+    justify-content: flex-end; 
 }
 
 .admin-form-submit-button {
-    padding: 10px 15px;
-    background-color: #28a745; /* Green */
+    padding: 12px 20px; 
+    background-color: #28a745; 
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    font-weight: 500;
 }
 
 .admin-form-submit-button:hover {
@@ -171,23 +200,200 @@
 }
 
 .admin-form-cancel-button {
-     padding: 10px 15px;
-     background-color: #dc3545; /* Red */
+     padding: 12px 20px; 
+     background-color: #6c757d; 
      color: white;
      border: none;
      border-radius: 5px;
      cursor: pointer;
      transition: background-color 0.3s ease;
+     font-weight: 500;
 }
 
 .admin-form-cancel-button:hover {
-     background-color: #c82333;
+     background-color: #5a6268;
+}
+
+
+/* Hall Form Specific Styles */
+.admin-hall-form-section {
+    margin-bottom: 30px; 
+    padding-bottom: 20px; 
+    border-bottom: 1px solid var(--admin-border-color);
+}
+.admin-hall-form-section:last-of-type { 
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+
+.admin-hall-form-section-header { /* For section titles like "Common Hall Details" */
+    color: var(--admin-primary-color);
+    margin-bottom: 20px; 
+    font-size: 1.3em; 
+    font-weight: 600;
+    border-bottom: 1px dashed var(--admin-border-color);
+    padding-bottom: 10px;
+}
+
+.admin-hall-form-section-header-flex { /* For section titles with buttons on the same line */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--admin-primary-color);
+    margin-bottom: 20px; 
+    font-size: 1.3em; 
+    font-weight: 600;
+    border-bottom: 1px dashed var(--admin-border-color);
+    padding-bottom: 10px;
+}
+.admin-hall-form-section-header-flex h4 { /* Reset margin for h4 inside flex */
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    font-size: 1em; /* Match parent font-size or adjust as needed */
+    font-weight: 600; /* Ensure h4 maintains its weight */
+    color: var(--admin-primary-color); /* Ensure color consistency */
+}
+
+
+.admin-hall-form-common-details .admin-form-grid {
+    /* Specific styles for the common details grid if needed */
+}
+
+.admin-hall-form-price-columns {
+    display: grid;
+    gap: 25px; 
+    margin-bottom: 20px; 
+}
+
+.admin-hall-form-price-columns.two-cols {
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 768px) { 
+    .admin-hall-form-price-columns.two-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.admin-hall-form-price-column {
+    padding: 20px; 
+    border: 1px solid var(--admin-border-color);
+    border-radius: 8px; 
+    background-color: var(--admin-white-bg); 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.admin-hall-form-price-column h5 { /* For "AC Blocks", "Non-AC Blocks" */
+    color: var(--admin-secondary-color); 
+    margin-top: 0;
+    margin-bottom: 15px; 
+    border-bottom: 1px solid var(--admin-light-grey);
+    padding-bottom: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.admin-form-group-tiered { 
+    margin-bottom: 15px;
+}
+.admin-form-group-tiered > label { 
+    font-weight: 500;
+    display: block;
+    margin-bottom: 8px;
+    color: var(--admin-text-color);
+}
+
+.tiered-inputs { 
+    display: flex;
+    flex-direction: column; 
+    gap: 10px; 
+}
+
+.tiered-inputs input[type="number"] {
+    padding: 10px; 
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box;
+    width: 100%; 
+}
+
+/* Event pricing specific adjustments */
+.admin-hall-form-event-pricing-section .admin-form-group-event { 
+    border: 1px solid var(--admin-border-color);
+    padding: 20px; 
+    margin-bottom: 20px; 
+    border-radius: 8px; 
+    background-color: var(--admin-white-bg);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.admin-event-type-header { /* Container for "Event Type X:" label and Remove button */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.admin-event-type-header label { /* The "Event Type X:" label */
+    font-weight: bold;
+    color: var(--admin-primary-color);
+    font-size: 1.15em;
+    margin-bottom: 0; 
+}
+
+.admin-hall-form-event-pricing-section .admin-form-group-event .admin-form-group input[type="text"]{
+    margin-bottom: 15px;
+}
+
+
+.admin-hall-form-event-pricing-section .event-tiered-group > label { 
+    font-weight: 600; 
+    color: var(--admin-text-color);
+    margin-bottom: 8px;
+    display: block; 
+    font-size: 1em;
+}
+
+
+.admin-add-event-button,
+.admin-remove-event-button {
+    background-color: var(--admin-secondary-color) !important; 
+    color: var(--admin-white-bg) !important;
+    border: none;
+    padding: 8px 12px; 
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; 
+    font-weight: 500;
+}
+.admin-remove-event-button {
+     margin-top: 0; 
+}
+
+
+.admin-add-event-button:hover {
+    background-color: var(--admin-secondary-color-darker) !important;
+}
+
+.admin-remove-event-button {
+    background-color: var(--admin-status-rejected-bg) !important; 
+}
+.admin-remove-event-button:hover {
+    background-color: var(--admin-status-rejected-bg-darker) !important;
 }
 
 
 /* Table Styles */
 .admin-table-container {
-    overflow-x: auto; /* Horizontal scroll for tables */
+    overflow-x: auto; 
 }
 
 .admin-table {
@@ -198,29 +404,38 @@
 
 .admin-table th,
 .admin-table td {
-    padding: 10px;
+    padding: 12px; 
     border: 1px solid var(--admin-border-color);
     text-align: left;
+    vertical-align: middle; 
 }
 
 .admin-table th {
-    background-color: var(--admin-primary-color); /* Primary color background */
-    color: var(--admin-white-bg); /* White text color */
+    background-color: var(--admin-primary-color); 
+    color: var(--admin-white-bg); 
     font-weight: 600;
 }
 
 .admin-table tbody tr:nth-child(even) {
-    background-color: var(--admin-light-grey); /* Zebra striping */
+    background-color: var(--admin-light-grey); 
 }
+.admin-table tbody tr:hover {
+    background-color: #e9ecef; 
+}
+
 
 /* Table Action Button Styles */
 .admin-table-actions button {
-    padding: 5px 10px;
+    padding: 6px 12px; 
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin-right: 5px; /* Space between buttons */
-    transition: background-color 0.3s ease;
+    margin-right: 5px; 
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    font-size: 0.9em;
+}
+.admin-table-actions button:hover {
+    transform: translateY(-1px); 
 }
 
 .admin-table-actions button:last-child {
@@ -254,26 +469,34 @@
     background-color: #218838;
 }
 
-.admin-cancel-button {
-    background-color: #ffc107; /* Yellow/Orange */
+.admin-cancel-button { 
+    background-color: #ffc107; 
     color: black;
 }
 .admin-cancel-button:hover {
     background-color: #e0a800;
 }
 
+.admin-process-refund-button {
+    background-color: var(--admin-secondary-color);
+    color: var(--admin-white-bg);
+}
+.admin-process-refund-button:hover {
+    background-color: var(--admin-secondary-color-darker);
+}
+
 
 /* Status Indicator Styles (matching BookNow) */
 .admin-status-indicator {
-    display: inline-flex; /* Use flexbox for icon and text alignment */
-    align-items: center; /* Vertically center icon and text */
-    padding: 4px 8px;
-    border-radius: 12px; /* More rounded corners */
+    display: inline-flex; 
+    align-items: center; 
+    padding: 5px 10px; 
+    border-radius: 15px; 
     font-size: 0.9em;
     font-weight: 600;
-    text-transform: capitalize; /* Capitalize the first letter of the status */
-    gap: 4px; /* Space between icon and text */
-    white-space: nowrap; /* Prevent wrapping */
+    text-transform: capitalize; 
+    gap: 5px; 
+    white-space: nowrap; 
 }
 
 .admin-status-confirmed {
@@ -295,9 +518,14 @@
     background-color: var(--admin-status-cancelled-bg);
     color: var(--admin-status-cancelled-text);
 }
+.admin-status-na { 
+    background-color: #6c757d; 
+    color: var(--admin-white-bg);
+}
+
 
 .admin-status-indicator svg {
-    width: 1em; /* Match icon size to text font size */
+    width: 1em; 
     height: 1em;
 }
 
@@ -314,7 +542,7 @@
     }
 
     .admin-tabs {
-        flex-wrap: wrap; /* Allow tabs to wrap */
+        flex-wrap: wrap; 
         justify-content: center;
         margin-bottom: 15px;
     }
@@ -323,27 +551,46 @@
         padding: 8px 15px;
         font-size: 1em;
         margin-right: 8px;
-        margin-bottom: 5px; /* Add space when wrapped */
+        margin-bottom: 5px; 
     }
 
     .admin-tab-content {
         padding: 15px;
     }
 
-    .admin-tab-content h2 {
-        font-size: 1.3em;
+    /* Adjust h2 within .admin-tab-content for responsiveness, but not if it's inside .admin-section-header-with-button */
+    .admin-tab-content > h2 { /* Direct child selector to avoid affecting h2 inside flex container */
+        font-size: 1.4em; 
         margin-bottom: 15px;
         padding-bottom: 8px;
     }
-
-    .admin-form-grid {
-        grid-template-columns: 1fr; /* Stack form items on small screens */
-        gap: 10px;
+    .admin-section-header-with-button {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+     .admin-section-header-with-button h2 {
+        font-size: 1.4em; /* Match other h2s on small screens */
+        margin-bottom: 10px; /* Space between title and button when stacked */
+     }
+    .admin-section-header-with-button .admin-form-toggle-button {
+        align-self: flex-start; /* Align button to start when stacked */
     }
 
-    .admin-form-group textarea,
+
+    .admin-form-grid {
+        grid-template-columns: 1fr; 
+        gap: 12px; 
+    }
+    
+    .admin-form-group textarea, 
     .admin-form-buttons {
-         grid-column: span 1; /* Reset span for small screens */
+         grid-column: span 1 !important; 
+    }
+    .admin-form-buttons {
+        flex-direction: column; 
+    }
+    .admin-form-buttons button {
+        width: 100%; 
     }
 
 
@@ -354,8 +601,36 @@
     }
 
     .admin-table-actions button {
-        padding: 4px 8px;
-        font-size: 0.8em;
-        margin-right: 3px;
+        padding: 5px 8px; 
+        font-size: 0.85em; 
+        margin-bottom: 5px; 
     }
+    .admin-table-actions {
+        display: flex;
+        flex-direction: column; 
+        gap: 5px;
+    }
+     .admin-table-actions button {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .admin-hall-form-section-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .admin-hall-form-section-header-flex h4 {
+        margin-bottom: 10px; /* Add space between title and button when stacked */
+    }
+    .admin-event-type-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+     .admin-event-type-header label {
+        margin-bottom: 10px;
+     }
+     .admin-remove-event-button {
+        align-self: flex-start; 
+     }
+
 }
