@@ -16,8 +16,9 @@ import QueryFeedbackSection from "./components/QueryFeedbackSection";
 import CheckRentSection from "./components/CheckRentSection";
 import CheckAvailabilitySection from "./components/CheckAvailabilitySection";
 import CheckRefundStatusSection from "./components/CheckRefundStatusSection";
-import BookNowSection from "./components/Book";
-import AdminPanel from "./components/AdminPanel";
+import BookNowSection from "./components/Book"; // Keep AdminPanel for the main admin route
+import HallManagement from "./components/HallManagement"; // Import HallManagement
+import BookingManagement from "./components/BookingManagement"; // Import BookingManagement
 
 function App() {
   const [languageType, setLanguageType] = useState("en");
@@ -60,6 +61,13 @@ function App() {
         });
 
         setUser(res.data.user);
+        if (res.data.user.userType === 'Admin') {
+          setIsAdmin(true);
+          // Navigate to a default admin sub-route, e.g., hall management
+   
+        } else {
+          navigate("/home"); 
+        }
       } catch (err) {
         console.error("Failed to fetch user profile", err);
         localStorage.removeItem("token");
@@ -81,7 +89,7 @@ function App() {
     // Clear the interval when the component unmounts
     return () => clearInterval(tokenCheckInterval);
 
-  }, [backend]); // Add backend to the dependency array
+  }, [backend, navigate]); // Added navigate to dependency array
 
   return (
     <div className="App">
@@ -106,7 +114,7 @@ function App() {
                 setUser={setUser}
               />
             ) : isAdmin ? (
-              <Navigate to="/admin" />
+              <Navigate to="/admin/hall-management" /> // Redirect admin to a specific admin sub-route
             ) : (
               <Navigate to="/" />
             )
@@ -115,14 +123,26 @@ function App() {
 
         <Route path="/" element={<HomePage languageType={languageType} />} />
         <Route path="/home" element={<HomePage languageType={languageType} />} />
-        <Route path="/book" element={<BookNowSection user={user} languageType={languageType} />} />
+        <Route path="/book" element={user ? <BookNowSection user={user} languageType={languageType} /> : <Navigate to="/" />} />
         <Route path="/contact" element={<ContactUsSection languageType={languageType} />} />
         <Route path="/feedback" element={<QueryFeedbackSection languageType={languageType} />} />
         <Route path="/check-rent" element={<CheckRentSection languageType={languageType} />} />
         <Route path="/availability" element={<CheckAvailabilitySection languageType={languageType} />} />
         <Route path="/refund-status" element={<CheckRefundStatusSection user={user} languageType={languageType} />} />
-        <Route path="/admin" element={isAdmin ? <AdminPanel user={user} geType={languageType} />: <Navigate to="/" />} />
-        <Route path="/book" element={user?<BookNowSection user={user} languageType={languageType} />: <Navigate to="/" />} />
+     
+     
+        {/* New specific admin sub-routes */}
+        <Route 
+          path="/admin/hall-management" 
+          element={isAdmin ? <HallManagement API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} 
+        />
+        <Route 
+          path="/admin/booking-management" 
+          element={isAdmin ? <BookingManagement API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} 
+        />
+        {/* Add other admin sub-routes here as needed, e.g., for verify-booking */}
+        <Route path="/admin/verify-booking" element={isAdmin ? <div>Verify Booking Content (To be implemented)</div> : <Navigate to="/" />} />
+
       </Routes>
 
       {/* Token Expired Dialog */}

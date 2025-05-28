@@ -1,0 +1,733 @@
+/* HallManagement.css (Consolidated and Enhanced from BookingManagement.css) */
+
+/* Booking Specific Action Button Styles - Retained for consistency as this file might consolidate styles */
+.book-m-confirm-button {
+    background-color: #28a745; /* Green */
+    color: white;
+    padding: 8px 15px; /* Slightly more padding for better clickability */
+    border-radius: 5px; /* Consistent border-radius */
+    font-size: 0.9em; /* Consistent font size */
+    border: none; /* Ensure no default button border */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.book-m-confirm-button:hover {
+    background-color: #218838;
+    transform: translateY(-1px); /* Subtle hover effect */
+}
+
+.book-m-cancel-button { 
+    background-color: #ffc107; 
+    color: black;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.book-m-cancel-button:hover {
+    background-color: #e0a800;
+    transform: translateY(-1px);
+}
+
+.book-m-process-refund-button {
+    background-color: var(--admin-secondary-color);
+    color: var(--admin-white-bg);
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.book-m-process-refund-button:hover {
+    background-color: var(--admin-secondary-color-darker);
+    transform: translateY(-1px);
+}
+
+.book-m-delete-button {
+    background-color: #dc3545; /* Red */
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.book-m-delete-button:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+/* Hall Management Specific Action Button Styles */
+.hall-m-edit-button {
+    background-color: #007bff; /* Blue */
+    color: white;
+    padding: 6px 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.hall-m-edit-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+.hall-m-delete-button {
+    background-color: #dc3545; /* Red */
+    color: white;
+    padding: 6px 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.hall-m-delete-button:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+/* Hall Management Form Specific Styles */
+.hall-m-form-section {
+    margin-bottom: var(--spacing-xl); /* Space between form sections */
+    padding-bottom: var(--spacing-lg); /* Padding at the bottom of the section */
+    border-bottom: 1px solid var(--admin-border-color); /* Separator */
+}
+
+.hall-m-form-section:last-child {
+    border-bottom: none; /* No border for the last section */
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.hall-m-form-section-header {
+    color: var(--admin-primary-color);
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--admin-border-color); /* Subtle line under header */
+}
+
+.hall-m-form-price-columns {
+    display: flex;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
+    margin-bottom: var(--spacing-sm);
+}
+.hall-m-form-price-columns.two-cols > .hall-m-form-price-column {
+    flex: 1 1 calc(50% - var(--spacing-lg) / 2); /* Distribute space for two columns */
+    min-width: 280px; /* Minimum width before wrapping */
+}
+
+.hall-m-form-price-column {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--admin-border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--admin-white-bg); /* White background for pricing blocks */
+}
+
+.hall-m-form-price-column h5 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    color: var(--admin-secondary-color);
+    text-align: center;
+    border-bottom: 1px dashed var(--admin-border-color);
+    padding-bottom: var(--spacing-xs);
+}
+
+.hall-m-form-group-tiered {
+    margin-bottom: var(--spacing-md);
+}
+
+.hall-m-form-group-tiered label {
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+    display: block; /* Ensure label takes full width */
+    color: var(--admin-text-color);
+}
+
+.hall-m-tiered-inputs {
+    display: flex;
+    gap: var(--spacing-xs); /* Smaller gap between inputs */
+    flex-wrap: wrap; /* Allow inputs to wrap */
+}
+
+.hall-m-tiered-inputs input[type="number"] {
+    flex: 1 1 0; /* Allow inputs to grow and shrink */
+    min-width: 80px; /* Minimum width for each tiered input */
+    padding: var(--spacing-sm);
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9em;
+    box-sizing: border-box;
+}
+
+.hall-m-form-section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--admin-border-color);
+    padding-bottom: var(--spacing-sm);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+.hall-m-form-section-header-flex h4 {
+    margin-top: 0;
+    margin-bottom: 0; /* Let parent control spacing */
+    border-bottom: none;
+    padding-bottom: 0;
+    color: var(--admin-primary-color);
+}
+
+.hall-m-add-event-button,
+.hall-m-remove-event-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.hall-m-add-event-button {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+.hall-m-add-event-button:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+.hall-m-remove-event-button {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+.hall-m-remove-event-button:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+.hall-m-form-group-event {
+    border: 1px solid var(--admin-border-color);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    background-color: var(--admin-light-grey);
+    margin-bottom: var(--spacing-lg); /* Space between event type blocks */
+}
+
+.hall-m-event-type-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px dashed var(--admin-border-color);
+}
+.hall-m-event-type-header label {
+    font-weight: 600;
+    color: var(--admin-primary-color);
+    font-size: 1.1em;
+}
+
+.event-tiered-group {
+    margin-bottom: var(--spacing-sm); /* Space between AC/Non-AC price groups */
+}
+
+
+/* AdminPanel.css - Consolidated and Enhanced for card effect and spacing */
+
+:root {
+    --admin-primary-color: #800000; /* Maroon - Same as BookNow primary */
+    --admin-secondary-color: #ff9900; /* Orange - Same as BookNow secondary */
+    --admin-text-color: #000000; /* Black */
+    --admin-white-bg: #FFFFFF; /* White */
+    --admin-light-grey: #f8f9fa; /* Light grey for backgrounds */
+    --admin-border-color: #dee2e6; /* Grey border */
+
+    /* Status colors (matching BookNow) */
+    --admin-status-confirmed-bg: #4CAF50; /* Green */
+    --admin-status-confirmed-text: #FFFFFF;
+    --admin-status-rejected-bg: #f44336; /* Red */
+    --admin-status-rejected-text: #FFFFFF;
+    --admin-status-pending-bg: #ff9800; /* Orange/Amber */
+    --admin-status-pending-text: #FFFFFF;
+    --admin-status-cancelled-bg: #dc3545; /* Red (using danger color) */
+    --admin-status-cancelled-text: #FFFFFF;
+
+    /* Darker shades for hover effects */
+    --admin-secondary-color-darker: #e68a00; /* Darker orange */
+    --admin-status-rejected-bg-darker: #d32f2f; /* Darker red */
+    --admin-primary-color-darker: #600000; /* Darker maroon */
+
+    /* Spacing variables for consistency */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 15px;
+    --spacing-lg: 20px;
+    --spacing-xl: 30px;
+    --spacing-xxl: 40px; /* New: Larger spacing for section separation */
+
+    /* Border Radius */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 15px;
+
+    /* Card Shadow */
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* More pronounced shadow */
+}
+
+body {
+    background-color: var(--admin-light-grey); /* Set a light grey background for the whole page */
+    margin: 0; /* Reset default body margin */
+    padding: 0; /* Reset default body padding */
+    font-family: Arial, sans-serif; /* Example font, adjust as needed */
+}
+
+/* Overall container for the admin panel, now acts as the content wrapper */
+.admin-panel-container {
+    padding: var(--spacing-xxl) var(--spacing-lg); /* Increased vertical padding to push content down from navbar, reduced horizontal */
+    max-width: 1200px;
+    margin: 0 auto; /* Center the container */
+    color: var(--admin-text-color);
+}
+
+/* New: Card style for the main content area */
+.admin-card {
+    background-color: var(--admin-white-bg); /* White background */
+    border-radius: var(--border-radius-md); /* Rounded corners */
+    box-shadow: var(--card-shadow); /* Subtle shadow */
+    padding: var(--spacing-xl); /* Generous padding inside the card */
+    margin-top: var(--spacing-lg); /* Space from elements above, like potential navigation */
+}
+
+/* Adjustments for h1 to ensure it's outside or appropriately spaced within the card */
+.admin-panel-container h1 {
+    text-align: center;
+    margin-bottom: var(--spacing-xl); /* Consistent spacing below title */
+    color: var(--admin-primary-color);
+    padding-top: var(--spacing-lg); /* Add some padding above the main title if it's within the main panel wrapper */
+}
+
+/* Tab Styles */
+.admin-tabs {
+    display: flex;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--admin-border-color);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-sm); /* Add padding above tabs */
+}
+
+.admin-tab-button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #555;
+    transition: color 0.3s ease, border-bottom-color 0.3s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.admin-tab-button.active {
+    color: var(--admin-primary-color);
+    border-bottom-color: var(--admin-primary-color);
+    font-weight: 600;
+}
+
+.admin-tab-button:hover:not(.active) {
+    color: var(--admin-secondary-color);
+    border-bottom-color: var(--admin-secondary-color);
+}
+
+/* This is the content area for each tab, it already has good styling */
+.admin-tab-content {
+    /* Removed border, shadow, and background as the new .admin-card will wrap it */
+    /* If you want inner cards per tab, keep these, otherwise remove them from here */
+    border: none; /* Let the parent .admin-card handle the main border/shadow */
+    background-color: transparent; /* No background, let parent card define it */
+    box-shadow: none; /* No shadow, let parent card define it */
+    padding: 0; /* Remove padding if it's already in .admin-card, otherwise adjust */
+    border-radius: 0;
+}
+/* If you want tab content to also be a 'card', then give it specific styling.
+   For this request, we're assuming the *entire* tab content area should be one card.
+   So, we'll wrap the <section> in BookingManagement.jsx with this 'admin-card' div. */
+
+
+/* Styles for the main section headers like "Hall Management", "Booking Management" */
+.admin-tab-content h2 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-lg);
+    color: var(--admin-primary-color);
+    border-bottom: 1px solid var(--admin-border-color);
+    padding-bottom: var(--spacing-sm);
+    padding-top: var(--spacing-md); /* Add some top padding to separate from card top */
+}
+
+/* Flex container for section headers that include a button (e.g., Hall Management + Add New Hall button) */
+.admin-section-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--admin-border-color);
+    padding-bottom: var(--spacing-sm);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.admin-section-header-with-button h2 {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    color: var(--admin-primary-color);
+}
+
+.admin-section-header-with-button .admin-form-toggle-button {
+    margin-bottom: 0;
+}
+
+
+/* Form Styles - General */
+.admin-form-toggle-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--admin-primary-color); 
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    margin-bottom: var(--spacing-lg);
+    transition: background-color 0.3s ease;
+}
+
+.admin-form-toggle-button:hover {
+    background-color: var(--admin-primary-color-darker);
+}
+
+.admin-form-container {
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--admin-border-color);
+    border-radius: var(--border-radius-md);
+    background-color: var(--admin-light-grey);
+}
+
+.admin-form-container h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-lg);
+    color: var(--admin-primary-color);
+    text-align: center;
+    font-size: 1.5em;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.admin-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-form-group label {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--admin-text-color);
+}
+
+.admin-form-group input[type="text"],
+.admin-form-group input[type="number"],
+.admin-form-group textarea {
+    padding: var(--spacing-sm); 
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius-sm);
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.admin-form-group textarea {
+    min-height: 100px; 
+    resize: vertical;
+}
+
+.admin-form-group input[type="text"]:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+
+.admin-form-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg); 
+    justify-content: flex-end; 
+    flex-wrap: wrap;
+}
+
+.admin-form-submit-button {
+    padding: var(--spacing-sm) var(--spacing-lg); 
+    background-color: #28a745; 
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: 500;
+}
+
+.admin-form-submit-button:hover {
+    background-color: #218838;
+}
+
+.admin-form-cancel-button {
+    padding: var(--spacing-sm) var(--spacing-lg); 
+    background-color: #6c757d; 
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: 500;
+}
+
+.admin-form-cancel-button:hover {
+    background-color: #5a6268;
+}
+
+
+/* Table Styles - General */
+.admin-table-container {
+    overflow-x: auto; 
+    margin-top: var(--spacing-lg); 
+    border: 1px solid var(--admin-border-color); 
+    border-radius: var(--border-radius-md); 
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: var(--spacing-sm) var(--spacing-md); 
+    border: 1px solid var(--admin-border-color);
+    text-align: left;
+    vertical-align: middle; 
+}
+
+.admin-table th {
+    background-color: var(--admin-primary-color); 
+    color: var(--admin-white-bg); 
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.admin-table tbody tr:nth-child(even) {
+    background-color: var(--admin-light-grey); 
+}
+.admin-table tbody tr:hover {
+    background-color: #e9ecef; 
+}
+
+
+/* Table Action Button Styles - General */
+.admin-table-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.admin-table-actions button {
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+.admin-table-actions button:hover {
+    transform: translateY(-1px); 
+}
+
+
+/* Status Indicator Styles (matching BookNow) - General */
+.admin-status-indicator {
+    display: inline-flex; 
+    align-items: center; 
+    padding: 5px 10px; 
+    border-radius: var(--border-radius-lg); 
+    font-size: 0.9em;
+    font-weight: 600;
+    text-transform: capitalize; 
+    gap: var(--spacing-xs); 
+    white-space: nowrap; 
+}
+
+.admin-status-confirmed {
+    background-color: var(--admin-status-confirmed-bg);
+    color: var(--admin-status-confirmed-text);
+}
+
+.admin-status-rejected {
+    background-color: var(--admin-status-rejected-bg);
+    color: var(--admin-status-rejected-text);
+}
+
+.admin-status-pending {
+    background-color: var(--admin-status-pending-bg);
+    color: var(--admin-status-pending-text);
+}
+
+.admin-status-cancelled {
+    background-color: var(--admin-status-cancelled-bg);
+    color: var(--admin-status-cancelled-text);
+}
+.admin-status-na { 
+    background-color: #6c757d; 
+    color: var(--admin-white-bg);
+}
+
+
+.admin-status-indicator svg {
+    width: 1em; 
+    height: 1em;
+    vertical-align: middle;
+}
+
+
+/* Responsive Adjustments - Common */
+@media (max-width: 768px) {
+    .admin-panel-container {
+        padding: var(--spacing-md);
+    }
+
+    .admin-panel-container h1 {
+        font-size: 1.8em;
+        margin-bottom: var(--spacing-lg);
+        padding-top: var(--spacing-md); /* Adjust padding */
+    }
+
+    .admin-card {
+        padding: var(--spacing-lg); /* Reduce card padding on smaller screens */
+    }
+
+    .admin-tabs {
+        flex-wrap: wrap; 
+        justify-content: center;
+        margin-bottom: var(--spacing-md);
+        gap: var(--spacing-sm);
+        padding-top: var(--spacing-sm);
+    }
+
+    .admin-tab-button {
+        padding: var(--spacing-xs) var(--spacing-md);
+        font-size: 1em;
+        margin-bottom: 0;
+    }
+
+    .admin-tab-content {
+        padding: 0; /* Already set to 0, ensure consistency */
+    }
+
+    .admin-tab-content > h2 {
+        font-size: 1.4em; 
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-xs);
+        padding-top: var(--spacing-md); /* Adjust padding */
+    }
+    .admin-section-header-with-button {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-xs);
+        gap: var(--spacing-sm);
+    }
+    .admin-section-header-with-button h2 {
+        font-size: 1.4em; 
+        margin-bottom: 0;
+    }
+    .admin-section-header-with-button .admin-form-toggle-button {
+        align-self: flex-start; 
+        margin-bottom: 0;
+    }
+
+
+    .admin-form-grid {
+        grid-template-columns: 1fr; 
+        gap: var(--spacing-sm);
+    }
+    
+    .admin-form-group textarea, 
+    .admin-form-buttons {
+         grid-column: span 1 !important; 
+    }
+    .admin-form-buttons {
+        flex-direction: column; 
+        gap: var(--spacing-sm);
+    }
+    .admin-form-buttons button {
+        width: 100%; 
+    }
+
+
+    .admin-table th,
+    .admin-table td {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.85em;
+    }
+
+    .admin-table-actions {
+        flex-direction: column; 
+        gap: var(--spacing-xs);
+    }
+     .admin-table-actions button {
+        width: 100%;
+        margin-right: 0;
+        padding: 7px 12px;
+        font-size: 0.85em;
+    }
+
+    /* Hall Management specific responsive adjustments */
+    .hall-m-form-price-columns.two-cols > .hall-m-form-price-column {
+        flex: 1 1 100%; /* Stack columns on small screens */
+        min-width: unset;
+    }
+    .hall-m-tiered-inputs {
+        flex-direction: column; /* Stack tiered inputs vertically */
+        gap: var(--spacing-xs);
+    }
+    .hall-m-tiered-inputs input[type="number"] {
+        min-width: unset;
+        width: 100%; /* Full width for stacked inputs */
+    }
+    .hall-m-form-section-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    .hall-m-add-event-button,
+    .hall-m-remove-event-button {
+        width: 100%;
+        justify-content: center; /* Center text and icon in stacked buttons */
+        padding: var(--spacing-sm);
+        font-size: 0.9em;
+    }
+}

@@ -1,3 +1,37 @@
+/* BookingManagement.css */
+
+/* Booking Specific Action Button Styles */
+.book-m-confirm-button {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+.book-m-confirm-button:hover {
+    background-color: #218838;
+}
+
+.book-m-cancel-button { 
+    background-color: #ffc107; 
+    color: black;
+}
+.book-m-cancel-button:hover {
+    background-color: #e0a800;
+}
+
+.book-m-process-refund-button {
+    background-color: var(--admin-secondary-color);
+    color: var(--admin-white-bg);
+}
+.book-m-process-refund-button:hover {
+    background-color: var(--admin-secondary-color-darker);
+}
+
+.book-m-delete-button {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+.book-m-delete-button:hover {
+     background-color: #c82333;
+}
 /* AdminPanel.css */
 
 :root {
@@ -107,7 +141,7 @@
 }
 
 
-/* Form Styles */
+/* Form Styles - General */
 .admin-form-toggle-button {
     padding: 10px 15px;
     background-color: var(--admin-primary-color); 
@@ -215,183 +249,7 @@
 }
 
 
-/* Hall Form Specific Styles */
-.admin-hall-form-section {
-    margin-bottom: 30px; 
-    padding-bottom: 20px; 
-    border-bottom: 1px solid var(--admin-border-color);
-}
-.admin-hall-form-section:last-of-type { 
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-
-.admin-hall-form-section-header { /* For section titles like "Common Hall Details" */
-    color: var(--admin-primary-color);
-    margin-bottom: 20px; 
-    font-size: 1.3em; 
-    font-weight: 600;
-    border-bottom: 1px dashed var(--admin-border-color);
-    padding-bottom: 10px;
-}
-
-.admin-hall-form-section-header-flex { /* For section titles with buttons on the same line */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--admin-primary-color);
-    margin-bottom: 20px; 
-    font-size: 1.3em; 
-    font-weight: 600;
-    border-bottom: 1px dashed var(--admin-border-color);
-    padding-bottom: 10px;
-}
-.admin-hall-form-section-header-flex h4 { /* Reset margin for h4 inside flex */
-    margin-bottom: 0;
-    border-bottom: none;
-    padding-bottom: 0;
-    font-size: 1em; /* Match parent font-size or adjust as needed */
-    font-weight: 600; /* Ensure h4 maintains its weight */
-    color: var(--admin-primary-color); /* Ensure color consistency */
-}
-
-
-.admin-hall-form-common-details .admin-form-grid {
-    /* Specific styles for the common details grid if needed */
-}
-
-.admin-hall-form-price-columns {
-    display: grid;
-    gap: 25px; 
-    margin-bottom: 20px; 
-}
-
-.admin-hall-form-price-columns.two-cols {
-    grid-template-columns: 1fr 1fr;
-}
-
-@media (max-width: 768px) { 
-    .admin-hall-form-price-columns.two-cols {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-.admin-hall-form-price-column {
-    padding: 20px; 
-    border: 1px solid var(--admin-border-color);
-    border-radius: 8px; 
-    background-color: var(--admin-white-bg); 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-}
-
-.admin-hall-form-price-column h5 { /* For "AC Blocks", "Non-AC Blocks" */
-    color: var(--admin-secondary-color); 
-    margin-top: 0;
-    margin-bottom: 15px; 
-    border-bottom: 1px solid var(--admin-light-grey);
-    padding-bottom: 8px;
-    font-size: 1.1em;
-    font-weight: 600;
-}
-
-.admin-form-group-tiered { 
-    margin-bottom: 15px;
-}
-.admin-form-group-tiered > label { 
-    font-weight: 500;
-    display: block;
-    margin-bottom: 8px;
-    color: var(--admin-text-color);
-}
-
-.tiered-inputs { 
-    display: flex;
-    flex-direction: column; 
-    gap: 10px; 
-}
-
-.tiered-inputs input[type="number"] {
-    padding: 10px; 
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1em;
-    box-sizing: border-box;
-    width: 100%; 
-}
-
-/* Event pricing specific adjustments */
-.admin-hall-form-event-pricing-section .admin-form-group-event { 
-    border: 1px solid var(--admin-border-color);
-    padding: 20px; 
-    margin-bottom: 20px; 
-    border-radius: 8px; 
-    background-color: var(--admin-white-bg);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-
-.admin-event-type-header { /* Container for "Event Type X:" label and Remove button */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.admin-event-type-header label { /* The "Event Type X:" label */
-    font-weight: bold;
-    color: var(--admin-primary-color);
-    font-size: 1.15em;
-    margin-bottom: 0; 
-}
-
-.admin-hall-form-event-pricing-section .admin-form-group-event .admin-form-group input[type="text"]{
-    margin-bottom: 15px;
-}
-
-
-.admin-hall-form-event-pricing-section .event-tiered-group > label { 
-    font-weight: 600; 
-    color: var(--admin-text-color);
-    margin-bottom: 8px;
-    display: block; 
-    font-size: 1em;
-}
-
-
-.admin-add-event-button,
-.admin-remove-event-button {
-    background-color: var(--admin-secondary-color) !important; 
-    color: var(--admin-white-bg) !important;
-    border: none;
-    padding: 8px 12px; 
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px; 
-    font-weight: 500;
-}
-.admin-remove-event-button {
-     margin-top: 0; 
-}
-
-
-.admin-add-event-button:hover {
-    background-color: var(--admin-secondary-color-darker) !important;
-}
-
-.admin-remove-event-button {
-    background-color: var(--admin-status-rejected-bg) !important; 
-}
-.admin-remove-event-button:hover {
-    background-color: var(--admin-status-rejected-bg-darker) !important;
-}
-
-
-/* Table Styles */
+/* Table Styles - General */
 .admin-table-container {
     overflow-x: auto; 
 }
@@ -424,7 +282,7 @@
 }
 
 
-/* Table Action Button Styles */
+/* Table Action Button Styles - General */
 .admin-table-actions button {
     padding: 6px 12px; 
     border: none;
@@ -443,50 +301,7 @@
 }
 
 
-.admin-edit-button {
-    background-color: #ffc107; /* Yellow */
-    color: black;
-}
-.admin-edit-button:hover {
-     background-color: #e0a800;
-}
-
-
-.admin-delete-button {
-    background-color: #dc3545; /* Red */
-    color: white;
-}
-.admin-delete-button:hover {
-     background-color: #c82333;
-}
-
-/* Booking Specific Action Button Styles */
-.admin-confirm-button {
-    background-color: #28a745; /* Green */
-    color: white;
-}
-.admin-confirm-button:hover {
-    background-color: #218838;
-}
-
-.admin-cancel-button { 
-    background-color: #ffc107; 
-    color: black;
-}
-.admin-cancel-button:hover {
-    background-color: #e0a800;
-}
-
-.admin-process-refund-button {
-    background-color: var(--admin-secondary-color);
-    color: var(--admin-white-bg);
-}
-.admin-process-refund-button:hover {
-    background-color: var(--admin-secondary-color-darker);
-}
-
-
-/* Status Indicator Styles (matching BookNow) */
+/* Status Indicator Styles (matching BookNow) - General */
 .admin-status-indicator {
     display: inline-flex; 
     align-items: center; 
@@ -530,7 +345,7 @@
 }
 
 
-/* Responsive Adjustments */
+/* Responsive Adjustments - Common */
 @media (max-width: 768px) {
     .admin-panel-container {
         padding: 15px;
@@ -614,23 +429,4 @@
         width: 100%;
         margin-right: 0;
     }
-
-    .admin-hall-form-section-header-flex {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .admin-hall-form-section-header-flex h4 {
-        margin-bottom: 10px; /* Add space between title and button when stacked */
-    }
-    .admin-event-type-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-     .admin-event-type-header label {
-        margin-bottom: 10px;
-     }
-     .admin-remove-event-button {
-        align-self: flex-start; 
-     }
-
 }

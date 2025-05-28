@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './styles/Navbar.css'; // Make sure this path is correct
+import './styles/Navbar.css';
 import { Bell } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
   { hi: 'होम',             en: 'Home', path: '/' },
-  { hi: 'अभी बुक करें',    en: 'Book Now', path: '/book' },
-  { hi: 'किराया जांचें',    en: 'Check Rent', path: '/check-rent' },
+  { hi: 'अभी बुक करें',   en: 'Book Now', path: '/book' },
+  { hi: 'किराया जांचें',   en: 'Check Rent', path: '/check-rent' },
   { hi: 'उपलब्धता जांचें',  en: 'Check Availability', path: '/availability' },
   { hi: 'रिफंड स्थिति',    en: 'Refund Status', path: '/refund-status' },
   { hi: 'संपर्क करें',      en: 'Contact Us', path: '/contact' },
@@ -30,10 +30,9 @@ const textContent = {
   }
 };
 
-// Define paths to hide when not logged in
 const pathsToHideWhenLoggedOut = ['/book', '/refund-status'];
 
-function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType,isAdmin }) {
+function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType, isAdmin }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const navigate = useNavigate();
@@ -75,10 +74,16 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
     setShowNotif(false);
   };
 
-  // Filter navItems based on user prop
-  const displayedNavItems = user
-    ? navItems
-    : navItems.filter(item => !pathsToHideWhenLoggedOut.includes(item.path));
+  const displayedNavItems = isAdmin
+    ? [
+        { hi: 'होम', en: 'Home', path: '/' }, 
+        { hi: 'हॉल प्रबंधन', en: 'Hall Management', path: '/admin/hall-management' },
+        { hi: 'बुकिंग प्रबंधन', en: 'Booking Management', path: '/admin/booking-management' },
+        { hi: 'बुकिंग सत्यापित करें', en: 'Verify Booking', path: '/admin/verify-booking' },
+      ]
+    : user
+      ? navItems
+      : navItems.filter(item => !pathsToHideWhenLoggedOut.includes(item.path));
 
   return (
     <nav className="navbar navbar--gov">
@@ -96,7 +101,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
           </button>
 
           <div className="navbar__logo">
-            <img src="./logo.webp" alt="Logo" className="navbar__logo-img" /> {/* Ensure logo.webp is in the correct path, often public folder */}
+            <img src="/logo.webp" alt="Logo" className="navbar__logo-img" />
             <div className="navbar__logo-text-container">
               <span className="gov-logo">{currentText.logoTopText}</span>
               <span className="kalyan-mandapam-heading">{currentText.logoBottomText}</span>
@@ -156,7 +161,6 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
 
         <div className={`navbar__mobile-menu ${showMenu ? 'show' : ''}`} ref={menuRef}>
           <ul className="navbar__menu">
-            {/* Use displayedNavItems for mobile menu */}
             {displayedNavItems.map((item, idx) => (
               <li
                 key={idx}
@@ -176,13 +180,10 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
           </ul>
         </div>
 
-        {!isAdmin && (<div className='navbar__desktop-only'>
-          {/* This condition (true || user) effectively means the bottom row always renders if items exist.
-              The filtering of displayedNavItems will handle which items are shown. */}
-          {(true || user) && (
+        <div className='navbar__desktop-only'>
+          {displayedNavItems.length > 0 && (
             <div className="navbar__bottom-row">
               <ul className="navbar__menu">
-                {/* Use displayedNavItems for desktop menu */}
                 {displayedNavItems.map((item, idx) => (
                   <li
                     key={idx}
@@ -195,8 +196,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
               </ul>
             </div>
           )}
-        </div>)
-        }
+        </div>
       </div>
     </nav>
   );
