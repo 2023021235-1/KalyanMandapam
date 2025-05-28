@@ -121,7 +121,8 @@ function App() {
         <Route path="/check-rent" element={<CheckRentSection languageType={languageType} />} />
         <Route path="/availability" element={<CheckAvailabilitySection languageType={languageType} />} />
         <Route path="/refund-status" element={<CheckRefundStatusSection user={user} languageType={languageType} />} />
-        <Route path="/admin" element={<AdminPanel languageType={languageType} />} />
+        <Route path="/admin" element={isAdmin ? <AdminPanel user={user} geType={languageType} />: <Navigate to="/" />} />
+        <Route path="/book" element={user?<BookNowSection user={user} languageType={languageType} />: <Navigate to="/" />} />
       </Routes>
 
       {/* Token Expired Dialog */}
