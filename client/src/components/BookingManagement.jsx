@@ -139,7 +139,10 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                                 <tr>
                                     <th>Booking ID</th><th>Trans. ID</th><th>Hall Name</th><th>Booking Date</th><th>Floor</th>
                                     <th>Function</th><th>AC Rms</th><th>Non-AC Rms</th><th>Amount</th><th>Status</th>
-                                    <th>Allowed</th><th>Paid</th><th>Refund Status</th><th>Refund Amt.</th><th>User ID</th><th>Actions</th>
+                                    <th>Allowed</th><th>Paid</th><th>Refund Status</th><th>Refund Amt.</th>
+                                    <th>Booker Name</th> {/* Added Booker Name */}
+                                    <th>Booker Email</th> {/* Added Booker Email */}
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -159,7 +162,8 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                                         <td>{booking.isPaid ? 'Yes' : 'No'}</td>       {/* Display isPaid */}
                                         <td>{renderStatus(booking.refund_status)}</td>
                                         <td>{booking.refund_amount ?? 'N/A'}</td>
-                                        <td>{booking.user_id}</td>
+                                        <td>{booking.user_id?.name || 'N/A'}</td> {/* Display booker's name */}
+                                        <td>{booking.user_id?.email || 'N/A'}</td> {/* Display booker's email */}
                                         <td className="admin-table-actions">
                                             {/* Allow button: Only for Pending bookings */}
                                             {booking.booking_status === 'Pending' && (

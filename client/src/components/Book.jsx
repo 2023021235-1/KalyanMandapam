@@ -69,8 +69,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
 
     // API Base URL Configuration
-    //const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Original API
-    const API_BASE_URL = 'http://localhost:5000/api'; // New localhost API
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Original API
+    //const API_BASE_URL = 'http://localhost:5000/api'; // New localhost API
 
     const getAuthToken = () => localStorage.getItem('token');
 

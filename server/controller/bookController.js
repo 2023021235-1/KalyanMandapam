@@ -286,7 +286,11 @@ const getAllBookings = async (req, res) => {
     if (req.user.userType != 'Admin') {
       query.user_id = req.user._id;
     }
-    const bookings = await Booking.find(query).populate('hall_id', 'hall_id hall_name location total_floors num_ac_rooms num_non_ac_rooms').sort({ createdAt: -1 });
+    // Populate user_id with 'name' and 'email' fields
+    const bookings = await Booking.find(query)
+      .populate('hall_id', 'hall_id hall_name location total_floors num_ac_rooms num_non_ac_rooms')
+      .populate('user_id', 'name email') // Populate user name and email
+      .sort({ createdAt: -1 });
     res.json(bookings);
   } catch (error) {
     console.error('Error fetching bookings:', error);
