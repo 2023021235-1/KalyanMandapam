@@ -41,7 +41,7 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
       setCaptchaVerified(false);
 
       axios
-        .get(`${API}/auth/captcha`)
+        .get(`${API}/captcha/get-captcha`)
         .then((res) => {
           // res.data = { svg: "<svg>…</svg>", token: "<JWT>" }
           setCaptchaSvg(res.data.svg);
@@ -65,7 +65,7 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${API}/auth/verify-captcha`, {
+      const res = await axios.post(`${API}/captcha/verify-captcha`, {
         captchaInput,
         captchaToken,
       });
