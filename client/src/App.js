@@ -65,8 +65,6 @@ function App() {
           setIsAdmin(true);
           // Navigate to a default admin sub-route, e.g., hall management
    
-        } else {
-          navigate("/home"); 
         }
       } catch (err) {
         console.error("Failed to fetch user profile", err);

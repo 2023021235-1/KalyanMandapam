@@ -26,16 +26,16 @@ const calculateBookingAmount = (hall, bookingData) => {
     is_conference_hall,
     is_food_prep_area,
     is_lawn,
-    is_ac, // This flag now applies to general/sqft pricing, not rooms specifically
-    add_parking, // Legacy
-    num_ac_rooms_booked, // New
-    num_non_ac_rooms_booked // New
+    is_ac, 
+    add_parking, 
+    num_ac_rooms_booked, 
+    num_non_ac_rooms_booked 
   } = bookingData;
 
   let totalAmount = 0;
 
   const getTieredPrice = (priceObject) => {
-    if (!priceObject) return 0; // Handle cases where a price object might be missing
+    if (!priceObject) return 0; 
     switch (booking_type) {
       case 'municipal': return priceObject.municipal;
       case 'municipality': return priceObject.municipality;
@@ -44,54 +44,65 @@ const calculateBookingAmount = (hall, bookingData) => {
     }
   };
 
-  // Calculate fixed-price block costs
-  if (is_parking) {
-    totalAmount += getTieredPrice(hall.parking);
-  }
-  if (is_conference_hall) {
-    totalAmount += getTieredPrice(is_ac ? hall.conference_hall_ac : hall.conference_hall_nonac);
-  }
-  if (is_food_prep_area) {
-    totalAmount += getTieredPrice(is_ac ? hall.food_prep_area_ac : hall.food_prep_area_nonac);
-  }
-  if (is_lawn) {
-    totalAmount += getTieredPrice(is_ac ? hall.lawn_ac : hall.lawn_nonac);
-  }
+  if (is_parking) totalAmount += getTieredPrice(hall.parking);
+  if (is_conference_hall) totalAmount += getTieredPrice(is_ac ? hall.conference_hall_ac : hall.conference_hall_nonac);
+  if (is_food_prep_area) totalAmount += getTieredPrice(is_ac ? hall.food_prep_area_ac : hall.food_prep_area_nonac);
+  if (is_lawn) totalAmount += getTieredPrice(is_ac ? hall.lawn_ac : hall.lawn_nonac);
+  if (num_ac_rooms_booked && num_ac_rooms_booked > 0) totalAmount += num_ac_rooms_booked * getTieredPrice(hall.room_rent_ac);
+  if (num_non_ac_rooms_booked && num_non_ac_rooms_booked > 0) totalAmount += num_non_ac_rooms_booked * getTieredPrice(hall.room_rent_nonac);
+  if (add_parking && !is_parking) totalAmount += getTieredPrice(hall.parking); 
 
-  // Calculate cost for AC rooms booked
-  if (num_ac_rooms_booked && num_ac_rooms_booked > 0) {
-    totalAmount += num_ac_rooms_booked * getTieredPrice(hall.room_rent_ac);
-  }
-
-  // Calculate cost for Non-AC rooms booked
-  if (num_non_ac_rooms_booked && num_non_ac_rooms_booked > 0) {
-    totalAmount += num_non_ac_rooms_booked * getTieredPrice(hall.room_rent_nonac);
-  }
-
-  // Add legacy add-ons if they represent distinct charges not covered by fixed blocks
-  // If add_parking means something separate from is_parking flag
-  if (add_parking && !is_parking) { // Only add if not already covered by is_parking
-      totalAmount += getTieredPrice(hall.parking); // Re-use parking pricing
-  }
-
-
-  // Calculate per-sqft event costs
   if (function_type && area_sqft) {
     const eventPricing = hall.event_pricing.find(ep => ep.event_type === function_type);
     if (eventPricing) {
-      // is_ac flag determines if AC per-sqft prices are used
       const perSqftPrice = getTieredPrice(is_ac ? eventPricing.prices_per_sqft_ac : eventPricing.prices_per_sqft_nonac);
       totalAmount += (area_sqft * perSqftPrice);
     }
   }
 
-  // Add electricity and cleaning charges
-  // is_ac flag determines if AC electricity charges are applied
   totalAmount += getTieredPrice(is_ac ? hall.electricity_ac : hall.electricity_nonac);
   totalAmount += getTieredPrice(hall.cleaning);
 
-
   return totalAmount;
+};
+
+// Helper function to update hall availability
+const updateHallAvailability = async (hallId, bookingDate, floor, bookingId, markAsBooked) => {
+    const hall = await Hall.findById(hallId);
+    if (!hall) return false;
+
+    const normalizedBookingDate = new Date(bookingDate);
+    normalizedBookingDate.setUTCHours(0, 0, 0, 0);
+    const dateString = normalizedBookingDate.toISOString().split('T')[0];
+
+    const availabilityIndex = hall.availability_details.findIndex(
+        (detail) =>
+            detail.date.toISOString().split('T')[0] === dateString &&
+            detail.floor === floor
+    );
+
+    if (markAsBooked) {
+        if (availabilityIndex > -1) {
+            hall.availability_details[availabilityIndex].status = 'booked';
+            hall.availability_details[availabilityIndex].booking_id = bookingId;
+        } else {
+            hall.availability_details.push({
+                date: normalizedBookingDate,
+                floor: floor,
+                status: 'booked',
+                booking_id: bookingId,
+            });
+        }
+    } else { // Mark as available (e.g., on cancellation of a confirmed booking)
+        if (availabilityIndex > -1) {
+            // Only remove if it was booked by this specific booking
+            if (hall.availability_details[availabilityIndex].booking_id && hall.availability_details[availabilityIndex].booking_id.toString() === bookingId.toString()) {
+                hall.availability_details.splice(availabilityIndex, 1);
+            }
+        }
+    }
+    await hall.save();
+    return true;
 };
 
 
@@ -102,133 +113,169 @@ const createBooking = async (req, res) => {
   try {
     const userId = req.user._id;
     const {
-      hall_id_string,
-      booking_date,
-      floor,
-      function_type,
-      booking_type, // 'municipal', 'municipality', 'panchayat'
-      area_sqft, // Only for per-sqft events
-      is_parking,
-      is_conference_hall,
-      is_food_prep_area,
-      is_lawn,
-      is_ac, // General AC flag for sqft events / main areas
-      add_parking, // Legacy
-      num_ac_rooms_booked, // New
-      num_non_ac_rooms_booked // New
+      hall_id_string, booking_date, floor, function_type, booking_type, area_sqft,
+      is_parking, is_conference_hall, is_food_prep_area, is_lawn, is_ac,
+      add_parking, num_ac_rooms_booked, num_non_ac_rooms_booked
     } = req.body;
-    //console.log(hall_id_string);
-    // Required fields validation - explicitly check for empty strings for hall_id_string
+
     if (!hall_id_string || !booking_date || !floor || !function_type || !booking_type) {
         return res.status(400).json({ message: 'Please provide all required booking details: Hall, Date, Floor, Function Type, and Booking Type.' });
     }
 
     const hall = await Hall.findOne({ hall_id: hall_id_string });
-    if (!hall) {
-      return res.status(404).json({ message: 'Hall not found' });
-    }
+    if (!hall) return res.status(404).json({ message: 'Hall not found' });
 
-    // Check if the floor exists in the hall
     if (floor < 1 || floor > hall.total_floors) {
         return res.status(400).json({ message: `Invalid floor number. This hall has ${hall.total_floors} floors.` });
     }
 
-    // Basic check for room availability (more sophisticated checks might be needed for concurrent bookings)
-    // Ensure num_ac_rooms_booked and num_non_ac_rooms_booked are numbers before comparison
     const numAcRoomsToBook = Number(num_ac_rooms_booked) || 0;
     const numNonAcRoomsToBook = Number(num_non_ac_rooms_booked) || 0;
 
     if (numAcRoomsToBook > hall.num_ac_rooms) {
-        return res.status(400).json({ message: `Cannot book ${numAcRoomsToBook} AC rooms. Only ${hall.num_ac_rooms} AC rooms available in this hall.` });
+        return res.status(400).json({ message: `Cannot book ${numAcRoomsToBook} AC rooms. Only ${hall.num_ac_rooms} AC rooms available.` });
     }
     if (numNonAcRoomsToBook > hall.num_non_ac_rooms) {
-        return res.status(400).json({ message: `Cannot book ${numNonAcRoomsToBook} Non-AC rooms. Only ${hall.num_non_ac_rooms} Non-AC rooms available in this hall.` });
+        return res.status(400).json({ message: `Cannot book ${numNonAcRoomsToBook} Non-AC rooms. Only ${hall.num_non_ac_rooms} Non-AC rooms available.` });
     }
 
-
-    // Check availability for the specific date and floor
     const desiredBookingDate = new Date(booking_date);
-    desiredBookingDate.setUTCHours(0, 0, 0, 0); // Normalize to start of the day UTC
+    desiredBookingDate.setUTCHours(0, 0, 0, 0);
 
-    const isBooked = hall.availability_details.some(
+    // Check if the same user already booked this hall for the same day (and not cancelled)
+    const existingUserBooking = await Booking.findOne({
+        user_id: userId,
+        hall_id_string: hall_id_string,
+        booking_date: desiredBookingDate,
+        booking_status: { $ne: 'Cancelled' }
+    });
+
+    if (existingUserBooking) {
+        return res.status(400).json({ message: 'You have already applied for a booking for this hall on this date.' });
+    }
+    
+    // Availability check will now effectively happen before allowing payment / confirming
+    // For creation, we just check if the hall *can* be booked, not blocking the slot yet.
+    // A more complex check might look at other 'Confirmed' bookings if we want to prevent even applying.
+    // However, the prompt implies availability is affected *after* confirmation.
+    // For now, let's check if the specific date and floor is *already confirmed* by someone else.
+    const isSlotConfirmedByOther = hall.availability_details.some(
       (detail) =>
         detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
         detail.floor === floor &&
         detail.status === 'booked'
     );
 
-    if (isBooked) {
-      return res.status(400).json({ message: 'This hall floor is already booked for the selected date.' });
+    if (isSlotConfirmedByOther) {
+      return res.status(400).json({ message: 'This hall floor is already confirmed by another booking for the selected date.' });
     }
 
-    // Calculate booking amount
-    // Pass the numeric values for rooms to calculateBookingAmount
-    const calculatedBookingAmount = calculateBookingAmount(hall, {
-        ...req.body,
-        num_ac_rooms_booked: numAcRoomsToBook,
-        num_non_ac_rooms_booked: numNonAcRoomsToBook
-    });
 
-
+    const calculatedBookingAmount = calculateBookingAmount(hall, { ...req.body, num_ac_rooms_booked: numAcRoomsToBook, num_non_ac_rooms_booked: numNonAcRoomsToBook });
     const booking_id = generateUniqueId();
-    const transaction_id = generateUniqueId(); // Assuming a transaction ID is generated on booking
+    const transaction_id = generateUniqueId();
 
     const newBooking = new Booking({
-      booking_id,
-      transaction_id,
-      user_id: userId,
-      hall_id_string, // Store the string ID
-      hall_id: hall._id, // Store the ObjectId reference
-      booking_date: desiredBookingDate,
-      floor,
-      function_type,
-      area_sqft: area_sqft || (function_type && hall.total_area_sqft ? hall.total_area_sqft : undefined), // Set total_area_sqft if function_type is present and area_sqft is not provided
-      booking_amount: calculatedBookingAmount,
-      booking_type,
-      num_ac_rooms_booked: numAcRoomsToBook,
-      num_non_ac_rooms_booked: numNonAcRoomsToBook,
-      is_parking: is_parking || false,
-      is_conference_hall: is_conference_hall || false,
-      is_food_prep_area: is_food_prep_area || false,
-      is_lawn: is_lawn || false,
-      is_ac: is_ac || false, // General AC status
-      add_parking: add_parking || false,
-      // add_room removed
-      booking_status: 'Pending', // Default status for new bookings
+      booking_id, transaction_id, user_id: userId, hall_id_string, hall_id: hall._id,
+      booking_date: desiredBookingDate, floor, function_type,
+      area_sqft: area_sqft || (function_type && hall.total_area_sqft ? hall.total_area_sqft : undefined),
+      booking_amount: calculatedBookingAmount, booking_type,
+      num_ac_rooms_booked: numAcRoomsToBook, num_non_ac_rooms_booked: numNonAcRoomsToBook,
+      is_parking: is_parking || false, is_conference_hall: is_conference_hall || false,
+      is_food_prep_area: is_food_prep_area || false, is_lawn: is_lawn || false,
+      is_ac: is_ac || false, add_parking: add_parking || false,
+      isAllowed: false, // New field
+      isPaid: false,    // New field
+      booking_status: 'Pending', // Initial status
     });
 
     const createdBooking = await newBooking.save();
-
-    // Update hall availability details
-    // Find if an availability entry for this date and floor already exists
-    const existingAvailabilityIndex = hall.availability_details.findIndex(
-      (detail) =>
-        detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
-        detail.floor === floor
-    );
-
-    if (existingAvailabilityIndex > -1) {
-      // Update existing entry
-      hall.availability_details[existingAvailabilityIndex].status = 'booked';
-      hall.availability_details[existingAvailabilityIndex].booking_id = createdBooking._id;
-    } else {
-      // Add new entry
-      hall.availability_details.push({
-        date: desiredBookingDate,
-        floor: floor,
-        status: 'booked',
-        booking_id: createdBooking._id,
-      });
-    }
-    await hall.save();
-
-    res.status(201).json({ message: 'Booking created successfully!', booking: createdBooking });
+    // DO NOT update hall availability here. It will be updated upon payment confirmation.
+    res.status(201).json({ message: 'Booking application submitted successfully! Awaiting admin approval.', booking: createdBooking });
   } catch (error) {
     console.error('Error creating booking:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
+// @desc    Admin allows a booking
+// @route   PUT /api/bookings/:id/allow
+// @access  Private (Admin)
+const allowBooking = async (req, res) => {
+    try {
+        const booking = await Booking.findOne({ booking_id: req.params.id });
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+        if (req.user.userType !== 'Admin') {
+            return res.status(403).json({ message: 'Not authorized for this action.' });
+        }
+
+        if (booking.booking_status !== 'Pending') {
+            return res.status(400).json({ message: `Booking is not in 'Pending' state. Current status: ${booking.booking_status}` });
+        }
+        
+        // Additional check: ensure the slot isn't taken by a now-confirmed booking by someone else in the meantime
+        const hall = await Hall.findById(booking.hall_id);
+        if(hall){
+            const desiredBookingDate = new Date(booking.booking_date);
+            desiredBookingDate.setUTCHours(0, 0, 0, 0);
+            const isSlotConfirmedByOther = hall.availability_details.some(
+              (detail) =>
+                detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
+                detail.floor === booking.floor &&
+                detail.status === 'booked'
+            );
+            if (isSlotConfirmedByOther) {
+              return res.status(400).json({ message: 'This hall floor has been confirmed by another booking since this application was made. Cannot allow.' });
+            }
+        }
+
+
+        booking.isAllowed = true;
+        booking.booking_status = 'AwaitingPayment';
+        const updatedBooking = await booking.save();
+
+        res.json({ message: 'Booking allowed. User can now proceed to payment.', booking: updatedBooking });
+
+    } catch (error) {
+        console.error('Error allowing booking:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+// @desc    User records payment for a booking
+// @route   PUT /api/bookings/:id/pay
+// @access  Private (Authenticated User)
+const recordPayment = async (req, res) => {
+    try {
+        const booking = await Booking.findOne({ booking_id: req.params.id });
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+        if (booking.user_id.toString() !== req.user._id.toString() && req.user.userType !== 'Admin') {
+             return res.status(403).json({ message: 'Not authorized to pay for this booking' });
+        }
+
+        if (!booking.isAllowed || booking.booking_status !== 'AwaitingPayment') {
+            return res.status(400).json({ message: 'Booking is not awaiting payment or not allowed.' });
+        }
+        if (booking.isPaid) {
+            return res.status(400).json({ message: 'Booking has already been paid.' });
+        }
+
+        booking.isPaid = true;
+        booking.booking_status = 'Confirmed';
+        const updatedBooking = await booking.save();
+
+        // Update hall availability
+        await updateHallAvailability(updatedBooking.hall_id, updatedBooking.booking_date, updatedBooking.floor, updatedBooking._id, true);
+
+        res.json({ message: 'Payment recorded and booking confirmed!', booking: updatedBooking });
+
+    } catch (error) {
+        console.error('Error recording payment:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
 
 // @desc    Get all bookings for a user (or all bookings if admin)
 // @route   GET /api/bookings
@@ -236,12 +283,10 @@ const createBooking = async (req, res) => {
 const getAllBookings = async (req, res) => {
   try {
     let query = {};
-    // If not admin, only fetch bookings for the current user
     if (req.user.userType != 'Admin') {
       query.user_id = req.user._id;
     }
-    // Populate hall_id to get hall details, but only necessary fields
-    const bookings = await Booking.find(query).populate('hall_id', 'hall_id hall_name location total_floors num_ac_rooms num_non_ac_rooms'); // Populate relevant hall fields
+    const bookings = await Booking.find(query).populate('hall_id', 'hall_id hall_name location total_floors num_ac_rooms num_non_ac_rooms').sort({ createdAt: -1 });
     res.json(bookings);
   } catch (error) {
     console.error('Error fetching bookings:', error);
@@ -258,8 +303,7 @@ const getBookingById = async (req, res) => {
     const booking = await Booking.findOne({ booking_id: req.params.id }).populate('hall_id', 'hall_id hall_name location total_floors num_ac_rooms num_non_ac_rooms');
 
     if (booking) {
-      // Ensure user is authorized to view this booking
-      if (!req.user.userType === 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
+      if (req.user.userType !== 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
         return res.status(403).json({ message: 'Not authorized to view this booking' });
       }
       res.json(booking);
@@ -273,58 +317,36 @@ const getBookingById = async (req, res) => {
 };
 
 
-// @desc    Update an existing booking
+// @desc    Update an existing booking (Only if 'Pending')
 // @route   PUT /api/bookings/:id
 // @access  Private (Authenticated User/Admin)
 const updateBooking = async (req, res) => {
   try {
-    const { booking_id } = req.params; // This is the custom booking_id string
+    const { booking_id } = req.params; 
     const {
-      hall_id_string,
-      booking_date,
-      floor,
-      function_type,
-      booking_type,
-      area_sqft,
-      is_parking,
-      is_conference_hall,
-      is_food_prep_area,
-      is_lawn,
-      is_ac, // General AC flag
-      add_parking,
-      num_ac_rooms_booked, // New
-      num_non_ac_rooms_booked, // New
-      // booking_amount // Amount will be recalculated
+      hall_id_string, booking_date, floor, function_type, booking_type, area_sqft,
+      is_parking, is_conference_hall, is_food_prep_area, is_lawn, is_ac,
+      add_parking, num_ac_rooms_booked, num_non_ac_rooms_booked,
     } = req.body;
 
-    // --- Input Validation ---
     if (!hall_id_string || !booking_date || !floor || !function_type || !booking_type) {
-      return res.status(400).json({ message: 'Please provide all required booking details: Hall, Date, Floor, Function Type, and Booking Type.' });
+      return res.status(400).json({ message: 'Please provide all required booking details.' });
     }
     
     const existingBooking = await Booking.findOne({ booking_id });
+    if (!existingBooking) return res.status(404).json({ message: 'Booking not found' });
 
-    if (!existingBooking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-
-    // Ensure user is authorized to update this booking
-    if (!req.user.userType === 'Admin' && existingBooking.user_id.toString() !== req.user._id.toString()) {
+    if (req.user.userType !== 'Admin' && existingBooking.user_id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to update this booking' });
     }
 
-    // --- Editing Restriction: Only allow updates if status is 'Pending' ---
     if (existingBooking.booking_status !== 'Pending') {
-      return res.status(400).json({ message: `Booking with status '${existingBooking.booking_status}' cannot be updated. Only 'Pending' bookings can be edited.` });
+      return res.status(400).json({ message: `Only 'Pending' bookings can be edited. Current status: ${existingBooking.booking_status}` });
     }
-
 
     const hall = await Hall.findOne({ hall_id: hall_id_string });
-    if (!hall) {
-      return res.status(404).json({ message: 'Hall not found' });
-    }
+    if (!hall) return res.status(404).json({ message: 'Hall not found' });
 
-    // Check if the floor exists in the hall
     if (floor < 1 || floor > hall.total_floors) {
         return res.status(400).json({ message: `Invalid floor number. This hall has ${hall.total_floors} floors.` });
     }
@@ -332,78 +354,32 @@ const updateBooking = async (req, res) => {
     const numAcRoomsToBook = Number(num_ac_rooms_booked) || 0;
     const numNonAcRoomsToBook = Number(num_non_ac_rooms_booked) || 0;
 
-    // Basic check for room availability on update
-    if (numAcRoomsToBook > hall.num_ac_rooms) {
-        return res.status(400).json({ message: `Cannot book ${numAcRoomsToBook} AC rooms. Only ${hall.num_ac_rooms} AC rooms available.` });
-    }
-    if (numNonAcRoomsToBook > hall.num_non_ac_rooms) {
-        return res.status(400).json({ message: `Cannot book ${numNonAcRoomsToBook} Non-AC rooms. Only ${hall.num_non_ac_rooms} Non-AC rooms available.` });
-    }
+    if (numAcRoomsToBook > hall.num_ac_rooms) return res.status(400).json({ message: `Cannot book ${numAcRoomsToBook} AC rooms. Only ${hall.num_ac_rooms} available.` });
+    if (numNonAcRoomsToBook > hall.num_non_ac_rooms) return res.status(400).json({ message: `Cannot book ${numNonAcRoomsToBook} Non-AC rooms. Only ${hall.num_non_ac_rooms} available.` });
 
     const desiredBookingDate = new Date(booking_date);
-    desiredBookingDate.setUTCHours(0, 0, 0, 0); // Normalize to start of the day UTC
+    desiredBookingDate.setUTCHours(0, 0, 0, 0);
 
-    // If date or floor changed, check for new availability
-    if (
+    // If date, floor or hall changed, check if the new slot is already confirmed by someone else.
+     if (
+        existingBooking.hall_id_string !== hall_id_string ||
         existingBooking.booking_date.toISOString().split('T')[0] !== desiredBookingDate.toISOString().split('T')[0] ||
         existingBooking.floor !== floor
     ) {
-        const isBooked = hall.availability_details.some(
+        const isSlotConfirmedByOther = hall.availability_details.some(
             (detail) =>
                 detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
                 detail.floor === floor &&
-                detail.status === 'booked' &&
-                detail.booking_id.toString() !== existingBooking._id.toString() // Exclude the current booking's own slot
+                detail.status === 'booked'
         );
-
-        if (isBooked) {
-            return res.status(400).json({ message: 'This hall floor is already booked for the selected date.' });
+        if (isSlotConfirmedByOther) {
+            return res.status(400).json({ message: 'The new selected hall/date/floor is already confirmed by another booking.' });
         }
-
-        // --- Update Hall Availability (Remove old, add new) ---
-        // 1. Remove old availability entry (if it existed)
-        const oldAvailabilityIndex = hall.availability_details.findIndex(
-            (detail) =>
-                detail.date.toISOString().split('T')[0] === existingBooking.booking_date.toISOString().split('T')[0] &&
-                detail.floor === existingBooking.floor &&
-                detail.booking_id && detail.booking_id.toString() === existingBooking._id.toString()
-        );
-
-        if (oldAvailabilityIndex > -1) {
-            hall.availability_details.splice(oldAvailabilityIndex, 1);
-        }
-
-        // 2. Add or update new availability entry
-        const newAvailabilityIndex = hall.availability_details.findIndex(
-            (detail) =>
-                detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
-                detail.floor === floor
-        );
-
-        if (newAvailabilityIndex > -1) {
-            hall.availability_details[newAvailabilityIndex].status = 'booked';
-            hall.availability_details[newAvailabilityIndex].booking_id = existingBooking._id;
-        } else {
-            hall.availability_details.push({
-                date: desiredBookingDate,
-                floor: floor,
-                status: 'booked',
-                booking_id: existingBooking._id,
-            });
-        }
-        await hall.save(); // Save hall changes immediately
     }
 
 
-    // Recalculate booking amount if relevant fields have changed
-    const recalculatedBookingAmount = calculateBookingAmount(hall, {
-        ...req.body,
-        num_ac_rooms_booked: numAcRoomsToBook,
-        num_non_ac_rooms_booked: numNonAcRoomsToBook
-    });
+    const recalculatedBookingAmount = calculateBookingAmount(hall, { ...req.body, num_ac_rooms_booked: numAcRoomsToBook, num_non_ac_rooms_booked: numNonAcRoomsToBook });
 
-
-    // Update booking fields
     existingBooking.hall_id_string = hall_id_string;
     existingBooking.hall_id = hall._id;
     existingBooking.booking_date = desiredBookingDate;
@@ -411,21 +387,17 @@ const updateBooking = async (req, res) => {
     existingBooking.function_type = function_type;
     existingBooking.booking_type = booking_type;
     existingBooking.area_sqft = area_sqft || (function_type && hall.total_area_sqft ? hall.total_area_sqft : undefined);
-    
     existingBooking.num_ac_rooms_booked = numAcRoomsToBook;
     existingBooking.num_non_ac_rooms_booked = numNonAcRoomsToBook;
-    
     existingBooking.is_parking = is_parking !== undefined ? is_parking : existingBooking.is_parking;
     existingBooking.is_conference_hall = is_conference_hall !== undefined ? is_conference_hall : existingBooking.is_conference_hall;
     existingBooking.is_food_prep_area = is_food_prep_area !== undefined ? is_food_prep_area : existingBooking.is_food_prep_area;
     existingBooking.is_lawn = is_lawn !== undefined ? is_lawn : existingBooking.is_lawn;
-    existingBooking.is_ac = is_ac !== undefined ? is_ac : existingBooking.is_ac; // General AC flag
+    existingBooking.is_ac = is_ac !== undefined ? is_ac : existingBooking.is_ac;
     existingBooking.add_parking = add_parking !== undefined ? add_parking : existingBooking.add_parking;
-    // existingBooking.add_room removed
-    existingBooking.booking_amount = recalculatedBookingAmount; // Update with recalculated amount
+    existingBooking.booking_amount = recalculatedBookingAmount;
 
     const updatedBooking = await existingBooking.save();
-
     res.json({ message: 'Booking updated successfully!', booking: updatedBooking });
   } catch (error) {
     console.error('Error updating booking:', error);
@@ -434,46 +406,31 @@ const updateBooking = async (req, res) => {
 };
 
 
-// @desc    Cancel a booking (User action)
+// @desc    Cancel a booking (User or Admin action)
 // @route   PUT /api/bookings/:id/cancel
 // @access  Private (Authenticated User/Admin)
 const cancelBooking = async (req, res) => {
   try {
-    const { id } = req.params; // This `id` is the booking_id string
+    const booking = await Booking.findOne({ booking_id: req.params.id });
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-    const booking = await Booking.findOne({ booking_id: id });
-
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-
-    // Ensure user is authorized to cancel this booking
-    if (!req.user.userType === 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
+    if (req.user.userType !== 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to cancel this booking' });
     }
 
-    // Only allow cancellation if booking is Pending or Confirmed
     if (booking.booking_status === 'Cancelled') {
       return res.status(400).json({ message: 'Booking is already cancelled.' });
     }
 
+    const wasConfirmed = booking.booking_status === 'Confirmed';
+    
     booking.booking_status = 'Cancelled';
+    booking.isPaid = false; // Typically, cancellation might involve refund, so mark as not paid.
+    // isAllowed might remain true or false depending on policy. Let's leave it as is.
     const cancelledBooking = await booking.save();
 
-    // --- Delete Availability from Hall Schema ---
-    const hall = await Hall.findById(cancelledBooking.hall_id); // Find hall using its ObjectId reference
-    if (hall) {
-      const availabilityIndex = hall.availability_details.findIndex(
-        (detail) =>
-          detail.date.toISOString().split('T')[0] === cancelledBooking.booking_date.toISOString().split('T')[0] &&
-          detail.floor === cancelledBooking.floor &&
-          detail.booking_id && detail.booking_id.toString() === cancelledBooking._id.toString()
-      );
-
-      if (availabilityIndex > -1) {
-        hall.availability_details.splice(availabilityIndex, 1); // Remove the entry
-        await hall.save(); // Save the updated hall document
-      }
+    if (wasConfirmed) { // If booking was confirmed, free up the hall slot
+      await updateHallAvailability(cancelledBooking.hall_id, cancelledBooking.booking_date, cancelledBooking.floor, cancelledBooking._id, false);
     }
 
     res.json({ message: 'Booking cancelled successfully!', booking: cancelledBooking });
@@ -489,32 +446,20 @@ const cancelBooking = async (req, res) => {
 // @access  Private (Admin)
 const deleteBooking = async (req, res) => {
     try {
-        const { id } = req.params; // This `id` is the booking_id string
-
-        const booking = await Booking.findOne({ booking_id: id });
-
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
+        const booking = await Booking.findOne({ booking_id: req.params.id });
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+        
+        if (req.user.userType !== 'Admin') {
+            return res.status(403).json({ message: 'Not authorized for this action.' });
         }
 
-        // Before deleting the booking, remove its availability from the hall schema
-        const hall = await Hall.findById(booking.hall_id);
-        if (hall) {
-             const availabilityIndex = hall.availability_details.findIndex(
-                (detail) =>
-                    detail.date.toISOString().split('T')[0] === booking.booking_date.toISOString().split('T')[0] &&
-                    detail.floor === booking.floor &&
-                    detail.booking_id && detail.booking_id.toString() === booking._id.toString()
-            );
-
-            if (availabilityIndex > -1) {
-                hall.availability_details.splice(availabilityIndex, 1); // Remove the entry
-                await hall.save(); // Save the updated hall document
-            }
+        const wasConfirmed = booking.booking_status === 'Confirmed';
+        if (wasConfirmed) {
+            await updateHallAvailability(booking.hall_id, booking.booking_date, booking.floor, booking._id, false);
         }
 
-        await Booking.deleteOne({ booking_id: id }); // Use deleteOne with the unique booking_id string
-        res.json({ message: 'Booking deleted successfully!' });
+        await Booking.deleteOne({ booking_id: req.params.id });
+        res.json({ message: 'Booking deleted permanently!' });
     } catch (error) {
         console.error('Error deleting booking:', error);
         res.status(500).json({ message: 'Server Error' });
@@ -526,71 +471,74 @@ const deleteBooking = async (req, res) => {
 // @access  Private (Admin)
 const updateBookingStatus = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { status } = req.body;
+        const { id } = req.params; // booking_id
+        const { status } = req.body; // New status
 
-        if (!status) {
-            return res.status(400).json({ message: 'Booking status is required.' });
-        }
+        if (!status) return res.status(400).json({ message: 'Booking status is required.' });
 
         const booking = await Booking.findOne({ booking_id: id });
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
+        if (req.user.userType !== 'Admin') {
+            return res.status(403).json({ message: 'Not authorized for this action.' });
         }
-
-        // Validate the new status against allowed enum values from the schema
-        const allowedStatuses = ['Confirmed', 'Pending', 'Cancelled'];
+        
+        const allowedStatuses = ['Pending', 'AwaitingPayment', 'Confirmed', 'Cancelled'];
         if (!allowedStatuses.includes(status)) {
-            return res.status(400).json({ message: `Invalid status: ${status}. Allowed statuses are ${allowedStatuses.join(', ')}.` });
+            return res.status(400).json({ message: `Invalid status: ${status}.` });
         }
+
+        const wasConfirmed = booking.booking_status === 'Confirmed';
+        const isNowConfirmed = status === 'Confirmed';
 
         booking.booking_status = status;
-        const updatedBooking = await booking.save();
 
         if (status === 'Confirmed') {
-            const hall = await Hall.findById(updatedBooking.hall_id);
-            if (hall) {
-                const availabilityIndex = hall.availability_details.findIndex(
-                    (detail) =>
-                        detail.date.toISOString().split('T')[0] === updatedBooking.booking_date.toISOString().split('T')[0] &&
-                        detail.floor === updatedBooking.floor &&
-                        detail.booking_id && detail.booking_id.toString() === updatedBooking._id.toString()
-                );
-
-                if (availabilityIndex > -1) {
-                    hall.availability_details[availabilityIndex].status = 'booked';
-                } else {
-                    hall.availability_details.push({
-                        date: updatedBooking.booking_date,
-                        floor: updatedBooking.floor,
-                        status: 'booked',
-                        booking_id: updatedBooking._id,
-                    });
+            booking.isAllowed = true;
+            booking.isPaid = true;
+            if (!wasConfirmed) {
+                 // Check if slot is available before confirming
+                const hall = await Hall.findById(booking.hall_id);
+                if(hall){
+                    const desiredBookingDate = new Date(booking.booking_date);
+                    desiredBookingDate.setUTCHours(0, 0, 0, 0);
+                    const isSlotConfirmedByOther = hall.availability_details.some(
+                      (detail) =>
+                        detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
+                        detail.floor === booking.floor &&
+                        detail.status === 'booked' &&
+                        (!detail.booking_id || detail.booking_id.toString() !== booking._id.toString()) // Exclude self
+                    );
+                    if (isSlotConfirmedByOther) {
+                      return res.status(400).json({ message: 'Cannot confirm. This hall floor has been confirmed by another booking.' });
+                    }
                 }
-                await hall.save();
+                await updateHallAvailability(booking.hall_id, booking.booking_date, booking.floor, booking._id, true);
             }
-        } else if (status === 'Cancelled') { // If admin changes status to Cancelled directly
-            const hall = await Hall.findById(updatedBooking.hall_id);
-            if (hall) {
-                const availabilityIndex = hall.availability_details.findIndex(
-                    (detail) =>
-                    detail.date.toISOString().split('T')[0] === updatedBooking.booking_date.toISOString().split('T')[0] &&
-                    detail.floor === updatedBooking.floor &&
-                    detail.booking_id && detail.booking_id.toString() === updatedBooking._id.toString()
-                );
-                if (availabilityIndex > -1) {
-                    hall.availability_details.splice(availabilityIndex, 1);
-                    await hall.save();
-                }
+        } else if (status === 'AwaitingPayment') {
+            booking.isAllowed = true;
+            booking.isPaid = false; // Ensure isPaid is false
+            if (wasConfirmed) { // If it was confirmed, now it's not (e.g. payment failed, admin reverts)
+                await updateHallAvailability(booking.hall_id, booking.booking_date, booking.floor, booking._id, false);
+            }
+        } else if (status === 'Pending') {
+            booking.isAllowed = false;
+            booking.isPaid = false;
+            if (wasConfirmed) {
+                await updateHallAvailability(booking.hall_id, booking.booking_date, booking.floor, booking._id, false);
+            }
+        } else if (status === 'Cancelled') {
+            // booking.isPaid = false; // Handled by cancelBooking logic if called directly
+            if (wasConfirmed) {
+                await updateHallAvailability(booking.hall_id, booking.booking_date, booking.floor, booking._id, false);
             }
         }
 
-
+        const updatedBooking = await booking.save();
         res.json({ message: 'Booking status updated successfully!', booking: updatedBooking });
     } catch (error) {
         console.error('Error updating booking status:', error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Server Error', error: message });
     }
 };
 
@@ -600,35 +548,24 @@ const updateBookingStatus = async (req, res) => {
 // @access  Private (Authenticated User)
 const requestRefund = async (req, res) => {
     try {
-        const { id } = req.params; // booking_id string
+        const booking = await Booking.findOne({ booking_id: req.params.id });
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-        const booking = await Booking.findOne({ booking_id: id });
-
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
+        if (req.user.userType !== 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
         }
 
-        // Ensure user is authorized
-        if (!req.user.userType === 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Not authorized to request refund for this booking' });
-        }
-
-        // Only allow refund request for Confirmed or Cancelled bookings
         if (!['Confirmed', 'Cancelled'].includes(booking.booking_status)) {
             return res.status(400).json({ message: 'Refund can only be requested for Confirmed or Cancelled bookings.' });
         }
-
-        // Prevent multiple refund requests or requests if already processed/rejected
         if (['Pending', 'Processed', 'Rejected'].includes(booking.refund_status)) {
             return res.status(400).json({ message: `Refund is already ${booking.refund_status}.` });
         }
 
         booking.refund_status = 'Pending';
-        // Set refund amount to the original booking amount by default for admin review
-        booking.refund_amount = `Rs. ${booking.booking_amount}`; // Storing as string with "Rs. " prefix
-
+        booking.refund_amount = `Rs. ${booking.booking_amount}`;
         const updatedBooking = await booking.save();
-        res.json({ message: 'Refund request submitted successfully! Awaiting admin review.', booking: updatedBooking });
+        res.json({ message: 'Refund request submitted!', booking: updatedBooking });
 
     } catch (error) {
         console.error('Error requesting refund:', error);
@@ -642,15 +579,11 @@ const requestRefund = async (req, res) => {
 // @access  Private (Authenticated User/Admin)
 const getRefundStatus = async (req, res) => {
     try {
-        // Find booking by the unique booking_id string and include transaction_id
         const booking = await Booking.findOne({ booking_id: req.params.id }).select('+transaction_id');
-
         if (booking) {
             res.json({
-                booking_id: booking.booking_id,
-                transaction_id: booking.transaction_id, // Include transaction_id
-                refund_status: booking.refund_status,
-                refund_amount: booking.refund_amount,
+                booking_id: booking.booking_id, transaction_id: booking.transaction_id,
+                refund_status: booking.refund_status, refund_amount: booking.refund_amount,
                 refund_processed_date: booking.refund_processed_date,
             });
         } else {
@@ -669,18 +602,18 @@ const getRefundStatus = async (req, res) => {
 const processRefund = async (req, res) => {
     try {
         const booking = await Booking.findOne({ booking_id: req.params.id });
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
+        if (req.user.userType !== 'Admin') {
+            return res.status(403).json({ message: 'Not authorized.' });
         }
 
         if (booking.refund_status !== 'Pending') {
-            return res.status(400).json({ message: `Refund for booking ${booking.booking_id} is not in 'Pending' status. Current status: ${booking.refund_status}` });
+            return res.status(400).json({ message: `Refund is not 'Pending'. Current status: ${booking.refund_status}` });
         }
 
         booking.refund_status = 'Processed';
-        booking.refund_processed_date = new Date(); // Set current date as processed date
-
+        booking.refund_processed_date = new Date();
         const updatedBooking = await booking.save();
         res.json({ message: 'Refund processed successfully', booking: updatedBooking });
 
@@ -702,4 +635,6 @@ module.exports = {
     requestRefund,
     getRefundStatus,
     processRefund,
+    allowBooking,    // Export new function
+    recordPayment,   // Export new function
 };

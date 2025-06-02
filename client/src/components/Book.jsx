@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/BookNow.css'; // Assuming BookNow.css is in a 'styles' subfolder
-import { CircleCheck, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon } from 'lucide-react'; // Added HomeIcon for rooms
+import { CircleCheck, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon, RefreshCw } from 'lucide-react'; // Added HomeIcon for rooms and RefreshCw for CAPTCHA
 import html2pdf from 'html2pdf.js';
 import BookingCertificate from './BookingCertificate'; // Import the new certificate component
 
@@ -36,11 +36,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         is_conference_hall: false,
         is_food_prep_area: false,
         is_lawn: false,
-        is_ac: false, // General AC flag
-        add_parking: false, // Legacy, review if still needed
-        // add_room: false, // Removed as per bookModel.js
-        num_ac_rooms_booked: 0, // New field for number of AC rooms
-        num_non_ac_rooms_booked: 0, // New field for number of Non-AC rooms
+        is_ac: false,
+        num_ac_rooms_booked: 0,
+        num_non_ac_rooms_booked: 0,
     });
 
     const [editingBookingId, setEditingBookingId] = useState(null);
@@ -52,6 +50,17 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     // Toast State
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+
+    // CAPTCHA State
+    const [captchaSvg, setCaptchaSvg] = useState("");
+    const [captchaToken, setCaptchaToken] = useState("");
+    const [captchaInput, setCaptchaInput] = useState("");
+    const [captchaError, setCaptchaError] = useState("");
+
+    // State for Cancel Confirmation Modal
+    const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+    const [bookingIdToCancelState, setBookingIdToCancelState] = useState(null);
+
 
     // API Base URL Configuration
     const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Original API
@@ -131,14 +140,12 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             foodPrepAreaNonAc: 'Food Prep Area (Non-AC)',
             lawnAc: 'Lawn (AC)',
             lawnNonAc: 'Lawn (Non-AC)',
-            // Updated labels for room rents in price table
             perAcRoomLabel: 'AC Room (Per Room/Day)',
             perNonAcRoomLabel: 'Non-AC Room (Per Room/Day)',
             parking: 'Parking',
             electricityAc: 'Electricity (AC)',
             electricityNonAc: 'Electricity (Non-AC)',
             cleaning: 'Cleaning Charges',
-            // New labels for room input fields
             numAcRoomsLabel: 'AC Rooms Required:',
             numNonAcRoomsLabel: 'Non-AC Rooms Required:',
             availableRoomsText: (count) => `(Max: ${count} Available)`,
@@ -162,6 +169,18 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             previewModalTitle: 'Certificate Preview',
             previewModalDownloadButton: 'Download PDF',
             previewModalCloseButton: 'Close',
+            // CAPTCHA Strings
+            captchaLabel: 'CAPTCHA:',
+            captchaPlaceholder: 'Enter CAPTCHA',
+            captchaRefreshAlt: 'Refresh CAPTCHA',
+            captchaErrorLoad: 'Failed to load CAPTCHA. Try again.',
+            captchaErrorVerifyGeneral: 'CAPTCHA verification failed. Please try again.',
+            captchaErrorInvalid: 'Invalid CAPTCHA. Please try again.',
+            captchaErrorEmpty: 'Please enter the CAPTCHA.',
+            confirmCancellationTitle: 'Confirm Cancellation',
+            confirmActionPrompt: (action) => `Please complete the CAPTCHA to ${action}.`,
+            confirmCancelButtonText: 'Confirm Cancel',
+            dismissButtonText: 'Dismiss',
         },
         hi: {
             sectionHeading: 'सामुदायिक भवन बुक करें',
@@ -224,14 +243,12 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             foodPrepAreaNonAc: 'भोजन तैयारी क्षेत्र (गैर-एसी)',
             lawnAc: 'लॉन (एसी)',
             lawnNonAc: 'लॉन (गैर-एसी)',
-            // Updated labels for room rents in price table
             perAcRoomLabel: 'एसी कमरा (प्रति कमरा/दिन)',
             perNonAcRoomLabel: 'गैर-एसी कमरा (प्रति कमरा/दिन)',
             parking: 'पार्किंग',
             electricityAc: 'बिजली (एसी)',
             electricityNonAc: 'बिजली (गैर-एसी)',
             cleaning: 'सफाई शुल्क',
-            // New labels for room input fields
             numAcRoomsLabel: 'एसी कमरे आवश्यक:',
             numNonAcRoomsLabel: 'गैर-एसी कमरे आवश्यक:',
             availableRoomsText: (count) => `(अधिकतम: ${count} उपलब्ध)`,
@@ -255,10 +272,75 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             previewModalTitle: 'प्रमाणपत्र पूर्वावलोकन',
             previewModalDownloadButton: 'पीडीएफ डाउनलोड करें',
             previewModalCloseButton: 'बंद करें',
+            // CAPTCHA Strings
+            captchaLabel: 'कैप्चा:',
+            captchaPlaceholder: 'कैप्चा दर्ज करें',
+            captchaRefreshAlt: 'कैप्चा रीफ़्रेश करें',
+            captchaErrorLoad: 'कैप्चा लोड करने में विफल। पुनः प्रयास करें।',
+            captchaErrorVerifyGeneral: 'कैप्चा सत्यापन विफल। कृपया पुनः प्रयास करें।',
+            captchaErrorInvalid: 'अमान्य कैप्चा। कृपया पुनः प्रयास करें।',
+            captchaErrorEmpty: 'कृपया कैप्चा दर्ज करें।',
+            confirmCancellationTitle: 'रद्दीकरण की पुष्टि करें',
+            confirmActionPrompt: (action) => `कृपया ${action} के लिए कैप्चा पूरा करें।`,
+            confirmCancelButtonText: 'रद्दीकरण की पुष्टि करें',
+            dismissButtonText: 'खारिज करें',
         },
     }), [languageType]);
 
     const currentContent = content[languageType] || content.en;
+
+     const fetchNewCaptcha = async () => {
+        setCaptchaError('');
+        setCaptchaInput('');
+        setCaptchaSvg('');
+        setCaptchaToken('');
+        try {
+            const response = await fetch(`${API_BASE_URL}/captcha/get-captcha`);
+            if (!response.ok) {
+                 const errorData = await response.text();
+                 console.error("CAPTCHA fetch error data:", errorData);
+                 throw new Error(currentContent.captchaErrorLoad);
+            }
+            const data = await response.json();
+            setCaptchaSvg(data.svg);
+            setCaptchaToken(data.token);
+        } catch (error) {
+            console.error("Failed to load CAPTCHA:", error);
+            const errorMessage = error.message || currentContent.captchaErrorLoad;
+            setCaptchaError(errorMessage);
+            // Do not show toast here, captchaError state will render the error in the form
+        }
+    };
+
+    const verifyCaptchaAndProceed = async (actualActionCallback) => {
+        if (!captchaInput.trim() || !captchaToken) {
+            setCaptchaError(currentContent.captchaErrorEmpty);
+            if (!captchaToken) fetchNewCaptcha(); // Refresh if token is missing (e.g. initial load failed)
+            return false;
+        }
+        try {
+            const response = await fetch(`${API_BASE_URL}/captcha/verify-captcha`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ captchaInput, captchaToken }),
+            });
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(currentContent.captchaErrorInvalid);
+            }
+            setCaptchaError(''); // Clear error on success
+            if (actualActionCallback) await actualActionCallback();
+            return true;
+        } catch (error) {
+            console.error("CAPTCHA verification error:", error);
+            const errorMessage = error.message || currentContent.captchaErrorVerifyGeneral;
+            setCaptchaError(errorMessage);
+            showToast(errorMessage, 'error');
+            fetchNewCaptcha(); // Refresh CAPTCHA on failure
+            return false;
+        }
+    };
+
 
     useEffect(() => {
         if (!user) {
@@ -267,7 +349,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             fetchBookings();
             fetchAllHalls();
         }
-    }, [user, navigate, languageType]); // fetchBookings and fetchAllHalls can be removed if they don't depend on languageType directly
+    }, [user, navigate]);
 
     useEffect(() => {
         if (bookingFormData.hall_id_string) {
@@ -275,42 +357,41 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         } else {
             setSelectedHallFullDetails(null);
             setHallDetailsError(null);
-            // Reset fields that depend on hall details
             setBookingFormData(prevData => ({
                 ...prevData,
-                function_type: '',
-                area_sqft: '',
-                booking_type: '', // Reset booking type as pricing depends on it too
-                is_parking: false,
-                is_conference_hall: false,
-                is_food_prep_area: false,
-                is_lawn: false,
-                num_ac_rooms_booked: 0,
-                num_non_ac_rooms_booked: 0,
+                function_type: '', area_sqft: '', booking_type: '',
+                is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
+                num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0,
             }));
             setSelectedAreaOption('none');
         }
     }, [bookingFormData.hall_id_string]);
 
-    const getTieredPrice = (priceObject, bookingType) => { // Moved out of calculateBookingAmount as it's a general utility
+    useEffect(() => {
+        if (showModal && modalStep === 2) {
+            fetchNewCaptcha();
+        }
+    }, [showModal, modalStep]);
+
+
+    const getTieredPrice = (priceObject, bookingType) => {
         if (!priceObject || !bookingType) return 0;
         return priceObject[bookingType] || 0;
     };
 
     const calculateBookingAmount = useMemo(() => () => {
+        // ... (existing calculateBookingAmount logic - no changes here)
         let totalAmount = 0;
         if (!selectedHallFullDetails || !bookingFormData.booking_type) return 0;
 
         const hall = selectedHallFullDetails;
         const bookingType = bookingFormData.booking_type;
 
-        // Fixed-price blocks
         if (bookingFormData.is_parking && hall.parking) totalAmount += getTieredPrice(hall.parking, bookingType);
         if (bookingFormData.is_conference_hall && (isAcSelected ? hall.conference_hall_ac : hall.conference_hall_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.conference_hall_ac : hall.conference_hall_nonac, bookingType);
         if (bookingFormData.is_food_prep_area && (isAcSelected ? hall.food_prep_area_ac : hall.food_prep_area_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.food_prep_area_ac : hall.food_prep_area_nonac, bookingType);
         if (bookingFormData.is_lawn && (isAcSelected ? hall.lawn_ac : hall.lawn_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.lawn_ac : hall.lawn_nonac, bookingType);
         
-        // Room costs based on number of rooms booked
         if (bookingFormData.num_ac_rooms_booked > 0 && hall.room_rent_ac) {
             totalAmount += Number(bookingFormData.num_ac_rooms_booked) * getTieredPrice(hall.room_rent_ac, bookingType);
         }
@@ -318,11 +399,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             totalAmount += Number(bookingFormData.num_non_ac_rooms_booked) * getTieredPrice(hall.room_rent_nonac, bookingType);
         }
 
-        // Electricity and Cleaning
         if (isAcSelected ? hall.electricity_ac : hall.electricity_nonac) totalAmount += getTieredPrice(isAcSelected ? hall.electricity_ac : hall.electricity_nonac, bookingType);
         if (hall.cleaning) totalAmount += getTieredPrice(hall.cleaning, bookingType);
 
-        // Event-specific pricing (per sq. ft.)
         if (bookingFormData.function_type && Number(bookingFormData.area_sqft) > 0) {
             const eventPrice = hall.event_pricing?.find(event =>
                 event.event_type.toLowerCase() === bookingFormData.function_type.toLowerCase()
@@ -348,7 +427,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         bookingFormData.is_lawn,
         bookingFormData.num_ac_rooms_booked,
         bookingFormData.num_non_ac_rooms_booked,
-        // getTieredPrice is defined outside and is stable
     ]);
     
     useEffect(() => {
@@ -356,11 +434,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         setBookingFormData(prevData => ({
             ...prevData,
             booking_amount: calculatedAmount,
-            is_ac: isAcSelected, // ensure is_ac in form data is also kept in sync with the radio button state
+            is_ac: isAcSelected,
         }));
     }, [
-        isAcSelected, // Primary trigger for is_ac related price changes
-        calculateBookingAmount // calculateBookingAmount itself is memoized with its own extensive dependencies
+        isAcSelected,
+        calculateBookingAmount
     ]);
 
 
@@ -387,37 +465,23 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            // Ensure availableHalls is populated before trying to map hall names
-            const populatedAvailableHalls = availableHalls.length > 0 ? availableHalls : await fetchAllHalls(true);
+            let populatedAvailableHalls = availableHalls;
+            if (availableHalls.length === 0) {
+                populatedAvailableHalls = await fetchAllHalls(true);
+            }
 
-
-            const bookingsWithHallNames = await Promise.all(data.map(async (booking) => {
+            const bookingsWithHallNames = data.map((booking) => {
                 let hallName = 'N/A';
-                let hallObjectId = null; // To store the ObjectId for consistency if needed elsewhere
-
-                // The backend populates hall_id with hall details directly sometimes.
-                // booking.hall_id might be an object like { hall_id: "1", hall_name: "Main Hall" } or just an ObjectId string
-                // booking.hall_id_string should be the custom string ID like "1", "2"
-                
                 if (booking.hall_id && typeof booking.hall_id === 'object' && booking.hall_id.hall_name) {
                     hallName = booking.hall_id.hall_name;
-                    hallObjectId = booking.hall_id._id || booking.hall_id.hall_id; // Prefer _id if it's a populated mongoose doc
-                } else if (booking.hall_id_string) { // Fallback to hall_id_string if full hall_id object not present
+                } else if (booking.hall_id_string) {
                     const hallDetails = populatedAvailableHalls.find(hall => hall.hall_id === booking.hall_id_string);
                     if (hallDetails) {
                         hallName = hallDetails.hall_name;
-                        hallObjectId = hallDetails._id; // Store Mongoose ObjectId if available
                     }
                 }
-                
-                return { 
-                    ...booking, 
-                    // Standardize how hall info is accessed in the list
-                    hall_display_name: hallName, 
-                    // Keep original hall_id (ObjectId reference from backend) and hall_id_string (custom string ID) if needed
-                    // For the table, we just need hall_display_name
-                };
-            }));
+                return { ...booking, hall_display_name: hallName };
+            });
             setBookings(bookingsWithHallNames);
         } catch (error) {
             console.error('Error fetching bookings:', error);
@@ -427,7 +491,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         }
     };
 
-    const fetchAllHalls = async (returnData = false) => { // Added returnData flag
+    const fetchAllHalls = async (returnData = false) => {
         setLoadingHalls(true);
         setHallsError(null);
         try {
@@ -435,11 +499,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             setAvailableHalls(data);
-            if (returnData) return data; // Return data if flag is true
+            if (returnData) return data;
         } catch (error) {
             console.error('Error fetching halls:', error);
             setHallsError(currentContent.hallsErrorMessage);
-            if (returnData) return []; // Return empty array on error if expecting data
+            if (returnData) return [];
         } finally {
             setLoadingHalls(false);
         }
@@ -449,56 +513,50 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const fetchHallFullDetails = async (hallIdString) => {
         setLoadingHallDetails(true);
         setHallDetailsError(null);
-        setSelectedHallFullDetails(null); // Clear previous details
+        setSelectedHallFullDetails(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/halls/${hallIdString}`); // Use hallIdString
+            const response = await fetch(`${API_BASE_URL}/halls/${hallIdString}`);
             if (!response.ok) {
                 if (response.status === 404) throw new Error(currentContent.hallNotFound(hallIdString));
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
             setSelectedHallFullDetails(data);
-            // Reset dependent form fields when new hall details are fetched
             setBookingFormData(prev => ({
-                ...prev,
-                function_type: '',
-                area_sqft: '',
-                // booking_type: '', // Don't reset booking_type, user might have set it
-                is_parking: false,
-                is_conference_hall: false,
-                is_food_prep_area: false,
-                is_lawn: false,
-                num_ac_rooms_booked: 0,
-                num_non_ac_rooms_booked: 0,
+                ...prev, function_type: '', area_sqft: '',
+                is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
+                num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0,
             }));
-            setSelectedAreaOption('none'); // Reset area option
+            setSelectedAreaOption('none');
             return data;
         } catch (error) {
             console.error('Error fetching hall details:', error);
             setHallDetailsError(currentContent.detailsErrorMessage);
-            setSelectedHallFullDetails(null); // Ensure it's null on error
+            setSelectedHallFullDetails(null);
             return null;
         } finally {
             setLoadingHallDetails(false);
         }
     };
 
-
-    const handleDisclaimerAgreedInModal = () => setModalStep(2);
+    const handleDisclaimerAgreedInModal = () => {
+        setModalStep(2);
+        // fetchNewCaptcha(); // Fetched by useEffect watching showModal and modalStep
+    }
 
     const resetFormData = () => {
         setBookingFormData({
             booking_id: '', hall_id_string: '', booking_date: '', floor: 1, function_type: '',
             area_sqft: '', booking_amount: 0, booking_type: '', is_parking: false,
             is_conference_hall: false, is_food_prep_area: false, is_lawn: false, is_ac: false,
-            add_parking: false, 
-            num_ac_rooms_booked: 0, 
-            num_non_ac_rooms_booked: 0,
+            num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0,
         });
         setSelectedHallFullDetails(null);
         setHallDetailsError(null);
-        setIsAcSelected(false); // Reset AC selection explicitly
+        setIsAcSelected(false);
         setSelectedAreaOption('none');
+        setCaptchaInput('');
+        setCaptchaError('');
     };
     
     const handleCloseModal = () => {
@@ -513,37 +571,27 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         setIsEditing(false);
         setEditingBookingId(null);
         resetFormData();
-        setModalStep(1); // Start with disclaimer
+        setModalStep(1); 
         setShowModal(true);
+        // CAPTCHA will be fetched when modalStep becomes 2 by useEffect
     };
 
     const handleBookingFormChange = (e) => {
+        // ... (existing form change logic - no changes here)
         const { name, value, type, checked } = e.target;
 
         if (name === 'hall_id_string') {
-            // When hall changes, reset dependent fields and fetch new hall details
             setBookingFormData(prevData => ({
-                ...prevData,
-                [name]: value,
-                // Reset fields that depend on hall specifics or pricing
-                function_type: '',
-                area_sqft: '',
-                // booking_type: '', // User might set this before hall, or we can reset it
-                is_parking: false,
-                is_conference_hall: false,
-                is_food_prep_area: false,
-                is_lawn: false,
-                num_ac_rooms_booked: 0,
-                num_non_ac_rooms_booked: 0,
-                booking_amount: 0, // Amount will be recalculated
+                ...prevData, [name]: value, function_type: '', area_sqft: '',
+                is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
+                num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0, booking_amount: 0,
             }));
-            setIsAcSelected(false); // Default to Non-AC or based on hall? For now, reset.
+            setIsAcSelected(false); 
             setSelectedAreaOption('none');
-            // fetchHallFullDetails will be called by the useEffect watching hall_id_string
         } else if (name === 'is_ac_radio') {
             const newAcSelected = value === 'true';
             setIsAcSelected(newAcSelected);
-            setBookingFormData(prevData => ({ ...prevData, is_ac: newAcSelected })); // Update is_ac in formData
+            setBookingFormData(prevData => ({ ...prevData, is_ac: newAcSelected }));
         } else if (name === 'booking_type_radio') {
             setBookingFormData(prevData => ({ ...prevData, booking_type: value }));
         } else if (name === 'selected_area_option') {
@@ -552,22 +600,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             const totalArea = selectedHallFullDetails?.total_area_sqft || 0;
             if (value === 'full' && totalArea > 0) calculatedArea = totalArea.toString();
             else if (value === 'half' && totalArea > 0) calculatedArea = (totalArea / 2).toString();
-            else if (value === 'partial') calculatedArea = bookingFormData.area_sqft; // Keep existing if user typed
-            else calculatedArea = ''; // For 'none' or if totalArea is 0
+            else if (value === 'partial') calculatedArea = bookingFormData.area_sqft;
+            else calculatedArea = '';
             setBookingFormData(prevData => ({ ...prevData, area_sqft: calculatedArea }));
         } else if (name === 'area_sqft') {
-            setBookingFormData(prevData => ({ ...prevData, [name]: value })); // Keep as string, validation will handle number
+            setBookingFormData(prevData => ({ ...prevData, [name]: value }));
         } else if (name === 'num_ac_rooms_booked' || name === 'num_non_ac_rooms_booked') {
             let numValue = value === '' ? 0 : parseInt(value, 10);
             if (isNaN(numValue) || numValue < 0) numValue = 0;
-            
-            // Optional: Cap at available rooms (client-side reminder, backend enforces)
-            const maxRooms = name === 'num_ac_rooms_booked' 
-                ? selectedHallFullDetails?.num_ac_rooms 
-                : selectedHallFullDetails?.num_non_ac_rooms;
-            if (maxRooms !== undefined && numValue > maxRooms) {
-                // numValue = maxRooms; // Or show a toast/warning
-            }
             setBookingFormData(prevData => ({ ...prevData, [name]: numValue }));
         } else if (type === 'checkbox') {
             setBookingFormData(prevData => ({ ...prevData, [name]: checked }));
@@ -595,102 +635,114 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             event.event_type.toLowerCase() === bookingFormData.function_type.toLowerCase()
         );
         if (isEventFunction && (bookingFormData.area_sqft === '' || Number(bookingFormData.area_sqft) <= 0)) {
-            showToast(currentContent.formValidation.areaRequired, 'error');
-            return;
+            showToast(currentContent.formValidation.areaRequired, 'error'); return;
         }
         if (Number(bookingFormData.num_ac_rooms_booked) < 0 || Number(bookingFormData.num_non_ac_rooms_booked) < 0) {
             showToast(currentContent.formValidation.roomsRequired, 'error'); return;
         }
 
+        const actualSubmitLogic = async () => {
+            const method = isEditing ? 'PUT' : 'POST';
+            const url = isEditing ? `${API_BASE_URL}/bookings/${editingBookingId}` : `${API_BASE_URL}/bookings`;
+            
+            const requestBody = { 
+                ...bookingFormData, 
+                area_sqft: isEventFunction ? Number(bookingFormData.area_sqft) : undefined,
+                num_ac_rooms_booked: Number(bookingFormData.num_ac_rooms_booked),
+                num_non_ac_rooms_booked: Number(bookingFormData.num_non_ac_rooms_booked),
+            };
 
-        const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing ? `${API_BASE_URL}/bookings/${editingBookingId}` : `${API_BASE_URL}/bookings`;
-        
-        const requestBody = { 
-            ...bookingFormData, 
-            area_sqft: isEventFunction ? Number(bookingFormData.area_sqft) : undefined,
-            num_ac_rooms_booked: Number(bookingFormData.num_ac_rooms_booked), // Ensure numbers
-            num_non_ac_rooms_booked: Number(bookingFormData.num_non_ac_rooms_booked), // Ensure numbers
-        };
-
-        try {
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(requestBody),
-            });
-            if (!response.ok) {
-                if (response.status === 401) { navigate('/login'); throw new Error(currentContent.authError); }
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(requestBody),
+                });
+                if (!response.ok) {
+                    if (response.status === 401) { navigate('/login'); throw new Error(currentContent.authError); }
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                await fetchBookings();
+                handleCloseModal(); // This also resets CAPTCHA input via resetFormData
+                showToast(isEditing ? currentContent.updateSuccess : currentContent.bookingSuccess, 'success');
+            } catch (error) {
+                console.error('Error saving booking:', error);
+                showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
+                // Do not call fetchNewCaptcha here, as CAPTCHA was already verified.
+                // The error is related to booking data or server issues post-CAPTCHA.
             }
-            await fetchBookings(); // Refetch bookings to update the list
-            handleCloseModal();
-            showToast(isEditing ? currentContent.updateSuccess : currentContent.bookingSuccess, 'success');
-        } catch (error) {
-            console.error('Error saving booking:', error);
-            showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
-        }
+        };
+        // Verify CAPTCHA then proceed
+        await verifyCaptchaAndProceed(actualSubmitLogic);
     };
 
     const startEditBooking = async (booking) => {
         setIsEditing(true);
-        setEditingBookingId(booking.booking_id); // Store the custom booking_id string for the API call
+        setEditingBookingId(booking.booking_id);
             
-        // Fetch full hall details for the booking being edited
-        // booking.hall_id might be an object from populate or just an ID string. We need hall_id_string.
         const hallIdForEdit = booking.hall_id_string || (booking.hall_id ? booking.hall_id.hall_id : null);
-
         let hallDetails = null;
         if (hallIdForEdit) {
-            hallDetails = await fetchHallFullDetails(hallIdForEdit); // This sets selectedHallFullDetails
+            hallDetails = await fetchHallFullDetails(hallIdForEdit);
         }
     
         setBookingFormData({
-            booking_id: booking.booking_id, // Custom string ID
-            hall_id_string: hallIdForEdit || '', // Custom string ID of the hall
+            booking_id: booking.booking_id,
+            hall_id_string: hallIdForEdit || '',
             booking_date: booking.booking_date ? new Date(booking.booking_date).toISOString().split('T')[0] : '',
             floor: booking.floor || 1,
             function_type: booking.function_type || '',
-            area_sqft: booking.area_sqft?.toString() || '', // Ensure it's a string for input field
-            booking_amount: booking.booking_amount || 0, // Will be recalculated but good to have initial
+            area_sqft: booking.area_sqft?.toString() || '',
+            booking_amount: booking.booking_amount || 0,
             booking_type: booking.booking_type || '',
             is_parking: booking.is_parking || false,
             is_conference_hall: booking.is_conference_hall || false,
             is_food_prep_area: booking.is_food_prep_area || false,
             is_lawn: booking.is_lawn || false,
-            is_ac: booking.is_ac || false, // General AC flag
+            is_ac: booking.is_ac || false,
             num_ac_rooms_booked: booking.num_ac_rooms_booked || 0,
             num_non_ac_rooms_booked: booking.num_non_ac_rooms_booked || 0,
-            add_parking: booking.add_parking || false,
         });
-        setIsAcSelected(booking.is_ac || false); // Sync the AC radio button state
+        setIsAcSelected(booking.is_ac || false);
     
-        // Determine selected area option based on fetched hall details and booking area
         if (hallDetails && booking.area_sqft) {
             const totalArea = hallDetails.total_area_sqft || 0;
-            if (totalArea > 0) { // Only set if totalArea is meaningful
+            if (totalArea > 0) {
                 if (Number(booking.area_sqft) === totalArea) setSelectedAreaOption('full');
                 else if (Number(booking.area_sqft) === totalArea / 2) setSelectedAreaOption('half');
                 else setSelectedAreaOption('partial');
             } else {
-                 setSelectedAreaOption(booking.area_sqft ? 'partial' : 'none'); // If no total area, but area exists, assume partial
+                 setSelectedAreaOption(booking.area_sqft ? 'partial' : 'none');
             }
         } else {
             setSelectedAreaOption(booking.area_sqft ? 'partial' : 'none');
         }
     
-        setModalStep(2); // Go directly to form
+        setModalStep(2); 
         setShowModal(true);
+        // CAPTCHA will be fetched when modalStep becomes 2 by useEffect
     };
 
-    const handleCancelBooking = async (bookingIdToCancel) => {
-        const token = getAuthToken();
-        if (!token) { showToast(currentContent.authError, 'error'); navigate('/login'); return; }
+    const initiateCancelBooking = (bookingId) => {
+        setBookingIdToCancelState(bookingId);
+        fetchNewCaptcha(); // Fetch captcha for the cancel confirmation modal
+        setShowCancelConfirmModal(true);
+    };
 
-        if (window.confirm(currentContent.confirmCancelMessage)) {
+    const confirmAndExecuteCancelBooking = async () => {
+        if (!bookingIdToCancelState) return;
+        const token = getAuthToken();
+        if (!token) { 
+            showToast(currentContent.authError, 'error'); 
+            navigate('/login'); 
+            setShowCancelConfirmModal(false);
+            return; 
+        }
+
+        const actualCancelLogic = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToCancel}/cancel`, { // Uses booking_id string
+                const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToCancelState}/cancel`, {
                     method: 'PUT', headers: { 'Authorization': `Bearer ${token}` },
                 });
                 if (!response.ok) {
@@ -701,44 +753,66 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 }
                 await fetchBookings(); // Refetch
                 showToast(currentContent.cancelSuccess, 'success');
+                setShowCancelConfirmModal(false);
+                setBookingIdToCancelState(null);
+                setCaptchaInput(''); // Clear captcha input
             } catch (error) {
                 console.error('Error cancelling booking:', error);
                 showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
+                 // CAPTCHA was already verified, error is with the cancel operation itself
+                // Modal might remain open if fetchNewCaptcha is called by verifyCaptchaAndProceed on error
+                // but here the modal should ideally close if the error is post-captcha.
+                // For now, it will close if successful, or CAPTCHA error shown by verifyCaptcha...
+                // If actualCancelLogic itself fails, verifyCaptchaAndProceed doesn't auto-close the cancel modal
+                // So, explicitly close on error within actualCancelLogic if desired, or let user retry captcha.
+                // Let's keep it simple: if actualCancelLogic fails, the toast shows, user can retry CAPTCHA.
             }
-        }
+        };
+
+        await verifyCaptchaAndProceed(actualCancelLogic);
     };
+
 
     const openCertificatePreview = (booking) => {
         setCurrentBookingForCertificate(booking);
         setShowCertificatePreviewModal(true);
+        fetchNewCaptcha(); // Fetch CAPTCHA for download modal
     };
 
-    const downloadCertificateFromPreview = () => {
-        if (certificatePreviewRef.current && currentBookingForCertificate) {
-            const elementToCapture = certificatePreviewRef.current.querySelector('.user-dl-pdf-layout');
-            if (elementToCapture) {
-                html2pdf().from(elementToCapture).set({
-                    margin: 0, 
-                    filename: `Certificate_Booking_${currentBookingForCertificate.booking_id}.pdf`,
-                    html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                }).save().then(() => {
-                    showToast('Certificate download started!', 'success');
-                     setShowCertificatePreviewModal(false);
-                     setCurrentBookingForCertificate(null);
-                }).catch(err => {
-                    console.error("PDF generation failed:", err);
-                    showToast('Certificate download failed.', 'error');
-                });
+    const downloadCertificateFromPreview = async () => {
+        const actualDownloadLogic = async () => {
+            if (certificatePreviewRef.current && currentBookingForCertificate) {
+                const elementToCapture = certificatePreviewRef.current.querySelector('.user-dl-pdf-layout');
+                if (elementToCapture) {
+                    html2pdf().from(elementToCapture).set({
+                        margin: 0, 
+                        filename: `Certificate_Booking_${currentBookingForCertificate.booking_id}.pdf`,
+                        html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    }).save().then(() => {
+                        showToast('Certificate download started!', 'success');
+                         setShowCertificatePreviewModal(false); // Close on successful initiation
+                         setCurrentBookingForCertificate(null);
+                         setCaptchaInput(''); // Clear captcha input
+                    }).catch(err => {
+                        console.error("PDF generation failed:", err);
+                        showToast('Certificate download failed.', 'error');
+                        // CAPTCHA was verified, error is in PDF generation
+                    });
+                } else {
+                    showToast('Error preparing certificate for download.', 'error');
+                }
             } else {
-                showToast('Error preparing certificate for download.', 'error');
+                showToast('Error: Cannot download certificate.', 'error');
             }
-        } else {
-            showToast('Error: Cannot download certificate.', 'error');
-        }
+        };
+
+        await verifyCaptchaAndProceed(actualDownloadLogic);
     };
+
 
     const renderPriceTable = (title, data, acStatus, isEventTable = false) => {
+        // ... (existing price table logic - no changes)
         if (!selectedHallFullDetails || (isEventTable && (!data || data.length === 0))) return null;
     
         const getRowData = (itemKey, item) => {
@@ -750,14 +824,13 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 prices = acStatus ? item.prices_per_sqft_ac : item.prices_per_sqft_nonac;
             } else {
                 const blockLabels = {
-                    conferenceHall: currentContent.conferenceHallOption, // Simpler label
+                    conferenceHall: currentContent.conferenceHallOption,
                     foodPrepArea: currentContent.foodPrepAreaOption,
                     lawn: currentContent.lawnOption,
-                    // Specific labels for per-room rates from translations
                     roomRentAc: currentContent.perAcRoomLabel,
                     roomRentNonAc: currentContent.perNonAcRoomLabel,
                     parking: currentContent.parking,
-                    electricity: currentContent.electricityAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''), // Base label
+                    electricity: currentContent.electricityAc.replace(' (AC)', '').replace(' (गैर-एसी)', ''),
                     cleaning: currentContent.cleaning,
                 };
                 label = blockLabels[itemKey];
@@ -787,7 +860,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             if (selectedHallFullDetails.lawn_ac && selectedHallFullDetails.lawn_nonac) {
                 blocks.lawn = acStatus ? selectedHallFullDetails.lawn_ac : selectedHallFullDetails.lawn_nonac;
             }
-            // Display per-room rates based on AC status
             if (acStatus && selectedHallFullDetails.room_rent_ac) {
                 blocks.roomRentAc = selectedHallFullDetails.room_rent_ac;
             }
@@ -829,6 +901,42 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             </div>
         );
     };
+
+    const renderCaptchaSection = (actionContext = "") => ( // actionContext for more specific prompts if needed
+        <div className="bn-form-group bn-captcha-section bn-form-group-full">
+            <label htmlFor="captcha_input" style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block' }}>
+                {currentContent.captchaLabel}
+            </label>
+            {actionContext && <p style={{fontSize: '0.9em', color: 'var(--bn-text-secondary)', marginBottom: '10px'}}>{actionContext}</p>}
+            {captchaSvg ? (
+                <div className="captcha-image-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <div dangerouslySetInnerHTML={{ __html: captchaSvg }} />
+                    <button 
+                        type="button" 
+                        onClick={fetchNewCaptcha} 
+                        className="bn-button bn-button-icon bn-refresh-captcha-button" 
+                        aria-label={currentContent.captchaRefreshAlt}
+                        title={currentContent.captchaRefreshAlt}
+                        style={{ padding: '8px', lineHeight: '1' }} // Minimal styling for the button
+                    >
+                        <RefreshCw size={18} />
+                    </button>
+                </div>
+            ) : (
+                 <p className="bn-message bn-loading-message" style={{fontSize: '0.9em'}}>{currentContent.loadingMessage}</p>
+            )}
+            <input
+                type="text"
+                id="captcha_input"
+                placeholder={currentContent.captchaPlaceholder}
+                value={captchaInput}
+                onChange={(e) => setCaptchaInput(e.target.value)}
+                className="bn-input"
+                // `required` attribute is less critical here as verifyCaptchaAndProceed handles empty check
+            />
+            {captchaError && <p className="bn-error-text" style={{color: 'var(--bn-color-error)', fontSize: '0.9em', marginTop: '5px'}}>{captchaError}</p>}
+        </div>
+    );
     
     const isHallSelected = !!bookingFormData.hall_id_string;
     const isFunctionTypeSelected = !!bookingFormData.function_type;
@@ -905,7 +1013,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     </button>
                                                 )}
                                                 {booking.booking_status !== 'Cancelled' && (
-                                                    <button className="bn-button bn-cancel-button" onClick={() => handleCancelBooking(booking.booking_id)} aria-label={`${currentContent.cancelButton} booking ${booking.booking_id}`}>
+                                                    <button 
+                                                        className="bn-button bn-cancel-button" 
+                                                        onClick={() => initiateCancelBooking(booking.booking_id)} // Changed to initiateCancelBooking
+                                                        aria-label={`${currentContent.cancelButton} booking ${booking.booking_id}`}
+                                                    >
                                                         {currentContent.cancelButton}
                                                     </button>
                                                 )}
@@ -944,6 +1056,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
                             <div className="bn-modal-body">
                                 {modalStep === 1 && (
+                                    // ... Disclaimer content ...
                                     <div className="bn-disclaimer-content">
                                         {currentContent.disclaimerPoints.map((point, index) => (
                                             <p key={index}><InfoIcon size={16} className="bn-disclaimer-icon" /> {point}</p>
@@ -952,6 +1065,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 )}
                                 {modalStep === 2 && (
                                     <form id="booking-form-id" onSubmit={handleBookingSubmit} className="bn-booking-form">
+                                        {/* ... existing form fields ... */}
                                         {isEditing && (
                                             <div className="bn-form-group bn-form-group-full">
                                                 <label htmlFor="booking_id_display">Booking ID:</label>
@@ -1014,7 +1128,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             </div>
                                         )}
 
-                                        {/* Number of AC Rooms Input */}
                                         {selectedHallFullDetails && typeof selectedHallFullDetails.num_ac_rooms === 'number' && selectedHallFullDetails.num_ac_rooms > 0 && (
                                             <div className="bn-form-group">
                                                 <label htmlFor="num_ac_rooms_booked">
@@ -1024,20 +1137,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     </span>
                                                 </label>
                                                 <input
-                                                    type="number"
-                                                    id="num_ac_rooms_booked"
-                                                    name="num_ac_rooms_booked"
-                                                    value={bookingFormData.num_ac_rooms_booked}
-                                                    onChange={handleBookingFormChange}
-                                                    className="bn-input"
-                                                    min="0"
-                                                    max={selectedHallFullDetails.num_ac_rooms}
+                                                    type="number" id="num_ac_rooms_booked" name="num_ac_rooms_booked"
+                                                    value={bookingFormData.num_ac_rooms_booked} onChange={handleBookingFormChange}
+                                                    className="bn-input" min="0" max={selectedHallFullDetails.num_ac_rooms}
                                                     disabled={!isHallSelected}
                                                 />
                                             </div>
                                         )}
 
-                                        {/* Number of Non-AC Rooms Input */}
                                         {selectedHallFullDetails && typeof selectedHallFullDetails.num_non_ac_rooms === 'number' && selectedHallFullDetails.num_non_ac_rooms > 0 && (
                                             <div className="bn-form-group">
                                                 <label htmlFor="num_non_ac_rooms_booked">
@@ -1047,14 +1154,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     </span>
                                                 </label>
                                                 <input
-                                                    type="number"
-                                                    id="num_non_ac_rooms_booked"
-                                                    name="num_non_ac_rooms_booked"
-                                                    value={bookingFormData.num_non_ac_rooms_booked}
-                                                    onChange={handleBookingFormChange}
-                                                    className="bn-input"
-                                                    min="0"
-                                                    max={selectedHallFullDetails.num_non_ac_rooms}
+                                                    type="number" id="num_non_ac_rooms_booked" name="num_non_ac_rooms_booked"
+                                                    value={bookingFormData.num_non_ac_rooms_booked} onChange={handleBookingFormChange}
+                                                    className="bn-input" min="0" max={selectedHallFullDetails.num_non_ac_rooms}
                                                     disabled={!isHallSelected}
                                                 />
                                             </div>
@@ -1064,12 +1166,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                         <div className="bn-form-group">
                                             <label htmlFor="function_type">{currentContent.tableHeaders[4]}:</label>
                                             <select 
-                                                id="function_type" 
-                                                name="function_type" 
-                                                value={bookingFormData.function_type} 
-                                                onChange={handleBookingFormChange} 
-                                                required 
-                                                className="bn-select" 
+                                                id="function_type" name="function_type" value={bookingFormData.function_type} 
+                                                onChange={handleBookingFormChange} required className="bn-select" 
                                                 disabled={!isHallSelected || !selectedHallFullDetails?.event_pricing || selectedHallFullDetails.event_pricing.length === 0}
                                             >
                                                 <option value="">{currentContent.selectFunctionPlaceholder}</option>
@@ -1077,16 +1175,13 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             </select>
                                         </div>
                                         
-                                        {isFunctionTypeEvent && ( // Only show area options if function type requires area (is an event)
+                                        {isFunctionTypeEvent && (
                                             <Fragment>
                                                 <div className="bn-form-group">
                                                     <label htmlFor="selected_area_option">{currentContent.areaOptionLabel}</label>
                                                     <select
-                                                        id="selected_area_option"
-                                                        name="selected_area_option"
-                                                        value={selectedAreaOption}
-                                                        onChange={handleBookingFormChange}
-                                                        className="bn-select"
+                                                        id="selected_area_option" name="selected_area_option" value={selectedAreaOption}
+                                                        onChange={handleBookingFormChange} className="bn-select"
                                                         disabled={!isHallSelected || !isFunctionTypeSelected}
                                                     >
                                                         <option value="none">Select Option</option>
@@ -1098,16 +1193,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                 <div className="bn-form-group">
                                                     <label htmlFor="area_sqft">{currentContent.areaSqftLabel}</label>
                                                     <input
-                                                        type="number"
-                                                        id="area_sqft"
-                                                        name="area_sqft"
-                                                        value={bookingFormData.area_sqft}
-                                                        onChange={handleBookingFormChange}
-                                                        min="1"
-                                                        required={selectedAreaOption !== 'none'} // Required if an area option is chosen
+                                                        type="number" id="area_sqft" name="area_sqft" value={bookingFormData.area_sqft}
+                                                        onChange={handleBookingFormChange} min="1" required={selectedAreaOption !== 'none'}
                                                         readOnly={selectedAreaOption === 'full' || selectedAreaOption === 'half'}
-                                                        className="bn-input"
-                                                        placeholder={selectedAreaOption === 'partial' ? 'Enter area in sq.ft.' : ''}
+                                                        className="bn-input" placeholder={selectedAreaOption === 'partial' ? 'Enter area in sq.ft.' : ''}
                                                         disabled={!isHallSelected || !isFunctionTypeSelected || selectedAreaOption === 'none'}
                                                     />
                                                 </div>
@@ -1138,7 +1227,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     { name: 'is_conference_hall', label: currentContent.conferenceHallOption, available: selectedHallFullDetails?.conference_hall_ac || selectedHallFullDetails?.conference_hall_nonac },
                                                     { name: 'is_food_prep_area', label: currentContent.foodPrepAreaOption, available: selectedHallFullDetails?.food_prep_area_ac || selectedHallFullDetails?.food_prep_area_nonac },
                                                     { name: 'is_lawn', label: currentContent.lawnOption, available: selectedHallFullDetails?.lawn_ac || selectedHallFullDetails?.lawn_nonac }
-                                                ].filter(addon => addon.available).map(addon => ( // Only show addons if available in the hall
+                                                ].filter(addon => addon.available).map(addon => (
                                                     <div className="bn-checkbox-group" key={addon.name}>
                                                         <input type="checkbox" id={addon.name} name={addon.name} checked={bookingFormData[addon.name]} onChange={handleBookingFormChange} disabled={!isHallSelected || !isBookingTypeSelected} />
                                                         <label htmlFor={addon.name}>{addon.label}</label>
@@ -1151,6 +1240,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             <label><DollarSignIcon size={18} /> {currentContent.calculatedAmountLabel}</label>
                                             <input type="text" value={`Rs. ${bookingFormData.booking_amount.toFixed(2)}`} readOnly className="bn-input bn-calculated-amount" />
                                         </div>
+
+                                        {/* CAPTCHA Section */}
+                                        {renderCaptchaSection()}
                                     </form>
                                 )}
                             </div>
@@ -1167,7 +1259,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                         <button className="bn-button bn-modal-action-button bn-modal-cancel-button" onClick={handleCloseModal}>
                                             {languageType === 'hi' ? content.hi.cancelButton : content.en.cancelButton}
                                         </button>
-                                        <button type="submit" className="bn-button bn-modal-action-button bn-submit-button" form="booking-form-id" disabled={loadingHallDetails || !selectedHallFullDetails}>
+                                        <button type="submit" className="bn-button bn-modal-action-button bn-submit-button" form="booking-form-id" disabled={loadingHallDetails || !selectedHallFullDetails || !captchaToken}> {/* Disable if CAPTCHA not loaded */}
                                             {isEditing ? (languageType === 'hi' ? 'अपडेट करें' : 'Update Booking') : (languageType === 'hi' ? 'बुक करें' : 'Create Booking')}
                                         </button>
                                     </Fragment>
@@ -1182,7 +1274,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             {showCertificatePreviewModal && currentBookingForCertificate && (
                 <div 
                     className="bn-modal-overlay" 
-                    onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); }}
+                    onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); setCaptchaInput(''); setCaptchaError(''); }}
                 >
                     <div 
                         className="bn-modal-content bn-certificate-preview-modal"
@@ -1193,7 +1285,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                             <h3>{currentContent.previewModalTitle}</h3>
                             <button 
                                 className="bn-modal-close-button" 
-                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); }} 
+                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); setCaptchaInput(''); setCaptchaError('');}} 
                                 aria-label={currentContent.previewModalCloseButton}
                             >
                                 &times;
@@ -1201,30 +1293,76 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                         </div>
                         <div 
                             className="bn-modal-body" 
-                            style={{ padding: 0, overflowY: 'auto', backgroundColor: 'var(--user-dl-gray-lightest)' }}
-                            ref={certificatePreviewRef}
+                            style={{ padding: '20px', overflowY: 'auto' }} // Added padding around body
                         >
-                            <BookingCertificate
-                                bookingDetails={{
-                                    ...currentBookingForCertificate,
-                                    hall_id_string: currentBookingForCertificate.hall_display_name || 'N/A', // Use display name
-                                    createdAt: currentBookingForCertificate.createdAt 
-                                }}
-                                userName={user?.name || 'N/A'}
-                            />
+                             <div 
+                                style={{ padding: 0, overflowY: 'auto', backgroundColor: 'var(--user-dl-gray-lightest)' }}
+                                ref={certificatePreviewRef}
+                            >
+                                <BookingCertificate
+                                    bookingDetails={{
+                                        ...currentBookingForCertificate,
+                                        hall_id_string: currentBookingForCertificate.hall_display_name || 'N/A',
+                                        createdAt: currentBookingForCertificate.createdAt 
+                                    }}
+                                    userName={user?.name || 'N/A'}
+                                />
+                            </div>
+                             {/* CAPTCHA Section for Certificate Download */}
+                            <div style={{marginTop: '20px'}}>
+                               {renderCaptchaSection(currentContent.confirmActionPrompt(languageType === 'en' ? 'download the certificate' : 'प्रमाणपत्र डाउनलोड करें'))}
+                            </div>
                         </div>
                         <div className="bn-modal-footer">
                             <button 
                                 className="bn-button bn-modal-action-button bn-modal-cancel-button" 
-                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); }}
+                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); setCaptchaInput(''); setCaptchaError('');}}
                             >
                                 {currentContent.previewModalCloseButton}
                             </button>
                             <button
                                 className="bn-button bn-modal-action-button bn-submit-button"
                                 onClick={downloadCertificateFromPreview}
+                                disabled={!captchaToken} // Disable if CAPTCHA not loaded
                             >
                                 <DownloadIcon size={16} /> {currentContent.previewModalDownloadButton}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Cancel Confirmation Modal */}
+            {showCancelConfirmModal && (
+                <div className="bn-modal-overlay" onClick={() => {setShowCancelConfirmModal(false); setBookingIdToCancelState(null); setCaptchaInput(''); setCaptchaError('');}}>
+                    <div className="bn-modal-content" style={{maxWidth: '500px'}} onClick={(e) => e.stopPropagation()}>
+                        <div className="bn-modal-header">
+                            <h3>{currentContent.confirmCancellationTitle}</h3>
+                            <button 
+                                className="bn-modal-close-button" 
+                                onClick={() => {setShowCancelConfirmModal(false); setBookingIdToCancelState(null); setCaptchaInput(''); setCaptchaError('');}}
+                                aria-label={currentContent.closeModalButton}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <div className="bn-modal-body">
+                            <p style={{marginBottom: '20px'}}>{currentContent.confirmCancelMessage}</p>
+                            {renderCaptchaSection(currentContent.confirmActionPrompt(languageType === 'en' ? 'cancel this booking' : 'यह बुकिंग रद्द करें'))}
+                        </div>
+                        <div className="bn-modal-footer">
+                            <button 
+                                onClick={() => {setShowCancelConfirmModal(false); setBookingIdToCancelState(null); setCaptchaInput(''); setCaptchaError('');}} 
+                                className="bn-button bn-modal-action-button bn-modal-cancel-button"
+                            >
+                                {currentContent.dismissButtonText}
+                            </button>
+                            <button 
+                                onClick={confirmAndExecuteCancelBooking} 
+                                className="bn-button bn-modal-action-button bn-submit-button" // Changed to bn-submit-button for consistency, or use bn-danger-button
+                                disabled={!captchaToken} // Disable if CAPTCHA not loaded
+                            >
+                                {currentContent.confirmCancelButtonText}
                             </button>
                         </div>
                     </div>

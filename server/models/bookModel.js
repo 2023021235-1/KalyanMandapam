@@ -36,22 +36,24 @@ const bookSchema = new mongoose.Schema({
 
   // legacy add-ons (if you still want extra beyond fixed blocks)
   add_parking:         { type: Boolean, default: false },
-  // add_room:            { type: Boolean, default: false }, // Removed, replaced by specific room counts
+  
+  isAllowed:         { type: Boolean, default: false }, // Admin allows the booking
+  isPaid:            { type: Boolean, default: false }, // User has paid
 
   booking_status: {
     type: String,
-    enum: ['Confirmed', 'Pending', 'Cancelled'], // Align with frontend statuses
+    enum: ['Pending', 'AwaitingPayment', 'Confirmed', 'Cancelled'], // Updated statuses
     default: 'Pending',
     required: true,
   },
   booking_amount:      { type: Number, required: true },
    refund_status: {
         type: String,
-        enum: ['Processed', 'Pending', 'Rejected', 'N/A'], // Align with frontend statuses, add N/A
+        enum: ['Processed', 'Pending', 'Rejected', 'N/A'], 
         default: 'N/A',
     },
     refund_amount: {
-        type: String, // Storing as string "Rs. X"
+        type: String, 
         default: 'Rs. 0',
     },
     refund_processed_date: {

@@ -431,3 +431,180 @@
     right: -70px;
   }
 }
+/* Add these styles to your Navbar.css */
+
+/* User section and popover */
+.navbar__user-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.navbar__username-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.navbar__username-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+.profile-popover {
+  position: absolute;
+  top: calc(100% + 10px); /* Position below the username */
+  right: 0;
+  background-color: var(--base-color);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 300px;
+  z-index: 1030; /* Higher than other navbar elements */
+  padding: 1rem;
+  color: var(--text-color);
+}
+
+.profile-popover__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #777;
+}
+.profile-popover__close:hover {
+  color: var(--text-color);
+}
+
+.profile-popover h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--hover-bg);
+  padding-bottom: 0.5rem;
+}
+
+.profile-details p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.profile-details p strong {
+  color: var(--primary-color);
+}
+
+.btn--profile-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
+  background-color: var(--hover-bg);
+  color: var(--primary-color);
+  border: 1px solid #ccc;
+}
+.btn--profile-action:hover {
+    filter: brightness(95%);
+}
+
+
+.profile-edit-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.profile-edit-form label {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.profile-edit-form input[type="text"] {
+  width: calc(100% - 20px); /* Full width minus padding */
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.profile-edit-form p small {
+    font-size: 0.8em;
+    color: #777;
+}
+
+
+.profile-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn--sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+.btn--outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+.btn--outline:hover {
+    background-color: var(--hover-bg);
+}
+
+.profile-message {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+.profile-message.success {
+    background-color: #e6fffa;
+    color: #00796b;
+    border: 1px solid #b2dfdb;
+}
+.profile-message.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+/* Mobile specific for popover if needed */
+.mobile-auth .navbar__username-btn { /* Style for username button in mobile menu */
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.75rem 1rem;
+    color: var(--text-color); /* Match mobile menu item color */
+}
+.mobile-auth .navbar__username-btn:hover {
+    background-color: var(--hover-bg); /* Match mobile menu item hover */
+}
+
+.mobile-profile-popover {
+    position: relative; /* Or static within the flow of mobile menu */
+    top: 0;
+    width: auto; /* Adjust as needed */
+    margin: 0.5rem 1rem; /* Example margin */
+    box-shadow: none;
+    border-top: 1px solid var(--hover-bg);
+    padding-top: 1rem;
+}
+
+/* Ensure username is displayed on mobile */
+.mobile-user-info {
+    width: 100%;
+    border-bottom: 1px solid var(--hover-bg); /* Match other nav items */
+}

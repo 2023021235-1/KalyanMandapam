@@ -1,7 +1,7 @@
 // authController.js (or wherever your login controller is)
 const User = require('../models/userModel');
 const Otp = require('../models/otpModel'); // Assuming you might use this elsewhere
-const jwt = require('jsonwebtoken');
+const jwt =require('jsonwebtoken');
 // const bcrypt = require('bcryptjs'); // <-- You MUST install and use bcrypt for password hashing
 
 const generateToken = (user) => {
@@ -82,21 +82,11 @@ userType: user.userType, // Send the userType from the fetched user object
 };
 
 const getProfile = async (req, res) => {
-// The 'protect' middleware should handle token verification and user fetching
-    // If you are using 'protect' middleware before this route, the following token check is redundant
-    // and req.user will already be populated.
-    // If this route is NOT protected, then the token check below is necessary.
-
-    // Assuming 'protect' middleware is used before this route:
-    if (!req.user) {
-        // This case should ideally not be reached if 'protect' middleware runs first
-        return res.status(401).json({ message: 'Not authenticated' });
-    }
-
     // req.user is already populated by the 'protect' middleware, excluding the password
     const user = req.user;
 
  if (!user) {
+ // This case should ideally not be reached if 'protect' middleware runs first
  return res.status(404).json({ message: "User not found" });
  }
 
@@ -109,43 +99,46 @@ const getProfile = async (req, res) => {
  // Add other fields you want to expose in the profile
  }
  });
+};
 
-    // If this route is NOT protected by the 'protect' middleware, uncomment and use the code below:
-    /*
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "No token provided" });
+// New Update Profile Controller
+const updateProfile = async (req, res) => {
+    const { name } = req.body; // For now, only allowing name update
+    
+    if (!name || name.trim() === "") {
+        return res.status(400).json({ message: 'Name cannot be empty' });
     }
-    const token = authHeader.split(" ")[1];
+
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id).select('-password');
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id, // User ID from 'protect' middleware
+            { name },
+            { new: true, runValidators: true } // Return updated document, run schema validators
+        ).select('-password'); // Exclude password from the result
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
         }
-
-        res.json({
+        
+        // Return the same structure as getProfile and login
+        res.status(200).json({
+            token: req.headers.authorization?.split(" ")[1] || generateToken(updatedUser), // Optionally re-issue token or send existing
             user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                userType: user.userType
+                id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                userType: updatedUser.userType
             }
         });
 
-    } catch (err) {
-        console.error("JWT Verification Error:", err.message);
-        if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: "Invalid token" });
+    } catch (error) {
+        console.error("Profile Update Error:", error);
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message });
         }
-        if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({ message: "Token expired" });
-        }
-        res.status(500).json({ message: "Failed to authenticate token" });
+        res.status(500).json({ message: 'Failed to update profile' });
     }
-    */
 };
 
 
-module.exports = { signup, login, getProfile };
+module.exports = { signup, login, getProfile, updateProfile }; // Added updateProfile

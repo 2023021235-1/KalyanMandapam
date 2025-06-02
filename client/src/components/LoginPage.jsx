@@ -1,10 +1,11 @@
 // LoginPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./styles/LoginPage.css";
 import { useNavigate } from "react-router-dom";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { RefreshCw } from 'lucide-react'; // Added for CAPTCHA refresh
 
 const API = "https://kalyanmandapam.onrender.com/api"; 
 
@@ -21,45 +22,47 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
 
-  // ─── CAPTCHA STATES ───────────────────────────────────────────────
+  // CAPTCHA STATES
   const [captchaSvg, setCaptchaSvg] = useState("");
-  const [captchaToken, setCaptchaToken] = useState("");   // JWT from server
+  const [captchaToken, setCaptchaToken] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
 
   const navigate = useNavigate();
 
-  // ─── FETCH A NEW CAPTCHA WHEN "LOGIN" OR "SIGNUP" TAB IS ACTIVE ───────────────
+  // Function to load/reload CAPTCHA
+  const loadCaptcha = useCallback(() => {
+    setError(""); // Clear general errors when captcha is (re)loaded
+    setCaptchaInput(""); // Clear input when new captcha is loaded
+    setCaptchaSvg("");   // Clear current SVG while loading
+    setCaptchaToken(""); // Clear current token
+
+    axios
+      .get(`${API}/captcha/get-captcha`)
+      .then((res) => {
+        setCaptchaSvg(res.data.svg);
+        setCaptchaToken(res.data.token);
+      })
+      .catch((err) => {
+        console.error("Failed to load CAPTCHA:", err);
+        setError(
+          languageType === "en"
+            ? "Failed to load CAPTCHA"
+            : "कैप्चा लोड करने में विफल"
+        );
+      });
+  }, [languageType]); // languageType for error messages
+
   useEffect(() => {
-    // Only fetch CAPTCHA for login or the first step of signup (where email/password are entered)
+    // Only fetch CAPTCHA for login or the first step of signup
     if (view === "login" || (view === "signup" && step === 1)) {
-      setError("");
-      setSuccess("");
-      setCaptchaInput(""); // Clear input when new captcha is loaded
-      setCaptchaSvg("");
-      setCaptchaToken("");
-
-      axios
-        .get(`${API}/captcha/get-captcha`)
-        .then((res) => {
-          setCaptchaSvg(res.data.svg);
-          setCaptchaToken(res.data.token);
-        })
-        .catch((err) => {
-          console.error("Failed to load CAPTCHA:", err);
-          setError(
-            languageType === "en"
-              ? "Failed to load CAPTCHA"
-              : "कैप्चा लोड करने में विफल"
-          );
-        });
+      loadCaptcha();
     }
-  }, [view, step, languageType]); // Added 'step' to dependencies
+  }, [view, step, loadCaptcha]); // Rerun if view, step, or loadCaptcha (due to languageType) changes
 
-  // ─── LOGIN (now includes CAPTCHA verification) ─────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess(""); // Clear previous success messages
+    setSuccess("");
     setLoading(true);
 
     try {
@@ -70,7 +73,6 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
       });
 
       if (!captchaRes.data?.success) {
-        // If server returns 200 but success: false, it's an invalid CAPTCHA
         throw new Error(
           languageType === "en" ? "Invalid CAPTCHA" : "अमान्य कैप्चा"
         );
@@ -102,35 +104,20 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
       console.error("Login/CAPTCHA error:", err.response || err.message);
       let errorMessage = languageType === "en" ? "Login failed" : "लॉगिन असफल";
 
-      // Prioritize specific error messages
       if (err.message === (languageType === "en" ? "Invalid CAPTCHA" : "अमान्य कैप्चा")) {
-        errorMessage = err.message; // Use the specific CAPTCHA error
+        errorMessage = err.message;
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       }
       
       setError(errorMessage);
+      loadCaptcha(); // Refresh CAPTCHA on error
 
-      // Always try to refresh CAPTCHA on any login error
-      try {
-        const r2 = await axios.get(`${API}/captcha/get-captcha`);
-        setCaptchaSvg(r2.data.svg);
-        setCaptchaToken(r2.data.token);
-        setCaptchaInput(""); // Clear input on refresh
-      } catch (e2) {
-        console.error("Failed to reload CAPTCHA after error:", e2);
-        setError(
-          languageType === "en"
-            ? "Login failed and failed to reload CAPTCHA"
-            : "लॉगिन असफल और कैप्चा लोड करने में विफल"
-        );
-      }
     } finally {
       setLoading(false);
     }
   };
 
-  // ─── SIGNUP: STEP 1 (Send OTP - now includes CAPTCHA verification) ───────────────────
   const sendOtp = async (e) => {
     e.preventDefault();
     setError("");
@@ -181,32 +168,17 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
         (languageType === "en" ? "Failed to send OTP" : "ओटीपी भेजने में विफल");
       
       if (err.message === (languageType === "en" ? "Invalid CAPTCHA" : "अमान्य कैप्चा")) {
-        errorMessage = err.message; // Use the specific CAPTCHA error
+        errorMessage = err.message;
       }
 
       setError(errorMessage);
-
-      // Always try to refresh CAPTCHA on any signup error in step 1
-      try {
-        const r2 = await axios.get(`${API}/captcha/get-captcha`);
-        setCaptchaSvg(r2.data.svg);
-        setCaptchaToken(r2.data.token);
-        setCaptchaInput(""); // Clear input on refresh
-      } catch (e2) {
-        console.error("Failed to reload CAPTCHA after error:", e2);
-        setError(
-          languageType === "en"
-            ? "Failed to send OTP and failed to reload CAPTCHA"
-            : "ओटीपी भेजने में विफल और कैप्चा लोड करने में विफल"
-        );
-      }
+      loadCaptcha(); // Refresh CAPTCHA on error
 
     } finally {
       setLoading(false);
     }
   };
 
-  // ─── SIGNUP: STEP 2 (Verify OTP & Signup) ────────────────────────
   const verifyAndSignup = async (e) => {
     e.preventDefault();
     setError("");
@@ -255,7 +227,34 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
     }
   };
 
-  // ─── RENDER ─────────────────────────────────────────────────────
+const renderCaptchaFields = () => (
+    captchaSvg && ( // Only render if captchaSvg is available
+        <div className="captcha-wrapper" style={{  display: "flex", alignItems: "center", gap: "10px" }}> {/* Main container for CAPTCHA elements */}
+            <div className="captcha-top-row" style={{  display: "flex", alignItems: "center", flexDirection: "row", gap: "10px" }}> {/* Container for image and refresh button */}
+                <div className="captcha-svg-container" dangerouslySetInnerHTML={{ __html: captchaSvg }} />
+                <button
+                    type="button"
+                    onClick={loadCaptcha} // Assuming loadCaptcha is your function to reload CAPTCHA
+                    title={languageType === "en" ? "Refresh CAPTCHA" : "कैप्चा रीफ़्रेश करें"}
+                    className="refresh-captcha-btn"
+                    // Inline styles for basic button reset, further styling in CSS
+                    style={{ height: "40px", width: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                    <RefreshCw size={22} /> {/* Adjusted icon size */}
+                </button>
+            </div>
+            <input
+                type="text"
+                placeholder={languageType === "en" ? "Enter CAPTCHA" : "कैप्चा दर्ज करें"}
+                value={captchaInput} // Assuming captchaInput is your state for the input
+                onChange={(e) => setCaptchaInput(e.target.value)} // Assuming setCaptchaInput updates the state
+                required
+                className="captcha-input-field" // Specific class for the input field
+            />
+        </div>
+    )
+  );
+
   return (
     <div className="login-wrapper">
       <div className="login-left">
@@ -269,7 +268,6 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
             {languageType === "en" ? "Back" : "पीछे"}
           </button>
 
-          {/* Language Toggle */}
           {toggleLanguage && (
             <div className="language-toggle">
               <button onClick={toggleLanguage}>
@@ -298,6 +296,7 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                 setStep(1);
                 setError("");
                 setSuccess("");
+                // loadCaptcha will be called by useEffect
               }}
             >
               {languageType === "en" ? "Login" : "लॉगिन"}
@@ -309,6 +308,7 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                 setStep(1);
                 setError("");
                 setSuccess("");
+                // loadCaptcha will be called by useEffect
               }}
             >
               {languageType === "en" ? "Signup" : "साइनअप"}
@@ -331,37 +331,15 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-
-              {/* ─── CAPTCHA IMAGE & INPUT ───────────────────────────── */}
-              {captchaSvg && (
-                <div className="captcha-wrapper">
-                  <input
-                    type="text"
-                    placeholder={
-                      languageType === "en"
-                        ? "Enter CAPTCHA"
-                        : "कैप्चा दर्ज करें"
-                    }
-                    value={captchaInput}
-                    onChange={(e) => {
-                      setCaptchaInput(e.target.value);
-                    }}
-                    required
-                  />
-                  {/* Render the SVG string returned by the server */}
-                  <div
-                    dangerouslySetInnerHTML={{ __html: captchaSvg }}
-                    style={{ marginBottom: "0.5rem" }} // This style will be overridden by CSS
-                  />
-                </div>
-              )}
+              
+              {renderCaptchaFields()}
 
               {error && <div className="error-message">{error}</div>}
               {success && <div className="success-message">{success}</div>}
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !captchaToken} // Also disable if captcha isn't loaded
                 className={loading ? "disabled-login-button" : ""}
               >
                 {loading
@@ -372,10 +350,6 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                   ? "Login"
                   : "लॉगिन करें"}
               </button>
-
-              <div className="links">
-                {/* (Optional) Forgot password link */}
-              </div>
             </form>
           )}
 
@@ -407,33 +381,12 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                     required
                   />
 
-                  {/* ─── CAPTCHA IMAGE & INPUT for Signup ───────────────────── */}
-                  {captchaSvg && (
-                    <div className="captcha-wrapper">
-                      <input
-                        type="text"
-                        placeholder={
-                          languageType === "en"
-                            ? "Enter CAPTCHA"
-                            : "कैप्चा दर्ज करें"
-                        }
-                        value={captchaInput}
-                        onChange={(e) => {
-                          setCaptchaInput(e.target.value);
-                        }}
-                        required
-                      />
-                      <div
-                        dangerouslySetInnerHTML={{ __html: captchaSvg }}
-                        style={{ marginBottom: "0.5rem" }}
-                      />
-                    </div>
-                  )}
+                  {renderCaptchaFields()}
 
                   {error && <div className="error-message">{error}</div>}
                   {success && <div className="success-message">{success}</div>}
 
-                  <button type="submit" disabled={loading}>
+                  <button type="submit" disabled={loading || !captchaToken}>
                     {loading
                       ? languageType === "en"
                         ? "Sending OTP..."
@@ -443,7 +396,7 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                       : "ओटीपी भेजें"}
                   </button>
                 </form>
-              ) : (
+              ) : ( // Step 2: Verify OTP
                 <form onSubmit={verifyAndSignup}>
                   <input
                     type="text"
@@ -472,9 +425,10 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        setStep(1);
+                        setStep(1); // Go back to step 1 (name, email, password, CAPTCHA)
                         setError("");
                         setSuccess("");
+                        // loadCaptcha will be called by useEffect due to step change
                       }}
                     >
                       ← {languageType === "en" ? "Back" : "पीछे"}
@@ -486,17 +440,22 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
           )}
 
           <div className="links">
+            {/* Links are kept as they were, switching view triggers useEffect for CAPTCHA */}
             <a
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                setView("signup");
-                setStep(1); // Ensure signup always starts at step 1
+                setView(view === "login" ? "signup" : "login");
+                setStep(1); 
+                setError("");
+                setSuccess("");
               }}
             >
-              {languageType === "en" ? "Create Account" : "खाता बनाएं"}
+              {view === "login"
+                ? languageType === "en" ? "Create Account" : "खाता बनाएं"
+                : languageType === "en" ? "Back to Login" : "लॉगिन पर वापस जाएं"}
             </a>
-            <a href="#" onClick={(e) => e.preventDefault()}>
+            <a href="#" onClick={(e) => {e.preventDefault(); /* Implement forgot password */}}>
               {languageType === "en" ? "Forgot Password?" : "पासवर्ड भूल गए?"}
             </a>
           </div>

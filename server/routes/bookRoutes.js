@@ -7,30 +7,35 @@ const {
     getBookingById,
     updateBooking,
     cancelBooking,
-    deleteBooking, // Added
-    updateBookingStatus, // Added
-    requestRefund, // Added
+    deleteBooking, 
+    updateBookingStatus, 
+    requestRefund, 
     getRefundStatus,
-    processRefund, // Added
+    processRefund, 
+    allowBooking,    // Added
+    recordPayment    // Added
 } = require('../controller/bookController');
-const { protect } = require('../middleware/authMiddleware'); // Import the protect middleware
+const { protect, admin } = require('../middleware/authMiddleware'); // Assuming you have an admin middleware
 
 
 // Protected routes using the 'protect' middleware
-router.post('/', protect, createBooking); // Create a new booking
-router.get('/', protect, getAllBookings); // Get all bookings (can add logic in controller to filter by user or admin)
-router.get('/:id', protect, getBookingById); // Get booking by unique booking_id string
-router.put('/:id', protect, updateBooking); // Update booking details by unique booking_id string
+router.post('/', protect, createBooking); 
+router.get('/', protect, getAllBookings); 
+router.get('/:id', protect, getBookingById); 
+router.put('/:id', protect, updateBooking); 
 
 // Specific routes for status changes and refund actions
-router.put('/:id/cancel', protect, cancelBooking); // Cancel a booking
-router.put('/:id/status', protect, updateBookingStatus); // Update booking status (Admin action)
-router.put('/:id/request-refund', protect, requestRefund); // Request a refund
-router.put('/:id/process-refund', protect, processRefund); // Process a refund (Admin action)
+router.put('/:id/cancel', protect, cancelBooking); 
+router.put('/:id/status', protect, admin, updateBookingStatus); // Admin action
+router.put('/:id/request-refund', protect, requestRefund); 
+router.put('/:id/process-refund', protect, admin, processRefund); // Admin action
 
-router.delete('/:id', protect, deleteBooking); // Delete a booking (Admin hard delete)
+router.put('/:id/allow', protect, admin, allowBooking); // Admin allows a booking
+router.put('/:id/pay', protect, recordPayment);       // User records payment
 
-router.get('/:id/refund-status', protect, getRefundStatus); // Check refund status by unique booking_id string
+router.delete('/:id', protect, admin, deleteBooking); // Admin hard delete
+
+router.get('/:id/refund-status', protect, getRefundStatus); 
 
 
 module.exports = router;
