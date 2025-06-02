@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const API = "http://localhost:5000/api";
+const API = "https://kalyanmandapam.onrender.com/api"; 
+// ← Make sure this matches your deployed backend!
 
 function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
   const [view, setView] = useState("login");
@@ -14,87 +15,92 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
-
-  // ─── Common fields ───────────────────────────────────────────────
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // ─── Signup-only fields ─────────────────────────────────────────
+  // Signup fields
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
 
-  // ─── CAPTCHA fields ───────────────────────────────────────────────
+  // ─── CAPTCHA STATES ───────────────────────────────────────────────
   const [captchaSvg, setCaptchaSvg] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");   // JWT from server
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaVerified, setCaptchaVerified] = useState(false);
 
-  // ─── Whenever “view” switches to login, fetch a new CAPTCHA ───────
+  const navigate = useNavigate();
+
+  // ─── FETCH A NEW CAPTCHA WHEN “LOGIN” TAB IS ACTIVE ───────────────
   useEffect(() => {
     if (view === "login") {
       setError("");
       setSuccess("");
       setCaptchaInput("");
       setCaptchaSvg("");
+      setCaptchaToken("");
       setCaptchaVerified(false);
 
       axios
-        .get(`${API}/auth/captcha`, { withCredentials: true })
+        .get(`${API}/auth/captcha`)
         .then((res) => {
-          setCaptchaSvg(res.data);
+          // res.data = { svg: "<svg>…</svg>", token: "<JWT>" }
+          setCaptchaSvg(res.data.svg);
+          setCaptchaToken(res.data.token);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("Failed to load CAPTCHA:", err);
           setError(
             languageType === "en"
               ? "Failed to load CAPTCHA"
-              : "कैप्चा लोड करने में विफलता"
+              : "कैप्चा लोड करने में विफल"
           );
         });
     }
   }, [view, languageType]);
 
-  // ─── VERIFY CAPTCHA ───────────────────────────────────────────────
+  // ─── VERIFY CAPTCHA (when user clicks the “Verify CAPTCHA” button) ─
   const handleVerifyCaptcha = async () => {
     setError("");
     setSuccess("");
     setLoading(true);
 
     try {
-      await axios.post(
-        `${API}/auth/verify-captcha`,
-        { captchaInput },
-        { withCredentials: true }
-      );
-
-      // If we reach here, CAPTCHA was correct
-      setSuccess(
-        languageType === "en" ? "CAPTCHA verified" : "कैप्चा सत्यापित"
-      );
-      setCaptchaVerified(true);
+      const res = await axios.post(`${API}/auth/verify-captcha`, {
+        captchaInput,
+        captchaToken,
+      });
+      // { success: true } → correct
+      if (res.data?.success) {
+        setSuccess(
+          languageType === "en" ? "CAPTCHA verified" : "कैप्चा सत्यापित"
+        );
+        setCaptchaVerified(true);
+      } else {
+        throw new Error("Invalid response");
+      }
     } catch (err) {
-      // CAPTCHA failed: show error, reload a new one
+      console.error("CAPTCHA verify error:", err.response || err.message);
       setError(
         err.response?.data?.message ||
           (languageType === "en" ? "Invalid CAPTCHA" : "अमान्य कैप्चा")
       );
       setCaptchaVerified(false);
 
-      // Fetch a fresh CAPTCHA
+      // Fetch a brand-new CAPTCHA on failure
       try {
-        const res = await axios.get(`${API}/auth/captcha`, {
-          withCredentials: true,
-        });
-        setCaptchaSvg(res.data);
+        const r2 = await axios.get(`${API}/auth/captcha`);
+        setCaptchaSvg(r2.data.svg);
+        setCaptchaToken(r2.data.token);
         setCaptchaInput("");
-      } catch {
-        // ignore fetch error
+      } catch (e2) {
+        console.error("Failed to reload CAPTCHA:", e2);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // ─── LOGIN (only runs if CAPTCHA is already verified) ─────────────
+  // ─── LOGIN (only if captchaVerified === true) ─────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -105,7 +111,9 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
       const { data } = await axios.post(
         `${API}/auth/login`,
         { email, password },
-        { withCredentials: true }
+        { withCredentials: false } 
+        // ← note: you don’t need credentials for CAPTCHA now, but 
+        // you might still need cookies if login itself uses sessions.
       );
 
       const { token, user, userType } = data;
@@ -291,7 +299,7 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                 required
               />
 
-              {/* ─── CAPTCHA IMAGE & INPUT ───────────────────── */}
+              {/* ─── CAPTCHA IMAGE & INPUT ───────────────────────────── */}
               {captchaSvg && (
                 <div className="captcha-wrapper">
                   {/* Render the SVG string returned by the server */}
@@ -309,16 +317,15 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
                     value={captchaInput}
                     onChange={(e) => {
                       setCaptchaInput(e.target.value);
-                      // If user edits the CAPTCHA input, they must re-verify
                       if (captchaVerified) setCaptchaVerified(false);
                     }}
                     required
                   />
                   <button
                     type="button"
-                    className="verify-captcha-button"
                     onClick={handleVerifyCaptcha}
                     disabled={loading || !captchaInput.trim()}
+                    className="verify-captcha-button"
                   >
                     {languageType === "en"
                       ? "Verify CAPTCHA"
@@ -333,7 +340,7 @@ function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
               <button
                 type="submit"
                 disabled={loading || !captchaVerified}
-                className={captchaVerified ? "" : "disabled-login-button"}
+                className={!captchaVerified ? "disabled-login-button" : ""}
               >
                 {loading
                   ? languageType === "en"
