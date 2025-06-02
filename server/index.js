@@ -11,7 +11,7 @@ const app = express();
 
 // Enable CORS and parse JSON
 app.use(cors({
-  origin: true,
+  origin: "https://kalyan-mandapam.vercel.app/",
   credentials: true
 }));
 app.use(express.json());
