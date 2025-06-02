@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './styles/CheckAvailability.css';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, List } from 'lucide-react';
+import axios from 'axios'; // Import axios for CAPTCHA functionality
 
 const CheckAvailabilitySection = ({ languageType = 'en' }) => {
     // State to store the list of available halls fetched from the API
@@ -24,9 +25,15 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
     const [availabilityDataForMonth, setAvailabilityDataForMonth] = useState(null);
     const [loadingAvailability, setLoadingAvailability] = useState(false);
     const [availabilityError, setAvailabilityError] = useState(null);
-
+    const [showAvailabilityAfterCaptcha, setShowAvailabilityAfterCaptcha] = useState(false); // New state for CAPTCHA
 
     const [viewMode, setViewMode] = useState('calendar');
+
+    // CAPTCHA STATES
+    const [captchaSvg, setCaptchaSvg] = useState("");
+    const [captchaToken, setCaptchaToken] = useState("");   // JWT from server
+    const [captchaInput, setCaptchaInput] = useState("");
+    const [captchaError, setCaptchaError] = useState("");
 
     // Base URL for API calls - Consider moving this to a config file or environment variable
     const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
@@ -94,6 +101,10 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
             fetchingAvailabilityMessage: 'Fetching availability...',
             hallsErrorMessage: 'Failed to load halls.',
             availabilityErrorMessage: 'Failed to fetch availability data.',
+            enterCaptcha: 'Enter CAPTCHA', // New
+            showAvailabilityButton: 'Show Availability', // New
+            invalidCaptcha: 'Invalid CAPTCHA', // New
+            failedToLoadCaptcha: 'Failed to load CAPTCHA', // New
         },
         hi: {
             sectionHeading: 'उपलब्धता जांचें',
@@ -116,6 +127,10 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
             fetchingAvailabilityMessage: 'उपलब्धता प्राप्त हो रही है...',
             hallsErrorMessage: 'बारात घर लोड करने में विफल।',
             availabilityErrorMessage: 'उपलब्धता डेटा प्राप्त करने में विफल।',
+            enterCaptcha: 'कैप्चा दर्ज करें', // New
+            showAvailabilityButton: 'उपलब्धता दिखाएं', // New
+            invalidCaptcha: 'अमान्य कैप्चा', // New
+            failedToLoadCaptcha: 'कैप्चा लोड करने में विफल', // New
         },
     };
 
@@ -214,32 +229,103 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
             }
 
             setAvailabilityDataForMonth(processedData);
+            setShowAvailabilityAfterCaptcha(true); // Set to true after successful data fetch
             return processedData;
 
         } catch (error) {
             console.error('Error fetching availability data:', error);
             setAvailabilityError(error.message || currentContent.availabilityErrorMessage);
             setAvailabilityDataForMonth([]);
+            setShowAvailabilityAfterCaptcha(false); // Reset on error
             return [];
         } finally {
             setLoadingAvailability(false);
         }
     }, [API_BASE_URL, currentContent.availabilityErrorMessage]);
 
-    // Effect to fetch data automatically when dropdown selections are complete and change
+
+    // Effect to fetch CAPTCHA when dropdown selections are complete
     useEffect(() => {
         if (selectedHallId && selectedMonthValue && selectedYearValue) {
+            setCaptchaError("");
+            setCaptchaInput(""); // Clear input when new captcha is loaded
+            setCaptchaSvg("");
+            setCaptchaToken("");
+            setAvailabilityDataForMonth(null); // Clear previous data
+            setShowAvailabilityAfterCaptcha(false); // Reset display flag
+
+            axios
+                .get(`${API_BASE_URL}/captcha/get-captcha`)
+                .then((res) => {
+                    setCaptchaSvg(res.data.svg);
+                    setCaptchaToken(res.data.token);
+                })
+                .catch((err) => {
+                    console.error("Failed to load CAPTCHA:", err);
+                    setCaptchaError(currentContent.failedToLoadCaptcha);
+                });
+        }
+    }, [selectedHallId, selectedMonthValue, selectedYearValue, API_BASE_URL, currentContent.failedToLoadCaptcha]);
+
+    // Handle "Show Availability" button click
+    const handleShowAvailability = async () => {
+        setLoadingAvailability(true);
+        setAvailabilityError(null);
+        setCaptchaError("");
+        setShowAvailabilityAfterCaptcha(false); // Hide details until re-verified
+
+        if (!captchaInput) {
+            setCaptchaError(currentContent.enterCaptcha);
+            setLoadingAvailability(false);
+            return;
+        }
+
+        try {
+            // 1. Verify CAPTCHA first
+            const captchaRes = await axios.post(`${API_BASE_URL}/captcha/verify-captcha`, {
+                captchaInput,
+                captchaToken,
+            });
+
+            if (!captchaRes.data?.success) {
+                throw new Error(currentContent.invalidCaptcha);
+            }
+
+            // If CAPTCHA is successful, proceed with fetching hall details
             const monthInt = parseInt(selectedMonthValue, 10);
             const yearInt = parseInt(selectedYearValue, 10);
             setDisplayMonth(monthInt);
             setDisplayYear(yearInt);
-            fetchAvailabilityData(selectedHallId, yearInt, monthInt);
-        } else {
-            setAvailabilityDataForMonth(null);
-            setAvailabilityError(null);
+            await fetchAvailabilityData(selectedHallId, yearInt, monthInt);
+            setShowAvailabilityAfterCaptcha(true); // Set to true after successful data fetch
+
+        } catch (err) {
+            console.error("Availability fetch/CAPTCHA error:", err.response || err.message);
+            let errorMessage = err.message || currentContent.fetchingAvailabilityMessage + ' failed.';
+
+            if (err.message === currentContent.invalidCaptcha) {
+                setCaptchaError(errorMessage); // Specific error for CAPTCHA
+            } else if (err.response?.data?.message) {
+                setAvailabilityError(err.response.data.message);
+            } else {
+                setAvailabilityError(errorMessage);
+            }
+
+            // Always try to refresh CAPTCHA on any error
+            try {
+                const r2 = await axios.get(`${API_BASE_URL}/captcha/get-captcha`);
+                setCaptchaSvg(r2.data.svg);
+                setCaptchaToken(r2.data.token);
+                setCaptchaInput(""); // Clear input on refresh
+            } catch (e2) {
+                console.error("Failed to reload CAPTCHA after error:", e2);
+                setCaptchaError(currentContent.failedToLoadCaptcha);
+            }
+        } finally {
             setLoadingAvailability(false);
         }
-    }, [selectedHallId, selectedMonthValue, selectedYearValue, fetchAvailabilityData]);
+    };
+
 
     // Determine if the previous month button should be disabled
     const isPreviousMonthDisabled = () => {
@@ -264,7 +350,7 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
 
     // Handle navigation to previous month
     const handlePreviousMonth = () => {
-        if (!selectedHallId || isPreviousMonthDisabled()) return;
+        if (!selectedHallId || !showAvailabilityAfterCaptcha || isPreviousMonthDisabled()) return; // Added check for showAvailabilityAfterCaptcha
 
         let newMonth = displayMonth - 1;
         let newYear = displayYear;
@@ -279,7 +365,7 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
 
     // Handle navigation to next month
     const handleNextMonth = () => {
-        if (!selectedHallId) return;
+        if (!selectedHallId || !showAvailabilityAfterCaptcha) return; // Added check for showAvailabilityAfterCaptcha
 
         let newMonth = displayMonth + 1;
         let newYear = displayYear;
@@ -295,16 +381,25 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
     // Handle change for BaratGhar select dropdown
     const handleBaratGharChange = (event) => {
         setSelectedHallId(event.target.value);
+        setAvailabilityError(null); // Clear errors
+        setCaptchaError(""); // Clear CAPTCHA errors
+        setShowAvailabilityAfterCaptcha(false); // Reset display flag
     };
 
     // Handle change for Month select dropdown
     const handleMonthChange = (event) => {
         setSelectedMonthValue(event.target.value);
+        setAvailabilityError(null); // Clear errors
+        setCaptchaError(""); // Clear CAPTCHA errors
+        setShowAvailabilityAfterCaptcha(false); // Reset display flag
     };
 
     // Handle change for Year select dropdown
     const handleYearChange = (event) => {
         setSelectedHallYearValue(event.target.value);
+        setAvailabilityError(null); // Clear errors
+        setCaptchaError(""); // Clear CAPTCHA errors
+        setShowAvailabilityAfterCaptcha(false); // Reset display flag
     };
 
     // Generates the array of days for the calendar grid
@@ -342,7 +437,8 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
     };
 
     // Determine if the data area should be shown
-    const showDataArea = selectedHallId && selectedMonthValue && selectedYearValue && availabilityDataForMonth !== null;
+    const allDropdownsSelected = selectedHallId && selectedMonthValue && selectedYearValue;
+    const showDataArea = allDropdownsSelected && availabilityDataForMonth !== null && showAvailabilityAfterCaptcha;
 
     return (
         <section className="ca-section">
@@ -413,12 +509,52 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                         </div>
                     </div>
 
-                    {!showDataArea && !loadingHalls && !hallsError && !loadingAvailability && !availabilityError && (
+                    {/* Conditional rendering for messages and CAPTCHA/button */}
+                    {!allDropdownsSelected && !loadingHalls && !hallsError && (
                         <p className="ca-availability-message">{currentContent.noDataMessage}</p>
                     )}
 
-                    {loadingAvailability && <p className="ca-availability-message">{currentContent.fetchingAvailabilityMessage}</p>}
-                    {availabilityError && <p style={{ color: 'red', textAlign: 'center', marginTop: '20px' }}>{availabilityError}</p>}
+                    {allDropdownsSelected && !loadingHalls && !hallsError && !showAvailabilityAfterCaptcha && (
+                        <div className="captcha-and-details-section">
+                            {/* CAPTCHA IMAGE & INPUT */}
+                            {captchaSvg && (
+                                <div className="captcha-wrapper">
+                                    <input
+                                        type="text"
+                                        placeholder={currentContent.enterCaptcha}
+                                        value={captchaInput}
+                                        onChange={(e) => setCaptchaInput(e.target.value)}
+                                        required
+                                    />
+                                    <div
+                                        dangerouslySetInnerHTML={{ __html: captchaSvg }}
+                                        style={{ marginBottom: "0.5rem" }}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Error/Success Messages for CAPTCHA */}
+                            {captchaError && <div className="ca-availability-message ca-message--error">{captchaError}</div>}
+
+
+                            <button
+                                className="show-availability-button"
+                                onClick={handleShowAvailability}
+                                disabled={loadingAvailability}
+                            >
+                                {loadingAvailability ? currentContent.fetchingAvailabilityMessage : currentContent.showAvailabilityButton}
+                            </button>
+                        </div>
+                    )}
+
+
+                    {loadingAvailability && !availabilityDataForMonth && (
+                        <p className="ca-availability-message"> {currentContent.fetchingAvailabilityMessage}</p>
+                    )}
+                    {availabilityError && (
+                        <p className="ca-availability-message ca-message--error"> {availabilityError}</p>
+                    )}
+
 
                     {showDataArea && !loadingAvailability && !availabilityError && (
                         <>

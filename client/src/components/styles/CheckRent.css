@@ -144,6 +144,96 @@
   box-shadow: 0 0 5px rgba(var(--rental-secondary-color-rgb, 255, 153, 0), 0.5);
 }
 
+/* CAPTCHA SECTION STYLING */
+.captcha-and-details-section {
+    width: 100%;
+    max-width: 400px; /* Match form group width */
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center; /* Center content within this section */
+}
+
+.captcha-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.captcha-wrapper input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--rental-form-input-border);
+  border-radius: 4px;
+  font-size: 1em;
+  color: var(--rental-text-color);
+  background-color: var(--rental-white-card-bg);
+  transition: border-color 0.3s ease;
+  box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
+}
+
+.captcha-wrapper input[type="text"]:focus {
+  outline: none;
+  border-color: var(--rental-form-input-focus-border);
+  box-shadow: 0 0 5px rgba(var(--rental-secondary-color-rgb, 255, 153, 0), 0.5);
+}
+
+.captcha-wrapper > div[dangerouslySetInnerHTML] {
+  border: 1px solid var(--rental-form-input-border);
+  border-radius: 4px;
+  padding: 5px;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 250px; /* Adjust as needed */
+  height: 80px; /* Adjust as needed */
+  overflow: hidden;
+}
+
+.captcha-wrapper svg {
+    display: block; /* Remove extra space below SVG */
+    width: 100%;
+    height: 100%;
+}
+
+/* SHOW DETAILS BUTTON */
+.show-details-button {
+  background-color: var(--rental-primary-color);
+  color: var(--rental-button-text-color);
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 400px; /* Match form group width */
+  box-sizing: border-box;
+}
+
+.show-details-button:hover:not(:disabled) {
+  background-color: #660033; /* Darker maroon on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.show-details-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.show-details-button:disabled {
+  background-color: #cccccc; /* Greyed out when disabled */
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 /* Hall Details Styling */
 .rental-hall-details {
     margin-top: 25px; /* Space above the details block */

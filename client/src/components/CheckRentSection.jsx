@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import './styles/CheckRent.css';
 import { Home, MapPin, Users, Info, DollarSign, Zap, Droplet, Car, Building, Utensils, TreePine, BedDouble, BookOpen, CalendarDays } from 'lucide-react';
-
+import axios from 'axios'; // Import axios
 
 const CheckRentSection = ({ languageType = 'en' }) => {
     // State to store the list of available halls fetched from the API
@@ -15,6 +15,14 @@ const CheckRentSection = ({ languageType = 'en' }) => {
     const [selectedHallDetails, setSelectedHallDetails] = useState(null); // State to display details for the selected hall
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [detailsError, setDetailsError] = useState(null);
+    const [showDetailsAfterCaptcha, setShowDetailsAfterCaptcha] = useState(false);
+
+    // CAPTCHA STATES
+    const [captchaSvg, setCaptchaSvg] = useState("");
+    const [captchaToken, setCaptchaToken] = useState("");   // JWT from server
+    const [captchaInput, setCaptchaInput] = useState("");
+    const [captchaError, setCaptchaError] = useState("");
+
 
     // Base URL for API calls
     const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
@@ -37,6 +45,10 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             fetchingDetailsMessage: 'Fetching details...',
             selectHallMessage: 'Please select a BaratGhar to see details.',
             hallNotFound: 'Details not found for the selected hall.',
+            enterCaptcha: 'Enter CAPTCHA',
+            showDetailsButton: 'Show Rent Details',
+            invalidCaptcha: 'Invalid CAPTCHA',
+            failedToLoadCaptcha: 'Failed to load CAPTCHA',
 
             // New pricing labels
             acPricesHeading: 'AC Prices', // Heading for AC table
@@ -76,6 +88,10 @@ const CheckRentSection = ({ languageType = 'en' }) => {
             fetchingDetailsMessage: 'विवरण प्राप्त हो रहा है...',
             selectHallMessage: 'विवरण देखने के लिए कृपया एक बारात घर चुनें।',
             hallNotFound: 'चयनित बारात घर के लिए विवरण नहीं मिला।',
+            enterCaptcha: 'कैप्चा दर्ज करें',
+            showDetailsButton: 'किराया विवरण दिखाएं',
+            invalidCaptcha: 'अमान्य कैप्चा',
+            failedToLoadCaptcha: 'कैप्चा लोड करने में विफल',
 
             // New pricing labels
             acPricesHeading: 'एसी मूल्य', // Heading for AC table
@@ -126,35 +142,97 @@ const CheckRentSection = ({ languageType = 'en' }) => {
         fetchAllHalls();
     }, [API_BASE_URL, currentContent.loadingHallsMessage]); // Dependencies: API_BASE_URL and content for error message
 
+    // Fetch a new CAPTCHA when a hall is selected or component mounts
+    useEffect(() => {
+        if (selectedHallId) {
+            setCaptchaError("");
+            setCaptchaInput(""); // Clear input when new captcha is loaded
+            setCaptchaSvg("");
+            setCaptchaToken("");
+            setSelectedHallDetails(null); // Clear previous details when a new hall is selected
+            setShowDetailsAfterCaptcha(false); // Reset display flag
 
-    // Handle dropdown change and fetch details for the selected hall
-    const handleDropdownChange = async (event) => {
+            axios
+                .get(`${API_BASE_URL}/captcha/get-captcha`)
+                .then((res) => {
+                    setCaptchaSvg(res.data.svg);
+                    setCaptchaToken(res.data.token);
+                })
+                .catch((err) => {
+                    console.error("Failed to load CAPTCHA:", err);
+                    setCaptchaError(currentContent.failedToLoadCaptcha);
+                });
+        }
+    }, [selectedHallId, languageType, API_BASE_URL, currentContent.failedToLoadCaptcha]);
+
+
+    // Handle dropdown change - only sets the selected hall ID, doesn't fetch details yet
+    const handleDropdownChange = (event) => {
         const selectedValue = event.target.value;
         setSelectedHallId(selectedValue);
-        setSelectedHallDetails(null); // Clear previous details
-        setDetailsError(null); // Clear previous error
+        setDetailsError(null); // Clear previous errors
+        setCaptchaError("");
+    };
 
-        if (selectedValue) { // Only fetch if a hall is selected (not the placeholder)
-            setLoadingDetails(true);
-            try {
-                const response = await fetch(`${API_BASE_URL}/halls/${selectedValue}`);
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error(currentContent.hallNotFound);
-                    }
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                // Assuming the fetched hall data contains all necessary fields
-                setSelectedHallDetails(data);
-            } catch (error) {
-                console.error('Error fetching hall details:', error);
-                setDetailsError(error.message || currentContent.fetchingDetailsMessage + ' failed.');
-            } finally {
-                setLoadingDetails(false);
+    // Handle "Show Rent Details" button click
+    const handleShowDetails = async () => {
+        setLoadingDetails(true);
+        setDetailsError(null);
+        setCaptchaError("");
+        setShowDetailsAfterCaptcha(false); // Hide details until re-verified
+
+        if (!captchaInput) {
+            setCaptchaError(currentContent.enterCaptcha);
+            setLoadingDetails(false);
+            return;
+        }
+
+        try {
+            // 1. Verify CAPTCHA first
+            const captchaRes = await axios.post(`${API_BASE_URL}/captcha/verify-captcha`, {
+                captchaInput,
+                captchaToken,
+            });
+
+            if (!captchaRes.data?.success) {
+                throw new Error(currentContent.invalidCaptcha);
             }
+
+            // If CAPTCHA is successful, proceed with fetching hall details
+            const response = await axios.get(`${API_BASE_URL}/halls/${selectedHallId}`);
+            if (!response.data) {
+                throw new Error(currentContent.hallNotFound);
+            }
+            setSelectedHallDetails(response.data);
+            setShowDetailsAfterCaptcha(true); // Display details after successful CAPTCHA and fetch
+
+        } catch (err) {
+            console.error("Details fetch/CAPTCHA error:", err.response || err.message);
+            let errorMessage = err.message || currentContent.fetchingDetailsMessage + ' failed.';
+
+            if (err.message === currentContent.invalidCaptcha) {
+                setCaptchaError(errorMessage); // Specific error for CAPTCHA
+            } else if (err.response?.data?.message) {
+                setDetailsError(err.response.data.message);
+            } else {
+                setDetailsError(errorMessage);
+            }
+
+            // Always try to refresh CAPTCHA on any error
+            try {
+                const r2 = await axios.get(`${API_BASE_URL}/captcha/get-captcha`);
+                setCaptchaSvg(r2.data.svg);
+                setCaptchaToken(r2.data.token);
+                setCaptchaInput(""); // Clear input on refresh
+            } catch (e2) {
+                console.error("Failed to reload CAPTCHA after error:", e2);
+                setCaptchaError(currentContent.failedToLoadCaptcha);
+            }
+        } finally {
+            setLoadingDetails(false);
         }
     };
+
 
     // Helper function to render fixed price tables for AC or Non-AC, now including event pricing
     const renderFixedPriceTable = (data, title, type, eventPricing) => {
@@ -274,16 +352,50 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                             <p className="ca-availability-message"> {currentContent.selectHallMessage}</p>
                         )}
 
-                        {loadingDetails && (
+                        {selectedHallId && !loadingHalls && !hallsError && !showDetailsAfterCaptcha && (
+                            <div className="captcha-and-details-section">
+                                {/* CAPTCHA IMAGE & INPUT */}
+                                {captchaSvg && (
+                                    <div className="captcha-wrapper">
+                                        <input
+                                            type="text"
+                                            placeholder={currentContent.enterCaptcha}
+                                            value={captchaInput}
+                                            onChange={(e) => setCaptchaInput(e.target.value)}
+                                            required
+                                        />
+                                        <div
+                                            dangerouslySetInnerHTML={{ __html: captchaSvg }}
+                                            style={{ marginBottom: "0.5rem" }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Error/Success Messages for CAPTCHA */}
+                                {captchaError && <div className="rental-message rental-message--error">{captchaError}</div>}
+
+
+                                <button
+                                    className="show-details-button"
+                                    onClick={handleShowDetails}
+                                    disabled={!selectedHallId || loadingDetails}
+                                >
+                                    {loadingDetails ? currentContent.fetchingDetailsMessage : currentContent.showDetailsButton}
+                                </button>
+                            </div>
+                        )}
+
+
+                        {loadingDetails && !selectedHallDetails && (
                             <p className="ca-availability-message"> {currentContent.fetchingDetailsMessage}</p>
                         )}
 
                         {detailsError && (
-                            <p className="ca-availability-message"> {detailsError}</p>
+                            <p className="ca-availability-message rental-message--error"> {detailsError}</p>
                         )}
 
                         {/* Hall Details (Location, Capacity, Total Floors, Description) and Pricing Tables */}
-                        {selectedHallDetails && !loadingDetails && !detailsError && (
+                        {selectedHallDetails && !loadingDetails && !detailsError && showDetailsAfterCaptcha && (
                             <div className="rental-hall-details">
                                 <h4> {selectedHallDetails.hall_name} Details</h4>
                                <div className='det'>

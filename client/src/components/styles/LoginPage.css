@@ -51,7 +51,7 @@
       max-width: 500px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
       text-align: center;
-      position: relative;
+      position: relative; /* Needed for absolute positioning of back-button and language-toggle */
     }
 /* for logo  */
     .logo {
@@ -263,6 +263,59 @@
       text-decoration: underline;
     }
 
+    /* CAPTCHA Specific Styles */
+    .captcha-wrapper {
+      display: flex;
+      flex-direction: row; /* Arranges children in a row */
+      align-items: center; /* Vertically aligns items in the center */
+      justify-content: space-between; /* Pushes items to the ends with space between */
+      margin-bottom: 15px;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .captcha-wrapper > div[dangerouslySetInnerHTML] {
+      /* This is the SVG container. Place it on the right visually. */
+      order: 2; /* Places SVG after the input field in row direction */
+      margin-bottom: 0; /* No bottom margin in row layout */
+      margin-left: 15px; /* Add margin to the left for separation from input */
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 250px;
+      height: 70px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    /* Style the input field specifically for captcha */
+    .captcha-wrapper input[type="text"] {
+      /* This is the input field. Place it on the left visually. */
+      order: 1; /* Places input field before the SVG in row direction */
+      flex-grow: 1; /* Allows input to take available space */
+      border: 1px solid #a0a0a0;
+      padding: 10px;
+      font-size: 1.1em;
+      text-align: center;
+      letter-spacing: 1px; /* Slightly reduced letter spacing for non-uppercase */
+      margin-bottom: 0; /* No bottom margin in row layout */
+    }
+
+    .captcha-wrapper input[type="text"]:focus {
+      border-color: #660033;
+      box-shadow: 0 0 8px rgba(102, 0, 51, 0.4);
+    }
+
+    /* The .verify-captcha-button class is no longer needed as the button is removed from JSX */
+    /* If it were to be reused, its styles would be here. */
+
+
     /* Tablet and Phone Responsive */
     @media (max-width: 1024px) { /* Increased tablet width */
       .login-wrapper {
@@ -271,7 +324,7 @@
         height: 100vh;
         align-items: center;
         justify-content: center;
-     
+
       }
 
       .login-left {
@@ -311,6 +364,22 @@
       .form-group-login label {
         margin: 0 10px;
       }
+
+      .captcha-wrapper {
+        flex-direction: column; /* Stack back to column on smaller screens if preferred */
+        justify-content: center;
+      }
+
+      .captcha-wrapper > div[dangerouslySetInnerHTML] {
+        order: 1; /* Put SVG on top when stacked vertically */
+        margin-left: 0;
+        margin-bottom: 15px; /* Add back bottom margin */
+      }
+
+      .captcha-wrapper input[type="text"] {
+        order: 2; /* Put input below SVG when stacked vertically */
+        margin-bottom: 0; /* No bottom margin for the last input */
+      }
     }
 
     /* PhoneInput Specific Styles */
@@ -340,6 +409,15 @@
 
       .login-box h3 {
         font-size: 1rem;
+      }
+
+      .captcha-wrapper > div[dangerouslySetInnerHTML] {
+        max-width: 180px;
+        height: 60px;
+      }
+
+      .captcha-wrapper input[type="text"] {
+        font-size: 1em;
       }
     }
     /* Language Toggle Styling */
@@ -374,6 +452,9 @@
   display: flex;
   align-items: center;
   transition: opacity 0.3s ease;
+  position: absolute; /* Position absolutely to top-left */
+  top: 20px;
+  left: 20px;
 }
 
 .back-button:hover {

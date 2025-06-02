@@ -692,3 +692,38 @@
                height: 18px;
            }
 }
+/* CheckAvailability.css */
+
+/* ... (previous CSS code) ... */
+
+/* Styles for the "Show Availability" button */
+.show-availability-button {
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px; /* Slightly more rounded */
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.25); /* More prominent shadow */
+  margin-top: 20px; /* Space from elements above */
+  letter-spacing: 0.03em; /* Subtle letter spacing */
+  text-transform: uppercase; /* Uppercase text */
+}
+
+.show-availability-button:hover {
+  background-color: var(--primary-color-lighter); /* Use the lighter primary color for hover */
+  box-shadow: 0 6px 15px rgba(128, 0, 0, 0.35); /* Enhanced shadow on hover */
+  transform: translateY(-2px); /* Subtle lift effect */
+}
+
+.show-availability-button:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.8;
+}
