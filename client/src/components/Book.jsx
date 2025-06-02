@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/BookNow.css'; // Assuming BookNow.css is in a 'styles' subfolder
-import { CircleCheck, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon, RefreshCw } from 'lucide-react'; // Added HomeIcon for rooms and RefreshCw for CAPTCHA
+import { CircleCheck,Clock, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon, RefreshCw } from 'lucide-react'; // Added HomeIcon for rooms and RefreshCw for CAPTCHA
 import html2pdf from 'html2pdf.js';
 import BookingCertificate from './BookingCertificate'; // Import the new certificate component
 
@@ -61,10 +61,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
     const [bookingIdToCancelState, setBookingIdToCancelState] = useState(null);
 
+    // State for Pay Now Confirmation Modal
+    const [showPayNowConfirmModal, setShowPayNowConfirmModal] = useState(false);
+    const [bookingIdToPayState, setBookingIdToPayState] = useState(null);
+
 
     // API Base URL Configuration
-    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Original API
-    //const API_BASE_URL = 'http://localhost:5000/api'; // New localhost API
+    //const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Original API
+    const API_BASE_URL = 'http://localhost:5000/api'; // New localhost API
 
     const getAuthToken = () => localStorage.getItem('token');
 
@@ -95,9 +99,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             disclaimerCloseButton: 'Close',
             newBookingButton: 'New Booking',
             previousBookingsHeading: 'Your Bookings',
-            tableHeaders: ['S.No.', 'Booking ID', 'Hall Name', 'Floor', 'Function', 'Amount', 'Status', 'AC', 'Date', 'Actions'],
+            tableHeaders: ['S.No.', 'Booking ID', 'Hall Name', 'Floor', 'Function', 'Amount', 'Status', 'Allowed', 'Paid', 'AC', 'Date', 'Actions'],
             editButton: 'Edit',
             cancelButton: 'Cancel',
+            payNowButton: 'Pay Now', // New button text
             downloadButton: 'Download Certificate',
             noBookingsMessage: 'No bookings found. Click "New Booking" to get started!',
             loadingMessage: 'Loading...',
@@ -150,6 +155,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             numNonAcRoomsLabel: 'Non-AC Rooms Required:',
             availableRoomsText: (count) => `(Max: ${count} Available)`,
             confirmCancelMessage: 'Are you sure you want to cancel this booking? This action cannot be undone.',
+            confirmPayMessage: 'Are you sure you want to proceed with payment for this booking? This action will confirm your booking.', // New message
             selectFunctionPlaceholder: 'Select Function Type',
             formValidation: {
                 hallRequired: 'Please select a hall.',
@@ -159,9 +165,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 areaRequired: 'Area (sq. ft.) is required for this function and must be greater than 0.',
                 roomsRequired: 'Number of rooms must be 0 or a positive integer.',
             },
-            bookingSuccess: 'Booking created successfully!',
+            bookingSuccess: 'Booking application submitted successfully! Awaiting admin approval.', // Updated message
             updateSuccess: 'Booking updated successfully!',
             cancelSuccess: 'Booking cancelled successfully!',
+            paymentSuccess: 'Payment successful! Booking confirmed.', // New message
             errorPrefix: 'Error: ',
             authError: 'Authentication failed. Please log in again.',
             hallNotFound: (id) => `Hall with ID ${id} not found.`,
@@ -178,8 +185,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             captchaErrorInvalid: 'Invalid CAPTCHA. Please try again.',
             captchaErrorEmpty: 'Please enter the CAPTCHA.',
             confirmCancellationTitle: 'Confirm Cancellation',
+            confirmPaymentTitle: 'Confirm Payment', // New title
             confirmActionPrompt: (action) => `Please complete the CAPTCHA to ${action}.`,
             confirmCancelButtonText: 'Confirm Cancel',
+            confirmPayButtonText: 'Confirm Payment', // New button text
             dismissButtonText: 'Dismiss',
         },
         hi: {
@@ -198,9 +207,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             disclaimerCloseButton: 'बंद करें',
             newBookingButton: 'नई बुकिंग',
             previousBookingsHeading: 'आपकी बुकिंग',
-            tableHeaders: ['क्र.सं.', 'बुकिंग आईडी', 'हॉल का नाम', 'मंजिल', 'समारोह', 'राशि', 'स्थिति', 'एसी', 'तिथि', 'कार्रवाई'],
+            tableHeaders: ['क्र.सं.', 'बुकिंग आईडी', 'हॉल का नाम', 'मंजिल', 'समारोह', 'राशि', 'स्थिति', 'अनुमति', 'भुगतान', 'एसी', 'तिथि', 'कार्रवाई'],
             editButton: 'संपादित करें',
             cancelButton: 'रद्द करें',
+            payNowButton: 'अभी भुगतान करें', // New button text
             downloadButton: 'प्रमाणपत्र डाउनलोड करें',
             noBookingsMessage: 'कोई बुकिंग नहीं मिली। आरंभ करने के लिए "नई बुकिंग" पर क्लिक करें!',
             loadingMessage: 'लोड हो रहा है...',
@@ -253,6 +263,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             numNonAcRoomsLabel: 'गैर-एसी कमरे आवश्यक:',
             availableRoomsText: (count) => `(अधिकतम: ${count} उपलब्ध)`,
             confirmCancelMessage: 'क्या आप वाकई इस बुकिंग को रद्द करना चाहते हैं? यह कार्रवाई पूर्ववत नहीं की जा सकती।',
+            confirmPayMessage: 'क्या आप वाकई इस बुकिंग के लिए भुगतान करना चाहते हैं? यह कार्रवाई आपकी बुकिंग की पुष्टि करेगी।', // New message
             selectFunctionPlaceholder: 'समारोह प्रकार चुनें',
             formValidation: {
                 hallRequired: 'कृपया एक हॉल चुनें।',
@@ -262,9 +273,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 areaRequired: 'इस समारोह के लिए क्षेत्र (वर्ग फुट) आवश्यक है और 0 से अधिक होना चाहिए।',
                 roomsRequired: 'कमरों की संख्या 0 या एक सकारात्मक पूर्णांक होनी चाहिए।',
             },
-            bookingSuccess: 'बुकिंग सफलतापूर्वक बनाई गई!',
+            bookingSuccess: 'बुकिंग आवेदन सफलतापूर्वक जमा किया गया! व्यवस्थापक अनुमोदन की प्रतीक्षा है।', // Updated message
             updateSuccess: 'बुकिंग सफलतापूर्वक अपडेट की गई!',
             cancelSuccess: 'बुकिंग सफलतापूर्वक रद्द की गई!',
+            paymentSuccess: 'भुगतान सफल! बुकिंग की पुष्टि हो गई।', // New message
             errorPrefix: 'त्रुटि: ',
             authError: 'प्रमाणीकरण विफल। कृपया पुनः लॉग इन करें।',
             hallNotFound: (id) => `हॉल आईडी ${id} नहीं मिला।`,
@@ -281,8 +293,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             captchaErrorInvalid: 'अमान्य कैप्चा। कृपया पुनः प्रयास करें।',
             captchaErrorEmpty: 'कृपया कैप्चा दर्ज करें।',
             confirmCancellationTitle: 'रद्दीकरण की पुष्टि करें',
+            confirmPaymentTitle: 'भुगतान की पुष्टि करें', // New title
             confirmActionPrompt: (action) => `कृपया ${action} के लिए कैप्चा पूरा करें।`,
             confirmCancelButtonText: 'रद्दीकरण की पुष्टि करें',
+            confirmPayButtonText: 'भुगतान की पुष्टि करें', // New button text
             dismissButtonText: 'खारिज करें',
         },
     }), [languageType]);
@@ -380,7 +394,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     };
 
     const calculateBookingAmount = useMemo(() => () => {
-        // ... (existing calculateBookingAmount logic - no changes here)
         let totalAmount = 0;
         if (!selectedHallFullDetails || !bookingFormData.booking_type) return 0;
 
@@ -541,7 +554,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const handleDisclaimerAgreedInModal = () => {
         setModalStep(2);
-        // fetchNewCaptcha(); // Fetched by useEffect watching showModal and modalStep
+        // CAPTCHA will be fetched when modalStep becomes 2 by useEffect
     }
 
     const resetFormData = () => {
@@ -577,7 +590,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     };
 
     const handleBookingFormChange = (e) => {
-        // ... (existing form change logic - no changes here)
         const { name, value, type, checked } = e.target;
 
         if (name === 'hall_id_string') {
@@ -643,6 +655,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
         const actualSubmitLogic = async () => {
             const method = isEditing ? 'PUT' : 'POST';
+            console.log('Submitting booking with data:', editingBookingId);
             const url = isEditing ? `${API_BASE_URL}/bookings/${editingBookingId}` : `${API_BASE_URL}/bookings`;
             
             const requestBody = { 
@@ -678,9 +691,16 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     };
 
     const startEditBooking = async (booking) => {
+        // Only allow editing if the booking status is 'Pending'
+        if (booking.booking_status !== 'Pending') {
+            showToast(`Cannot edit booking with status: ${booking.booking_status}. Only 'Pending' bookings can be edited.`, 'error');
+            return;
+        }
+       // console.log('Starting edit for booking:', booking);
         setIsEditing(true);
-        setEditingBookingId(booking.booking_id);
-            
+        setEditingBookingId(booking._id);
+            //console.log('Editing booking ID:', booking._id);
+          //  console.log('Booking details:', editingBookingId);
         const hallIdForEdit = booking.hall_id_string || (booking.hall_id ? booking.hall_id.hall_id : null);
         let hallDetails = null;
         if (hallIdForEdit) {
@@ -772,6 +792,47 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         await verifyCaptchaAndProceed(actualCancelLogic);
     };
 
+    const initiatePayNow = (bookingId) => {
+        setBookingIdToPayState(bookingId);
+        fetchNewCaptcha(); // Fetch captcha for the pay now confirmation modal
+        setShowPayNowConfirmModal(true);
+    };
+
+    const confirmAndExecutePayNow = async () => {
+        if (!bookingIdToPayState) return;
+        const token = getAuthToken();
+        if (!token) {
+            showToast(currentContent.authError, 'error');
+            navigate('/login');
+            setShowPayNowConfirmModal(false);
+            return;
+        }
+
+        const actualPayLogic = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToPayState}/pay`, {
+                    method: 'PUT', headers: { 'Authorization': `Bearer ${token}` },
+                });
+                if (!response.ok) {
+                    if (response.status === 401) { navigate('/login'); throw new Error(currentContent.authError); }
+                    if (response.status === 404) throw new Error(currentContent.bookingNotFound);
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                await fetchBookings(); // Refetch
+                showToast(currentContent.paymentSuccess, 'success');
+                setShowPayNowConfirmModal(false);
+                setBookingIdToPayState(null);
+                setCaptchaInput(''); // Clear captcha input
+            } catch (error) {
+                console.error('Error processing payment:', error);
+                showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
+            }
+        };
+
+        await verifyCaptchaAndProceed(actualPayLogic);
+    };
+
 
     const openCertificatePreview = (booking) => {
         setCurrentBookingForCertificate(booking);
@@ -812,7 +873,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
 
     const renderPriceTable = (title, data, acStatus, isEventTable = false) => {
-        // ... (existing price table logic - no changes)
         if (!selectedHallFullDetails || (isEventTable && (!data || data.length === 0))) return null;
     
         const getRowData = (itemKey, item) => {
@@ -1001,17 +1061,32 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                 {booking.booking_status === 'Confirmed' && <span className="bn-status-indicator bn-status-confirmed"><CircleCheck size={16} />{booking.booking_status}</span>}
                                                 {booking.booking_status === 'Cancelled' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{booking.booking_status}</span>}
                                                 {booking.booking_status === 'Pending' && <span className="bn-status-indicator bn-status-pending"><CircleDot size={16} />{booking.booking_status}</span>}
-                                                {!['Confirmed', 'Cancelled', 'Pending'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
+                                                {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
+                                                {!['Confirmed', 'Cancelled', 'Pending', 'AwaitingPayment'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
                                             </td>
-                                            <td data-label={currentContent.tableHeaders[7]}>{booking.is_ac ? currentContent.acOption : currentContent.nonAcOption}</td>
-                                            <td data-label={currentContent.tableHeaders[8]}>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>
-                                            <td data-label={currentContent.tableHeaders[9]} >
+                                            <td data-label={currentContent.tableHeaders[7]}>{booking.isAllowed ? 'Yes' : 'No'}</td> {/* Display isAllowed */}
+                                            <td data-label={currentContent.tableHeaders[8]}>{booking.isPaid ? 'Yes' : 'No'}</td>       {/* Display isPaid */}
+                                            <td data-label={currentContent.tableHeaders[9]}>{booking.is_ac ? currentContent.acOption : currentContent.nonAcOption}</td>
+                                            <td data-label={currentContent.tableHeaders[10]}>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>
+                                            <td data-label={currentContent.tableHeaders[11]} >
                                                 <div className="bn-table-actions">
-                                                {booking.booking_status !== 'Cancelled' && booking.booking_status !== 'Confirmed' && (
+                                                {/* Edit button: Only if status is Pending */}
+                                                {booking.booking_status === 'Pending' && (
                                                     <button className="bn-button bn-edit-button" onClick={() => startEditBooking(booking)} aria-label={`${currentContent.editButton} booking ${booking.booking_id}`}>
                                                        {currentContent.editButton}
                                                     </button>
                                                 )}
+                                                {/* Pay Now button: If status is AwaitingPayment and isAllowed is true */}
+                                                {booking.booking_status === 'AwaitingPayment' && booking.isAllowed && (
+                                                    <button 
+                                                        className="bn-button bn-pay-button" 
+                                                        onClick={() => initiatePayNow(booking.booking_id)} 
+                                                        aria-label={`${currentContent.payNowButton} for booking ${booking.booking_id}`}
+                                                    >
+                                                        {currentContent.payNowButton}
+                                                    </button>
+                                                )}
+                                                {/* Cancel button: If status is not Cancelled */}
                                                 {booking.booking_status !== 'Cancelled' && (
                                                     <button 
                                                         className="bn-button bn-cancel-button" 
@@ -1021,6 +1096,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                         {currentContent.cancelButton}
                                                     </button>
                                                 )}
+                                                {/* Download Certificate button: Only if status is Confirmed */}
                                                 {booking.booking_status === 'Confirmed' && (
                                                     <button
                                                         className="bn-button bn-download-button"
@@ -1056,7 +1132,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
                             <div className="bn-modal-body">
                                 {modalStep === 1 && (
-                                    // ... Disclaimer content ...
                                     <div className="bn-disclaimer-content">
                                         {currentContent.disclaimerPoints.map((point, index) => (
                                             <p key={index}><InfoIcon size={16} className="bn-disclaimer-icon" /> {point}</p>
@@ -1065,7 +1140,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 )}
                                 {modalStep === 2 && (
                                     <form id="booking-form-id" onSubmit={handleBookingSubmit} className="bn-booking-form">
-                                        {/* ... existing form fields ... */}
                                         {isEditing && (
                                             <div className="bn-form-group bn-form-group-full">
                                                 <label htmlFor="booking_id_display">Booking ID:</label>
@@ -1084,7 +1158,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                         </div>
 
                                         <div className="bn-form-group">
-                                            <label htmlFor="booking_date"><CalendarDays size={16} /> {currentContent.tableHeaders[8]}:</label>
+                                            <label htmlFor="booking_date"><CalendarDays size={16} /> {currentContent.tableHeaders[10]}:</label>
                                             <input type="date" id="booking_date" name="booking_date" value={bookingFormData.booking_date} onChange={handleBookingFormChange} required className="bn-input" min={new Date().toISOString().split("T")[0]} />
                                         </div>
 
@@ -1363,6 +1437,43 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 disabled={!captchaToken} // Disable if CAPTCHA not loaded
                             >
                                 {currentContent.confirmCancelButtonText}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Pay Now Confirmation Modal */}
+            {showPayNowConfirmModal && (
+                <div className="bn-modal-overlay" onClick={() => {setShowPayNowConfirmModal(false); setBookingIdToPayState(null); setCaptchaInput(''); setCaptchaError('');}}>
+                    <div className="bn-modal-content" style={{maxWidth: '500px'}} onClick={(e) => e.stopPropagation()}>
+                        <div className="bn-modal-header">
+                            <h3>{currentContent.confirmPaymentTitle}</h3>
+                            <button 
+                                className="bn-modal-close-button" 
+                                onClick={() => {setShowPayNowConfirmModal(false); setBookingIdToPayState(null); setCaptchaInput(''); setCaptchaError('');}}
+                                aria-label={currentContent.closeModalButton}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <div className="bn-modal-body">
+                            <p style={{marginBottom: '20px'}}>{currentContent.confirmPayMessage}</p>
+                            {renderCaptchaSection(currentContent.confirmActionPrompt(languageType === 'en' ? 'pay for this booking' : 'इस बुकिंग के लिए भुगतान करें'))}
+                        </div>
+                        <div className="bn-modal-footer">
+                            <button 
+                                onClick={() => {setShowPayNowConfirmModal(false); setBookingIdToPayState(null); setCaptchaInput(''); setCaptchaError('');}} 
+                                className="bn-button bn-modal-action-button bn-modal-cancel-button"
+                            >
+                                {currentContent.dismissButtonText}
+                            </button>
+                            <button 
+                                onClick={confirmAndExecutePayNow} 
+                                className="bn-button bn-modal-action-button bn-submit-button" 
+                                disabled={!captchaToken} // Disable if CAPTCHA not loaded
+                            >
+                                {currentContent.confirmPayButtonText}
                             </button>
                         </div>
                     </div>

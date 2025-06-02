@@ -322,7 +322,9 @@ const getBookingById = async (req, res) => {
 // @access  Private (Authenticated User/Admin)
 const updateBooking = async (req, res) => {
   try {
-    const { booking_id } = req.params; 
+
+    const  booking_id  = req.params.id; 
+    console.log('Updating booking with ID:', booking_id);
     const {
       hall_id_string, booking_date, floor, function_type, booking_type, area_sqft,
       is_parking, is_conference_hall, is_food_prep_area, is_lawn, is_ac,
@@ -333,9 +335,9 @@ const updateBooking = async (req, res) => {
       return res.status(400).json({ message: 'Please provide all required booking details.' });
     }
     
-    const existingBooking = await Booking.findOne({ booking_id });
+    const existingBooking = await Booking.findOne({ _id:booking_id});
     if (!existingBooking) return res.status(404).json({ message: 'Booking not found' });
-
+    console.log('Existing booking found:', existingBooking);
     if (req.user.userType !== 'Admin' && existingBooking.user_id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to update this booking' });
     }

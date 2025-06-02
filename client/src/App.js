@@ -27,7 +27,7 @@ function App() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [showTokenExpiredDialog, setShowTokenExpiredDialog] = useState(false); // New state for dialog
-  const backend = "https://kalyanmandapam.onrender.com";
+  const backend = "http://localhost:5000"; // Replace with your backend URL
 
   const handleLogin = (userData, token) => {
     localStorage.setItem("token", token);
