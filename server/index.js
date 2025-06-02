@@ -5,33 +5,35 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
-
 dotenv.config();
+
 const app = express();
 
-// ─── MONGOOSE SETUP ─────────────────────────────────────────────
+// ─── 1) CONNECT TO MONGODB ──────────────────────────────────────
 mongoose
   .connect(process.env.URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// ─── TRUST PROXY (CRUCIAL ON RENDER) ─────────────────────────────
+// ─── 2) TRUST PROXY (CRUCIAL ON RENDER) ─────────────────────────
+// Render terminates TLS at its load balancer, so internal Express sees HTTP.
+// By doing this, Express knows to trust the 'X-Forwarded-Proto' header and treat the request as HTTPS.
 app.set("trust proxy", 1);
 
-// ─── CORS MIDDLEWARE ────────────────────────────────────────────
-// Use your actual Render URL for the frontend
+// ─── 3) CORS MIDDLEWARE ─────────────────────────────────────────
+// Replace with your actual Vercel frontend URL.
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://kalyan-mandapam.vercel.app";
 
 app.use(
   cors({
     origin: FRONTEND_URL,
-    credentials: true,   // allow session cookies
+    credentials: true,  // ← VERY IMPORTANT: allow browser to send and receive cookies
   })
 );
 
 app.use(express.json());
 
-// ─── SESSION MIDDLEWARE ──────────────────────────────────────────
+// ─── 4) SESSION MIDDLEWARE ───────────────────────────────────────
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "keyboard_cat",
@@ -43,14 +45,15 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      secure: true,         // must be true on HTTPS
-      sameSite: "none",     // must be "none" for cross-site (frontend ↔ backend)
-      maxAge: 1000 * 60 * 10 // 10 minutes
+      secure: true,       // ← must be true on HTTPS
+      sameSite: "none",   // ← must be "none" for cross-site cookies
+      maxAge: 1000 * 60 * 10, // 10 minutes
     },
   })
 );
 
-// ─── ROUTES ──────────────────────────────────────────────────────
+// ─── 5) ROUTES ───────────────────────────────────────────────────
+// Make sure this is *after* session middleware!
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/halls", require("./routes/hallRoutes"));
 app.use("/api/bookings", require("./routes/bookRoutes"));
