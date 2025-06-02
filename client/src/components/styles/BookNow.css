@@ -149,6 +149,8 @@
   align-items: center;
   gap: 8px; 
   box-shadow: 0 2px 4px var(--shadow);
+  background-color: #046bd9;
+  color: var(--white);
 }
 
 .bn-button:hover {
@@ -294,7 +296,7 @@
   white-space: nowrap;
   display: flex;
   gap: 8px; 
-  justify-content: center; /* This centers the group of buttons */
+  
   align-items: center; /* Vertically align buttons if their heights differ */
 }
 

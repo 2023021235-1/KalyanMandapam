@@ -69,6 +69,8 @@ function App() {
       } catch (err) {
         console.error("Failed to fetch user profile", err);
         localStorage.removeItem("token");
+        setUser(null);
+        setIsAdmin(false);
         if (err.response && err.response.status === 401) {
           setShowTokenExpiredDialog(true);
         }
@@ -121,7 +123,7 @@ function App() {
 
         <Route path="/" element={<HomePage languageType={languageType} />} />
         <Route path="/home" element={<HomePage languageType={languageType} />} />
-        <Route path="/book" element={user ? <BookNowSection user={user} languageType={languageType} /> : <Navigate to="/" />} />
+        <Route path="/book" element={user ? <BookNowSection user={user} languageType={languageType} /> : <Navigate to="/login" />} />
         <Route path="/contact" element={<ContactUsSection languageType={languageType} />} />
         <Route path="/feedback" element={<QueryFeedbackSection languageType={languageType} />} />
         <Route path="/check-rent" element={<CheckRentSection languageType={languageType} />} />

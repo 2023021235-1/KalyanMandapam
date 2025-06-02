@@ -42,6 +42,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     });
 
     const [editingBookingId, setEditingBookingId] = useState(null);
+    const [isViewOnly, setIsViewOnly] = useState(false); // New state for view-only mode
+
 
     // State for certificate PREVIEW modal
     const [showCertificatePreviewModal, setShowCertificatePreviewModal] = useState(false);
@@ -100,9 +102,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             newBookingButton: 'New Booking',
             previousBookingsHeading: 'Your Bookings',
             tableHeaders: ['S.No.', 'Booking ID', 'Hall Name', 'Floor', 'Function', 'Amount', 'Status', 'Allowed', 'Paid', 'AC', 'Date', 'Actions'],
-            editButton: 'Edit',
+            editButton: 'Edit Booking', // General title for editing
+            viewEditButton: 'View/Edit', // For table button
+            viewBookingTitle: 'View Booking', // Title for view-only modal
+            updateBookingButton: 'Update Booking', // Button text for submit in edit mode
+            createBookingButton: 'Create Booking', // Button text for submit in new booking mode
+            closeButtonText: 'Close', // Generic close button text
             cancelButton: 'Cancel',
-            payNowButton: 'Pay Now', // New button text
+            payNowButton: 'Pay Now',
             downloadButton: 'Download Certificate',
             noBookingsMessage: 'No bookings found. Click "New Booking" to get started!',
             loadingMessage: 'Loading...',
@@ -155,7 +162,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             numNonAcRoomsLabel: 'Non-AC Rooms Required:',
             availableRoomsText: (count) => `(Max: ${count} Available)`,
             confirmCancelMessage: 'Are you sure you want to cancel this booking? This action cannot be undone.',
-            confirmPayMessage: 'Are you sure you want to proceed with payment for this booking? This action will confirm your booking.', // New message
+            confirmPayMessage: 'Are you sure you want to proceed with payment for this booking? This action will confirm your booking.',
             selectFunctionPlaceholder: 'Select Function Type',
             formValidation: {
                 hallRequired: 'Please select a hall.',
@@ -165,10 +172,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 areaRequired: 'Area (sq. ft.) is required for this function and must be greater than 0.',
                 roomsRequired: 'Number of rooms must be 0 or a positive integer.',
             },
-            bookingSuccess: 'Booking application submitted successfully! Awaiting admin approval.', // Updated message
+            bookingSuccess: 'Booking application submitted successfully! Awaiting admin approval.',
             updateSuccess: 'Booking updated successfully!',
             cancelSuccess: 'Booking cancelled successfully!',
-            paymentSuccess: 'Payment successful! Booking confirmed.', // New message
+            paymentSuccess: 'Payment successful! Booking confirmed.',
             errorPrefix: 'Error: ',
             authError: 'Authentication failed. Please log in again.',
             hallNotFound: (id) => `Hall with ID ${id} not found.`,
@@ -176,7 +183,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             previewModalTitle: 'Certificate Preview',
             previewModalDownloadButton: 'Download PDF',
             previewModalCloseButton: 'Close',
-            // CAPTCHA Strings
             captchaLabel: 'CAPTCHA:',
             captchaPlaceholder: 'Enter CAPTCHA',
             captchaRefreshAlt: 'Refresh CAPTCHA',
@@ -185,10 +191,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             captchaErrorInvalid: 'Invalid CAPTCHA. Please try again.',
             captchaErrorEmpty: 'Please enter the CAPTCHA.',
             confirmCancellationTitle: 'Confirm Cancellation',
-            confirmPaymentTitle: 'Confirm Payment', // New title
+            confirmPaymentTitle: 'Confirm Payment',
             confirmActionPrompt: (action) => `Please complete the CAPTCHA to ${action}.`,
             confirmCancelButtonText: 'Confirm Cancel',
-            confirmPayButtonText: 'Confirm Payment', // New button text
+            confirmPayButtonText: 'Confirm Payment',
             dismissButtonText: 'Dismiss',
         },
         hi: {
@@ -208,9 +214,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             newBookingButton: 'नई बुकिंग',
             previousBookingsHeading: 'आपकी बुकिंग',
             tableHeaders: ['क्र.सं.', 'बुकिंग आईडी', 'हॉल का नाम', 'मंजिल', 'समारोह', 'राशि', 'स्थिति', 'अनुमति', 'भुगतान', 'एसी', 'तिथि', 'कार्रवाई'],
-            editButton: 'संपादित करें',
+            editButton: 'बुकिंग संपादित करें', // General title for editing
+            viewEditButton: 'देखें/संपादित करें', // For table button
+            viewBookingTitle: 'बुकिंग देखें', // Title for view-only modal
+            updateBookingButton: 'अपडेट करें', // Button text for submit in edit mode
+            createBookingButton: 'बुक करें', // Button text for submit in new booking mode
+            closeButtonText: 'बंद करें', // Generic close button text
             cancelButton: 'रद्द करें',
-            payNowButton: 'अभी भुगतान करें', // New button text
+            payNowButton: 'अभी भुगतान करें',
             downloadButton: 'प्रमाणपत्र डाउनलोड करें',
             noBookingsMessage: 'कोई बुकिंग नहीं मिली। आरंभ करने के लिए "नई बुकिंग" पर क्लिक करें!',
             loadingMessage: 'लोड हो रहा है...',
@@ -263,7 +274,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             numNonAcRoomsLabel: 'गैर-एसी कमरे आवश्यक:',
             availableRoomsText: (count) => `(अधिकतम: ${count} उपलब्ध)`,
             confirmCancelMessage: 'क्या आप वाकई इस बुकिंग को रद्द करना चाहते हैं? यह कार्रवाई पूर्ववत नहीं की जा सकती।',
-            confirmPayMessage: 'क्या आप वाकई इस बुकिंग के लिए भुगतान करना चाहते हैं? यह कार्रवाई आपकी बुकिंग की पुष्टि करेगी।', // New message
+            confirmPayMessage: 'क्या आप वाकई इस बुकिंग के लिए भुगतान करना चाहते हैं? यह कार्रवाई आपकी बुकिंग की पुष्टि करेगी।',
             selectFunctionPlaceholder: 'समारोह प्रकार चुनें',
             formValidation: {
                 hallRequired: 'कृपया एक हॉल चुनें।',
@@ -273,10 +284,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 areaRequired: 'इस समारोह के लिए क्षेत्र (वर्ग फुट) आवश्यक है और 0 से अधिक होना चाहिए।',
                 roomsRequired: 'कमरों की संख्या 0 या एक सकारात्मक पूर्णांक होनी चाहिए।',
             },
-            bookingSuccess: 'बुकिंग आवेदन सफलतापूर्वक जमा किया गया! व्यवस्थापक अनुमोदन की प्रतीक्षा है।', // Updated message
+            bookingSuccess: 'बुकिंग आवेदन सफलतापूर्वक जमा किया गया! व्यवस्थापक अनुमोदन की प्रतीक्षा है।',
             updateSuccess: 'बुकिंग सफलतापूर्वक अपडेट की गई!',
             cancelSuccess: 'बुकिंग सफलतापूर्वक रद्द की गई!',
-            paymentSuccess: 'भुगतान सफल! बुकिंग की पुष्टि हो गई।', // New message
+            paymentSuccess: 'भुगतान सफल! बुकिंग की पुष्टि हो गई।',
             errorPrefix: 'त्रुटि: ',
             authError: 'प्रमाणीकरण विफल। कृपया पुनः लॉग इन करें।',
             hallNotFound: (id) => `हॉल आईडी ${id} नहीं मिला।`,
@@ -284,7 +295,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             previewModalTitle: 'प्रमाणपत्र पूर्वावलोकन',
             previewModalDownloadButton: 'पीडीएफ डाउनलोड करें',
             previewModalCloseButton: 'बंद करें',
-            // CAPTCHA Strings
             captchaLabel: 'कैप्चा:',
             captchaPlaceholder: 'कैप्चा दर्ज करें',
             captchaRefreshAlt: 'कैप्चा रीफ़्रेश करें',
@@ -293,10 +303,10 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             captchaErrorInvalid: 'अमान्य कैप्चा। कृपया पुनः प्रयास करें।',
             captchaErrorEmpty: 'कृपया कैप्चा दर्ज करें।',
             confirmCancellationTitle: 'रद्दीकरण की पुष्टि करें',
-            confirmPaymentTitle: 'भुगतान की पुष्टि करें', // New title
+            confirmPaymentTitle: 'भुगतान की पुष्टि करें',
             confirmActionPrompt: (action) => `कृपया ${action} के लिए कैप्चा पूरा करें।`,
             confirmCancelButtonText: 'रद्दीकरण की पुष्टि करें',
-            confirmPayButtonText: 'भुगतान की पुष्टि करें', // New button text
+            confirmPayButtonText: 'भुगतान की पुष्टि करें',
             dismissButtonText: 'खारिज करें',
         },
     }), [languageType]);
@@ -322,14 +332,13 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             console.error("Failed to load CAPTCHA:", error);
             const errorMessage = error.message || currentContent.captchaErrorLoad;
             setCaptchaError(errorMessage);
-            // Do not show toast here, captchaError state will render the error in the form
         }
     };
 
     const verifyCaptchaAndProceed = async (actualActionCallback) => {
         if (!captchaInput.trim() || !captchaToken) {
             setCaptchaError(currentContent.captchaErrorEmpty);
-            if (!captchaToken) fetchNewCaptcha(); // Refresh if token is missing (e.g. initial load failed)
+            if (!captchaToken) fetchNewCaptcha();
             return false;
         }
         try {
@@ -342,7 +351,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             if (!data.success) {
                 throw new Error(currentContent.captchaErrorInvalid);
             }
-            setCaptchaError(''); // Clear error on success
+            setCaptchaError(''); 
             if (actualActionCallback) await actualActionCallback();
             return true;
         } catch (error) {
@@ -350,7 +359,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             const errorMessage = error.message || currentContent.captchaErrorVerifyGeneral;
             setCaptchaError(errorMessage);
             showToast(errorMessage, 'error');
-            fetchNewCaptcha(); // Refresh CAPTCHA on failure
+            fetchNewCaptcha(); 
             return false;
         }
     };
@@ -367,25 +376,41 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     useEffect(() => {
         if (bookingFormData.hall_id_string) {
-            fetchHallFullDetails(bookingFormData.hall_id_string);
+            if (!isViewOnly) { // Only fetch if not in view only, or if details are needed for viewing
+                fetchHallFullDetails(bookingFormData.hall_id_string);
+            } else if (!selectedHallFullDetails) { // If view only and details aren't there, fetch them
+                 fetchHallFullDetails(bookingFormData.hall_id_string);
+            }
         } else {
             setSelectedHallFullDetails(null);
             setHallDetailsError(null);
-            setBookingFormData(prevData => ({
-                ...prevData,
-                function_type: '', area_sqft: '', booking_type: '',
-                is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
-                num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0,
-            }));
-            setSelectedAreaOption('none');
+             if(!isEditing || !isViewOnly) { // Avoid resetting form data if just viewing and hall id changes due to some other logic
+                setBookingFormData(prevData => ({
+                    ...prevData,
+                    function_type: '', area_sqft: '', booking_type: '',
+                    is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
+                    num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0,
+                }));
+                setSelectedAreaOption('none');
+            }
         }
-    }, [bookingFormData.hall_id_string]);
+    }, [bookingFormData.hall_id_string, isViewOnly, isEditing]);
 
     useEffect(() => {
-        if (showModal && modalStep === 2) {
+        // Fetch CAPTCHA for the main booking/editing form
+        if (showModal && modalStep === 2 && !isViewOnly) {
             fetchNewCaptcha();
         }
-    }, [showModal, modalStep]);
+        // Fetch CAPTCHA for cancel confirmation modal
+        if (showCancelConfirmModal) {
+            fetchNewCaptcha();
+        }
+        // Fetch CAPTCHA for pay now confirmation modal
+        if (showPayNowConfirmModal) {
+            fetchNewCaptcha();
+        }
+        // DO NOT fetch CAPTCHA for certificate preview modal anymore
+    }, [showModal, modalStep, isViewOnly, showCancelConfirmModal, showPayNowConfirmModal]);
 
 
     const getTieredPrice = (priceObject, bookingType) => {
@@ -443,15 +468,18 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     ]);
     
     useEffect(() => {
-        const calculatedAmount = calculateBookingAmount();
-        setBookingFormData(prevData => ({
-            ...prevData,
-            booking_amount: calculatedAmount,
-            is_ac: isAcSelected,
-        }));
+        if (!isViewOnly) { // Only calculate and update if not in view-only mode
+            const calculatedAmount = calculateBookingAmount();
+            setBookingFormData(prevData => ({
+                ...prevData,
+                booking_amount: calculatedAmount,
+                is_ac: isAcSelected,
+            }));
+        }
     }, [
         isAcSelected,
-        calculateBookingAmount
+        calculateBookingAmount,
+        isViewOnly // Add isViewOnly to dependency array
     ]);
 
 
@@ -480,7 +508,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             const data = await response.json();
             let populatedAvailableHalls = availableHalls;
             if (availableHalls.length === 0) {
-                populatedAvailableHalls = await fetchAllHalls(true);
+                populatedAvailableHalls = await fetchAllHalls(true); // Make sure fetchAllHalls can return data
             }
 
             const bookingsWithHallNames = data.map((booking) => {
@@ -488,6 +516,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 if (booking.hall_id && typeof booking.hall_id === 'object' && booking.hall_id.hall_name) {
                     hallName = booking.hall_id.hall_name;
                 } else if (booking.hall_id_string) {
+                    // Use `populatedAvailableHalls` which should be up-to-date
                     const hallDetails = populatedAvailableHalls.find(hall => hall.hall_id === booking.hall_id_string);
                     if (hallDetails) {
                         hallName = hallDetails.hall_name;
@@ -526,7 +555,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const fetchHallFullDetails = async (hallIdString) => {
         setLoadingHallDetails(true);
         setHallDetailsError(null);
-        setSelectedHallFullDetails(null);
+        // setSelectedHallFullDetails(null); // Don't nullify if we might be viewing
         try {
             const response = await fetch(`${API_BASE_URL}/halls/${hallIdString}`);
             if (!response.ok) {
@@ -535,12 +564,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             }
             const data = await response.json();
             setSelectedHallFullDetails(data);
-            setBookingFormData(prev => ({
-                ...prev, function_type: '', area_sqft: '',
-                is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
-                num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0,
-            }));
-            setSelectedAreaOption('none');
+            if (!isEditing && !isViewOnly) { // Reset parts of form only if creating a new booking and hall changes
+                 setBookingFormData(prev => ({
+                    ...prev, function_type: '', area_sqft: '',
+                    is_parking: false, is_conference_hall: false, is_food_prep_area: false, is_lawn: false,
+                    num_ac_rooms_booked: 0, num_non_ac_rooms_booked: 0,
+                }));
+                setSelectedAreaOption('none');
+            }
             return data;
         } catch (error) {
             console.error('Error fetching hall details:', error);
@@ -554,7 +585,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const handleDisclaimerAgreedInModal = () => {
         setModalStep(2);
-        // CAPTCHA will be fetched when modalStep becomes 2 by useEffect
     }
 
     const resetFormData = () => {
@@ -570,6 +600,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         setSelectedAreaOption('none');
         setCaptchaInput('');
         setCaptchaError('');
+        setIsViewOnly(false); // Reset view-only mode
     };
     
     const handleCloseModal = () => {
@@ -577,19 +608,21 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         setModalStep(1);
         setIsEditing(false);
         setEditingBookingId(null);
-        resetFormData();
+        resetFormData(); // This will now also reset isViewOnly
     };
 
     const handleNewBookingClick = () => {
-        setIsEditing(false);
+        setIsEditing(false); 
+        setIsViewOnly(false); 
         setEditingBookingId(null);
         resetFormData();
         setModalStep(1); 
         setShowModal(true);
-        // CAPTCHA will be fetched when modalStep becomes 2 by useEffect
     };
 
     const handleBookingFormChange = (e) => {
+        if (isViewOnly) return; // Prevent changes if in view-only mode
+
         const { name, value, type, checked } = e.target;
 
         if (name === 'hall_id_string') {
@@ -630,6 +663,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const handleBookingSubmit = async (e) => {
         e.preventDefault();
+        if (isViewOnly) return; // Should not be callable if view only due to button state
+
         const token = getAuthToken();
         if (!token) {
             showToast(currentContent.authError, 'error');
@@ -637,7 +672,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             return;
         }
 
-        // Form Validation
         if (!bookingFormData.hall_id_string) { showToast(currentContent.formValidation.hallRequired, 'error'); return; }
         if (!bookingFormData.booking_date) { showToast(currentContent.formValidation.dateRequired, 'error'); return; }
         if (!bookingFormData.function_type) { showToast(currentContent.formValidation.functionTypeRequired, 'error'); return; }
@@ -655,7 +689,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
         const actualSubmitLogic = async () => {
             const method = isEditing ? 'PUT' : 'POST';
-            console.log('Submitting booking with data:', editingBookingId);
             const url = isEditing ? `${API_BASE_URL}/bookings/${editingBookingId}` : `${API_BASE_URL}/bookings`;
             
             const requestBody = { 
@@ -677,44 +710,36 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
                 await fetchBookings();
-                handleCloseModal(); // This also resets CAPTCHA input via resetFormData
+                handleCloseModal(); 
                 showToast(isEditing ? currentContent.updateSuccess : currentContent.bookingSuccess, 'success');
             } catch (error) {
                 console.error('Error saving booking:', error);
                 showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
-                // Do not call fetchNewCaptcha here, as CAPTCHA was already verified.
-                // The error is related to booking data or server issues post-CAPTCHA.
             }
         };
-        // Verify CAPTCHA then proceed
         await verifyCaptchaAndProceed(actualSubmitLogic);
     };
-
-    const startEditBooking = async (booking) => {
-        // Only allow editing if the booking status is 'Pending'
-        if (booking.booking_status !== 'Pending') {
-            showToast(`Cannot edit booking with status: ${booking.booking_status}. Only 'Pending' bookings can be edited.`, 'error');
-            return;
-        }
-       // console.log('Starting edit for booking:', booking);
-        setIsEditing(true);
+    
+    const handleOpenBookingModal = async (booking) => {
+        const viewMode = booking.booking_status !== 'Pending';
+        setIsEditing(true); 
+        setIsViewOnly(viewMode); 
         setEditingBookingId(booking._id);
-            //console.log('Editing booking ID:', booking._id);
-          //  console.log('Booking details:', editingBookingId);
-        const hallIdForEdit = booking.hall_id_string || (booking.hall_id ? booking.hall_id.hall_id : null);
+        
+        const hallIdForModal = booking.hall_id_string || (booking.hall_id ? booking.hall_id.hall_id : null);
         let hallDetails = null;
-        if (hallIdForEdit) {
-            hallDetails = await fetchHallFullDetails(hallIdForEdit);
+        if (hallIdForModal) {
+            hallDetails = await fetchHallFullDetails(hallIdForModal); 
         }
     
         setBookingFormData({
             booking_id: booking.booking_id,
-            hall_id_string: hallIdForEdit || '',
+            hall_id_string: hallIdForModal || '',
             booking_date: booking.booking_date ? new Date(booking.booking_date).toISOString().split('T')[0] : '',
             floor: booking.floor || 1,
             function_type: booking.function_type || '',
             area_sqft: booking.area_sqft?.toString() || '',
-            booking_amount: booking.booking_amount || 0,
+            booking_amount: booking.booking_amount || 0, // Will be recalculated if editable, otherwise just for display
             booking_type: booking.booking_type || '',
             is_parking: booking.is_parking || false,
             is_conference_hall: booking.is_conference_hall || false,
@@ -724,7 +749,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             num_ac_rooms_booked: booking.num_ac_rooms_booked || 0,
             num_non_ac_rooms_booked: booking.num_non_ac_rooms_booked || 0,
         });
-        setIsAcSelected(booking.is_ac || false);
+        setIsAcSelected(booking.is_ac || false); // Set AC selection based on existing booking
     
         if (hallDetails && booking.area_sqft) {
             const totalArea = hallDetails.total_area_sqft || 0;
@@ -741,12 +766,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     
         setModalStep(2); 
         setShowModal(true);
-        // CAPTCHA will be fetched when modalStep becomes 2 by useEffect
     };
 
     const initiateCancelBooking = (bookingId) => {
         setBookingIdToCancelState(bookingId);
-        fetchNewCaptcha(); // Fetch captcha for the cancel confirmation modal
+        // fetchNewCaptcha(); // CAPTCHA fetched by useEffect for this modal
         setShowCancelConfirmModal(true);
     };
 
@@ -771,21 +795,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-                await fetchBookings(); // Refetch
+                await fetchBookings(); 
                 showToast(currentContent.cancelSuccess, 'success');
                 setShowCancelConfirmModal(false);
                 setBookingIdToCancelState(null);
-                setCaptchaInput(''); // Clear captcha input
+                setCaptchaInput(''); 
             } catch (error) {
                 console.error('Error cancelling booking:', error);
                 showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
-                 // CAPTCHA was already verified, error is with the cancel operation itself
-                // Modal might remain open if fetchNewCaptcha is called by verifyCaptchaAndProceed on error
-                // but here the modal should ideally close if the error is post-captcha.
-                // For now, it will close if successful, or CAPTCHA error shown by verifyCaptcha...
-                // If actualCancelLogic itself fails, verifyCaptchaAndProceed doesn't auto-close the cancel modal
-                // So, explicitly close on error within actualCancelLogic if desired, or let user retry captcha.
-                // Let's keep it simple: if actualCancelLogic fails, the toast shows, user can retry CAPTCHA.
             }
         };
 
@@ -794,7 +811,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     const initiatePayNow = (bookingId) => {
         setBookingIdToPayState(bookingId);
-        fetchNewCaptcha(); // Fetch captcha for the pay now confirmation modal
+        // fetchNewCaptcha(); // CAPTCHA fetched by useEffect for this modal
         setShowPayNowConfirmModal(true);
     };
 
@@ -819,11 +836,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-                await fetchBookings(); // Refetch
+                await fetchBookings(); 
                 showToast(currentContent.paymentSuccess, 'success');
                 setShowPayNowConfirmModal(false);
                 setBookingIdToPayState(null);
-                setCaptchaInput(''); // Clear captcha input
+                setCaptchaInput(''); 
             } catch (error) {
                 console.error('Error processing payment:', error);
                 showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
@@ -837,42 +854,38 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const openCertificatePreview = (booking) => {
         setCurrentBookingForCertificate(booking);
         setShowCertificatePreviewModal(true);
-        fetchNewCaptcha(); // Fetch CAPTCHA for download modal
+        // CAPTCHA is removed for certificate download
     };
 
     const downloadCertificateFromPreview = async () => {
-        const actualDownloadLogic = async () => {
-            if (certificatePreviewRef.current && currentBookingForCertificate) {
-                const elementToCapture = certificatePreviewRef.current.querySelector('.user-dl-pdf-layout');
-                if (elementToCapture) {
-                    html2pdf().from(elementToCapture).set({
-                        margin: 0, 
-                        filename: `Certificate_Booking_${currentBookingForCertificate.booking_id}.pdf`,
-                        html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                    }).save().then(() => {
-                        showToast('Certificate download started!', 'success');
-                         setShowCertificatePreviewModal(false); // Close on successful initiation
-                         setCurrentBookingForCertificate(null);
-                         setCaptchaInput(''); // Clear captcha input
-                    }).catch(err => {
-                        console.error("PDF generation failed:", err);
-                        showToast('Certificate download failed.', 'error');
-                        // CAPTCHA was verified, error is in PDF generation
-                    });
-                } else {
-                    showToast('Error preparing certificate for download.', 'error');
-                }
+        // CAPTCHA verification is removed from here
+        if (certificatePreviewRef.current && currentBookingForCertificate) {
+            const elementToCapture = certificatePreviewRef.current.querySelector('.user-dl-pdf-layout');
+            if (elementToCapture) {
+                html2pdf().from(elementToCapture).set({
+                    margin: 0, 
+                    filename: `Certificate_Booking_${currentBookingForCertificate.booking_id}.pdf`,
+                    html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                }).save().then(() => {
+                    showToast('Certificate download started!', 'success');
+                     setShowCertificatePreviewModal(false); 
+                     setCurrentBookingForCertificate(null);
+                }).catch(err => {
+                    console.error("PDF generation failed:", err);
+                    showToast('Certificate download failed.', 'error');
+                });
             } else {
-                showToast('Error: Cannot download certificate.', 'error');
+                showToast('Error preparing certificate for download.', 'error');
             }
-        };
-
-        await verifyCaptchaAndProceed(actualDownloadLogic);
+        } else {
+            showToast('Error: Cannot download certificate.', 'error');
+        }
     };
 
 
     const renderPriceTable = (title, data, acStatus, isEventTable = false) => {
+        // ... (price table rendering logic - no changes needed for view-only as it's display)
         if (!selectedHallFullDetails || (isEventTable && (!data || data.length === 0))) return null;
     
         const getRowData = (itemKey, item) => {
@@ -962,7 +975,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         );
     };
 
-    const renderCaptchaSection = (actionContext = "") => ( // actionContext for more specific prompts if needed
+    const renderCaptchaSection = (actionContext = "") => (
         <div className="bn-form-group bn-captcha-section bn-form-group-full">
             <label htmlFor="captcha_input" style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block' }}>
                 {currentContent.captchaLabel}
@@ -977,7 +990,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                         className="bn-button bn-button-icon bn-refresh-captcha-button" 
                         aria-label={currentContent.captchaRefreshAlt}
                         title={currentContent.captchaRefreshAlt}
-                        style={{ padding: '8px', lineHeight: '1' }} // Minimal styling for the button
+                        style={{ padding: '8px', lineHeight: '1' }}
                     >
                         <RefreshCw size={18} />
                     </button>
@@ -992,7 +1005,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 value={captchaInput}
                 onChange={(e) => setCaptchaInput(e.target.value)}
                 className="bn-input"
-                // `required` attribute is less critical here as verifyCaptchaAndProceed handles empty check
             />
             {captchaError && <p className="bn-error-text" style={{color: 'var(--bn-color-error)', fontSize: '0.9em', marginTop: '5px'}}>{captchaError}</p>}
         </div>
@@ -1050,7 +1062,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 </thead>
                                 <tbody>
                                     {bookings.map((booking, index) => (
-                                        <tr key={booking.booking_id}>
+                                        <tr key={booking._id || booking.booking_id}>
                                             <td data-label={currentContent.tableHeaders[0]}>{index + 1}</td>
                                             <td data-label={currentContent.tableHeaders[1]}>{booking.booking_id}</td>
                                             <td data-label={currentContent.tableHeaders[2]}>{booking.hall_display_name || 'N/A'}</td>
@@ -1064,48 +1076,49 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                 {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
                                                 {!['Confirmed', 'Cancelled', 'Pending', 'AwaitingPayment'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
                                             </td>
-                                            <td data-label={currentContent.tableHeaders[7]}>{booking.isAllowed ? 'Yes' : 'No'}</td> {/* Display isAllowed */}
-                                            <td data-label={currentContent.tableHeaders[8]}>{booking.isPaid ? 'Yes' : 'No'}</td>       {/* Display isPaid */}
+                                            <td data-label={currentContent.tableHeaders[7]}>{booking.isAllowed ? 'Yes' : 'No'}</td>
+                                            <td data-label={currentContent.tableHeaders[8]}>{booking.isPaid ? 'Yes' : 'No'}</td>
                                             <td data-label={currentContent.tableHeaders[9]}>{booking.is_ac ? currentContent.acOption : currentContent.nonAcOption}</td>
                                             <td data-label={currentContent.tableHeaders[10]}>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>
                                             <td data-label={currentContent.tableHeaders[11]} >
                                                 <div className="bn-table-actions">
-                                                {/* Edit button: Only if status is Pending */}
-                                                {booking.booking_status === 'Pending' && (
-                                                    <button className="bn-button bn-edit-button" onClick={() => startEditBooking(booking)} aria-label={`${currentContent.editButton} booking ${booking.booking_id}`}>
-                                                       {currentContent.editButton}
-                                                    </button>
-                                                )}
-                                                {/* Pay Now button: If status is AwaitingPayment and isAllowed is true */}
-                                                {booking.booking_status === 'AwaitingPayment' && booking.isAllowed && (
                                                     <button 
-                                                        className="bn-button bn-pay-button" 
-                                                        onClick={() => initiatePayNow(booking.booking_id)} 
-                                                        aria-label={`${currentContent.payNowButton} for booking ${booking.booking_id}`}
+                                                        className="bn-button bn-view-edit-button" // Class for View/Edit button
+                                                        onClick={() => handleOpenBookingModal(booking)} 
+                                                        aria-label={`${currentContent.viewEditButton} for booking ${booking.booking_id}`}
                                                     >
-                                                        {currentContent.payNowButton}
+                                                        {currentContent.viewEditButton}
                                                     </button>
-                                                )}
-                                                {/* Cancel button: If status is not Cancelled */}
-                                                {booking.booking_status !== 'Cancelled' && (
-                                                    <button 
-                                                        className="bn-button bn-cancel-button" 
-                                                        onClick={() => initiateCancelBooking(booking.booking_id)} // Changed to initiateCancelBooking
-                                                        aria-label={`${currentContent.cancelButton} booking ${booking.booking_id}`}
-                                                    >
-                                                        {currentContent.cancelButton}
-                                                    </button>
-                                                )}
-                                                {/* Download Certificate button: Only if status is Confirmed */}
-                                                {booking.booking_status === 'Confirmed' && (
-                                                    <button
-                                                        className="bn-button bn-download-button"
-                                                        onClick={() => openCertificatePreview(booking)}
-                                                        aria-label={`${currentContent.downloadButton} for booking ${booking.booking_id}`}
-                                                    >
-                                                        <DownloadIcon size={16} />
-                                                    </button>
-                                                )}
+                                                    {/* Pay Now button: If status is AwaitingPayment and isAllowed is true */}
+                                                    {booking.booking_status === 'AwaitingPayment' && booking.isAllowed && (
+                                                        <button 
+                                                            className="bn-button bn-pay-button" 
+                                                            onClick={() => initiatePayNow(booking.booking_id)} 
+                                                            aria-label={`${currentContent.payNowButton} for booking ${booking.booking_id}`}
+                                                        >
+                                                            {currentContent.payNowButton}
+                                                        </button>
+                                                    )}
+                                                    {/* Cancel button: If status is not Cancelled (and not Confirmed - adjust as per business rule) */}
+                                                    {booking.booking_status !== 'Cancelled' && booking.booking_status !== 'Confirmed' && (
+                                                        <button 
+                                                            className="bn-button bn-cancel-button" 
+                                                            onClick={() => initiateCancelBooking(booking.booking_id)}
+                                                            aria-label={`${currentContent.cancelButton} booking ${booking.booking_id}`}
+                                                        >
+                                                            {currentContent.cancelButton}
+                                                        </button>
+                                                    )}
+                                                    {/* Download Certificate button: Only if status is Confirmed */}
+                                                    {booking.booking_status === 'Confirmed' && (
+                                                        <button
+                                                            className="bn-button bn-download-button"
+                                                            onClick={() => openCertificatePreview(booking)}
+                                                            aria-label={`${currentContent.downloadButton} for booking ${booking.booking_id}`}
+                                                        >
+                                                            <DownloadIcon size={16} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -1124,8 +1137,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                             <div className="bn-modal-header">
                                 <h3>
                                     {modalStep === 1 ? currentContent.disclaimerHeading :
-                                     isEditing ? (languageType === 'hi' ? 'बुकिंग संपादित करें' : 'Edit Booking') :
-                                     (languageType === 'hi' ? 'नई बुकिंग' : 'New Booking')}
+                                     isEditing ? (isViewOnly ? currentContent.viewBookingTitle : currentContent.editButton) :
+                                     currentContent.newBookingButton}
                                 </h3>
                                 <button className="bn-modal-close-button" onClick={handleCloseModal} aria-label={currentContent.closeModalButton}>&times;</button>
                             </div>
@@ -1150,7 +1163,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                         <div className="bn-form-group">
                                             <label htmlFor="hall_id_string"><BuildingIcon size={16} /> {currentContent.tableHeaders[2]}:</label>
                                             {loadingHalls ? <p>{currentContent.loadingHallsMessage}</p> : hallsError ? <p className="bn-error-text">{hallsError}</p> : (
-                                                <select id="hall_id_string" name="hall_id_string" value={bookingFormData.hall_id_string} onChange={handleBookingFormChange} required className="bn-select">
+                                                <select id="hall_id_string" name="hall_id_string" value={bookingFormData.hall_id_string} onChange={handleBookingFormChange} required 
+                                                        disabled={isViewOnly || loadingHalls} className="bn-select">
                                                     <option value="">{currentContent.selectHallPlaceholder}</option>
                                                     {availableHalls.map((hall) => (<option key={hall.hall_id} value={hall.hall_id}>{hall.hall_name}</option>))}
                                                 </select>
@@ -1159,23 +1173,27 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
                                         <div className="bn-form-group">
                                             <label htmlFor="booking_date"><CalendarDays size={16} /> {currentContent.tableHeaders[10]}:</label>
-                                            <input type="date" id="booking_date" name="booking_date" value={bookingFormData.booking_date} onChange={handleBookingFormChange} required className="bn-input" min={new Date().toISOString().split("T")[0]} />
+                                            <input type="date" id="booking_date" name="booking_date" value={bookingFormData.booking_date} onChange={handleBookingFormChange} required 
+                                                   disabled={isViewOnly} className="bn-input" min={new Date().toISOString().split("T")[0]} />
                                         </div>
 
                                         <div className="bn-form-group">
                                             <label htmlFor="floor">{currentContent.tableHeaders[3]}:</label>
-                                            <input type="number" id="floor" name="floor" value={bookingFormData.floor} onChange={handleBookingFormChange} className="bn-input" min="1" disabled={!isHallSelected || !selectedHallFullDetails} max={selectedHallFullDetails?.total_floors} />
+                                            <input type="number" id="floor" name="floor" value={bookingFormData.floor} onChange={handleBookingFormChange} className="bn-input" min="1" 
+                                                   disabled={isViewOnly || !isHallSelected || !selectedHallFullDetails} max={selectedHallFullDetails?.total_floors} />
                                         </div>
                                         
                                         <div className="bn-form-group">
                                             <label><ZapIcon size={16} /> {currentContent.acNonAcLabel}</label>
                                             <div className="bn-radio-group-container">
                                                 <div className="bn-radio-group">
-                                                    <input type="radio" id="ac-yes" name="is_ac_radio" value="true" checked={isAcSelected === true} onChange={handleBookingFormChange} disabled={!isHallSelected} />
+                                                    <input type="radio" id="ac-yes" name="is_ac_radio" value="true" checked={isAcSelected === true} onChange={handleBookingFormChange} 
+                                                           disabled={isViewOnly || !isHallSelected} />
                                                     <label htmlFor="ac-yes">{currentContent.acOption}</label>
                                                 </div>
                                                 <div className="bn-radio-group">
-                                                    <input type="radio" id="ac-no" name="is_ac_radio" value="false" checked={isAcSelected === false} onChange={handleBookingFormChange} disabled={!isHallSelected} />
+                                                    <input type="radio" id="ac-no" name="is_ac_radio" value="false" checked={isAcSelected === false} onChange={handleBookingFormChange} 
+                                                           disabled={isViewOnly || !isHallSelected} />
                                                     <label htmlFor="ac-no">{currentContent.nonAcOption}</label>
                                                 </div>
                                             </div>
@@ -1214,7 +1232,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     type="number" id="num_ac_rooms_booked" name="num_ac_rooms_booked"
                                                     value={bookingFormData.num_ac_rooms_booked} onChange={handleBookingFormChange}
                                                     className="bn-input" min="0" max={selectedHallFullDetails.num_ac_rooms}
-                                                    disabled={!isHallSelected}
+                                                    disabled={isViewOnly || !isHallSelected}
                                                 />
                                             </div>
                                         )}
@@ -1231,7 +1249,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     type="number" id="num_non_ac_rooms_booked" name="num_non_ac_rooms_booked"
                                                     value={bookingFormData.num_non_ac_rooms_booked} onChange={handleBookingFormChange}
                                                     className="bn-input" min="0" max={selectedHallFullDetails.num_non_ac_rooms}
-                                                    disabled={!isHallSelected}
+                                                    disabled={isViewOnly || !isHallSelected}
                                                 />
                                             </div>
                                         )}
@@ -1242,7 +1260,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             <select 
                                                 id="function_type" name="function_type" value={bookingFormData.function_type} 
                                                 onChange={handleBookingFormChange} required className="bn-select" 
-                                                disabled={!isHallSelected || !selectedHallFullDetails?.event_pricing || selectedHallFullDetails.event_pricing.length === 0}
+                                                disabled={isViewOnly || !isHallSelected || !selectedHallFullDetails?.event_pricing || selectedHallFullDetails.event_pricing.length === 0}
                                             >
                                                 <option value="">{currentContent.selectFunctionPlaceholder}</option>
                                                 {selectedHallFullDetails?.event_pricing?.map((event) => (<option key={event.event_type} value={event.event_type}>{event.event_type}</option>))}
@@ -1256,7 +1274,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     <select
                                                         id="selected_area_option" name="selected_area_option" value={selectedAreaOption}
                                                         onChange={handleBookingFormChange} className="bn-select"
-                                                        disabled={!isHallSelected || !isFunctionTypeSelected}
+                                                        disabled={isViewOnly || !isHallSelected || !isFunctionTypeSelected}
                                                     >
                                                         <option value="none">Select Option</option>
                                                         {selectedHallFullDetails?.total_area_sqft > 0 && <option value="full">{currentContent.areaOptionFull}</option>}
@@ -1269,9 +1287,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     <input
                                                         type="number" id="area_sqft" name="area_sqft" value={bookingFormData.area_sqft}
                                                         onChange={handleBookingFormChange} min="1" required={selectedAreaOption !== 'none'}
-                                                        readOnly={selectedAreaOption === 'full' || selectedAreaOption === 'half'}
+                                                        readOnly={(selectedAreaOption === 'full' || selectedAreaOption === 'half')}
                                                         className="bn-input" placeholder={selectedAreaOption === 'partial' ? 'Enter area in sq.ft.' : ''}
-                                                        disabled={!isHallSelected || !isFunctionTypeSelected || selectedAreaOption === 'none'}
+                                                        disabled={isViewOnly || !isHallSelected || !isFunctionTypeSelected || selectedAreaOption === 'none' || (selectedAreaOption !== 'partial')}
                                                     />
                                                 </div>
                                             </Fragment>
@@ -1286,7 +1304,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     { value: 'panchayat', label: currentContent.panchayatType }
                                                 ].map(type => (
                                                     <div className="bn-radio-group" key={type.value}>
-                                                        <input type="radio" id={`booking-type-${type.value}`} name="booking_type_radio" value={type.value} checked={bookingFormData.booking_type === type.value} onChange={handleBookingFormChange} required disabled={!isHallSelected} />
+                                                        <input type="radio" id={`booking-type-${type.value}`} name="booking_type_radio" value={type.value} checked={bookingFormData.booking_type === type.value} 
+                                                               onChange={handleBookingFormChange} required disabled={isViewOnly || !isHallSelected} />
                                                         <label htmlFor={`booking-type-${type.value}`}>{type.label}</label>
                                                     </div>
                                                 ))}
@@ -1303,7 +1322,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     { name: 'is_lawn', label: currentContent.lawnOption, available: selectedHallFullDetails?.lawn_ac || selectedHallFullDetails?.lawn_nonac }
                                                 ].filter(addon => addon.available).map(addon => (
                                                     <div className="bn-checkbox-group" key={addon.name}>
-                                                        <input type="checkbox" id={addon.name} name={addon.name} checked={bookingFormData[addon.name]} onChange={handleBookingFormChange} disabled={!isHallSelected || !isBookingTypeSelected} />
+                                                        <input type="checkbox" id={addon.name} name={addon.name} checked={bookingFormData[addon.name]} onChange={handleBookingFormChange} 
+                                                               disabled={isViewOnly || !isHallSelected || !isBookingTypeSelected} />
                                                         <label htmlFor={addon.name}>{addon.label}</label>
                                                     </div>
                                                 ))}
@@ -1315,8 +1335,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             <input type="text" value={`Rs. ${bookingFormData.booking_amount.toFixed(2)}`} readOnly className="bn-input bn-calculated-amount" />
                                         </div>
 
-                                        {/* CAPTCHA Section */}
-                                        {renderCaptchaSection()}
+                                        {/* CAPTCHA Section - only if creating new or editing, not for viewOnly */}
+                                        {!isViewOnly && renderCaptchaSection()}
                                     </form>
                                 )}
                             </div>
@@ -1331,11 +1351,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 {modalStep === 2 && (
                                     <Fragment>
                                         <button className="bn-button bn-modal-action-button bn-modal-cancel-button" onClick={handleCloseModal}>
-                                            {languageType === 'hi' ? content.hi.cancelButton : content.en.cancelButton}
+                                            {isViewOnly ? currentContent.closeButtonText : currentContent.cancelButton}
                                         </button>
-                                        <button type="submit" className="bn-button bn-modal-action-button bn-submit-button" form="booking-form-id" disabled={loadingHallDetails || !selectedHallFullDetails || !captchaToken}> {/* Disable if CAPTCHA not loaded */}
-                                            {isEditing ? (languageType === 'hi' ? 'अपडेट करें' : 'Update Booking') : (languageType === 'hi' ? 'बुक करें' : 'Create Booking')}
-                                        </button>
+                                        {!isViewOnly && ( 
+                                            <button type="submit" className="bn-button bn-modal-action-button bn-submit-button" form="booking-form-id" 
+                                                    disabled={loadingHallDetails || !selectedHallFullDetails || !captchaToken || hallsError || !!captchaError}>
+                                                {isEditing ? currentContent.updateBookingButton : currentContent.createBookingButton}
+                                            </button>
+                                        )}
                                     </Fragment>
                                 )}
                             </div>
@@ -1344,11 +1367,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 </Fragment>
             )}
 
-            {/* Certificate Preview Modal */}
+            {/* Certificate Preview Modal - CAPTCHA REMOVED */}
             {showCertificatePreviewModal && currentBookingForCertificate && (
                 <div 
                     className="bn-modal-overlay" 
-                    onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); setCaptchaInput(''); setCaptchaError(''); }}
+                    onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null);}}
                 >
                     <div 
                         className="bn-modal-content bn-certificate-preview-modal"
@@ -1359,7 +1382,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                             <h3>{currentContent.previewModalTitle}</h3>
                             <button 
                                 className="bn-modal-close-button" 
-                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); setCaptchaInput(''); setCaptchaError('');}} 
+                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null);}} 
                                 aria-label={currentContent.previewModalCloseButton}
                             >
                                 &times;
@@ -1367,7 +1390,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                         </div>
                         <div 
                             className="bn-modal-body" 
-                            style={{ padding: '20px', overflowY: 'auto' }} // Added padding around body
+                            style={{ padding: '20px', overflowY: 'auto' }}
                         >
                              <div 
                                 style={{ padding: 0, overflowY: 'auto', backgroundColor: 'var(--user-dl-gray-lightest)' }}
@@ -1376,28 +1399,25 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                 <BookingCertificate
                                     bookingDetails={{
                                         ...currentBookingForCertificate,
-                                        hall_id_string: currentBookingForCertificate.hall_display_name || 'N/A',
+                                        hall_id_string: currentBookingForCertificate.hall_display_name || 'N/A', // Use display name
                                         createdAt: currentBookingForCertificate.createdAt 
                                     }}
                                     userName={user?.name || 'N/A'}
                                 />
                             </div>
-                             {/* CAPTCHA Section for Certificate Download */}
-                            <div style={{marginTop: '20px'}}>
-                               {renderCaptchaSection(currentContent.confirmActionPrompt(languageType === 'en' ? 'download the certificate' : 'प्रमाणपत्र डाउनलोड करें'))}
-                            </div>
+                             {/* CAPTCHA Section REMOVED from Certificate Download */}
                         </div>
                         <div className="bn-modal-footer">
                             <button 
                                 className="bn-button bn-modal-action-button bn-modal-cancel-button" 
-                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null); setCaptchaInput(''); setCaptchaError('');}}
+                                onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null);}}
                             >
                                 {currentContent.previewModalCloseButton}
                             </button>
                             <button
                                 className="bn-button bn-modal-action-button bn-submit-button"
                                 onClick={downloadCertificateFromPreview}
-                                disabled={!captchaToken} // Disable if CAPTCHA not loaded
+                                // No captchaToken check needed here anymore
                             >
                                 <DownloadIcon size={16} /> {currentContent.previewModalDownloadButton}
                             </button>
@@ -1433,8 +1453,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                             </button>
                             <button 
                                 onClick={confirmAndExecuteCancelBooking} 
-                                className="bn-button bn-modal-action-button bn-submit-button" // Changed to bn-submit-button for consistency, or use bn-danger-button
-                                disabled={!captchaToken} // Disable if CAPTCHA not loaded
+                                className="bn-button bn-modal-action-button bn-submit-button"
+                                disabled={!captchaToken || !!captchaError} 
                             >
                                 {currentContent.confirmCancelButtonText}
                             </button>
@@ -1471,7 +1491,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                             <button 
                                 onClick={confirmAndExecutePayNow} 
                                 className="bn-button bn-modal-action-button bn-submit-button" 
-                                disabled={!captchaToken} // Disable if CAPTCHA not loaded
+                                disabled={!captchaToken || !!captchaError} 
                             >
                                 {currentContent.confirmPayButtonText}
                             </button>

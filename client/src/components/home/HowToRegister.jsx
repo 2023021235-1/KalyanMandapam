@@ -114,7 +114,7 @@ const HowToRegister = ({ languageType = 'en' }) => {
           ))}
         </div>
         <div className="rs-register-button-container">
-          <button className="rs-btn rs-btn-primary" onClick={()=>navigate('/booking')} >{currentContent.buttonText}</button>
+          <button className="rs-btn rs-btn-primary" onClick={()=>navigate('/book')} >{currentContent.buttonText}</button>
         </div>
       </div>
     </div>
