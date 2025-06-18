@@ -176,7 +176,9 @@ const createBooking = async (req, res) => {
     const transaction_id = generateUniqueId();
 
     const newBooking = new Booking({
-      booking_id, transaction_id, user_id: userId, hall_id_string, hall_id: hall._id,
+      booking_id,
+       transaction_id:null
+       , user_id: userId, hall_id_string, hall_id: hall._id,
       booking_date: desiredBookingDate, floor, function_type,
       area_sqft: area_sqft || (function_type && hall.total_area_sqft ? hall.total_area_sqft : undefined),
       booking_amount: calculatedBookingAmount, booking_type,

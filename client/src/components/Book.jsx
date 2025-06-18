@@ -70,7 +70,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
 
     // API Base URL Configuration
     const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api'; // Original API
-    //const API_BASE_URL = 'http://localhost:5000/api'; // New localhost API
+    const API_BASE_URL2 = 'https://kalyanmandapam.onrender.com/'; // New localhost API
 
     const getAuthToken = () => localStorage.getItem('token');
 
@@ -101,7 +101,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             disclaimerCloseButton: 'Close',
             newBookingButton: 'New Booking',
             previousBookingsHeading: 'Your Bookings',
-            tableHeaders: ['S.No.', 'Booking ID', 'Hall Name', 'Floor', 'Function', 'Amount', 'Status', 'Allowed', 'Paid', 'AC', 'Date', 'Actions'],
+            tableHeaders: ['S.No.', 'Booking ID', 'Hall Name', 'Floor', 'Function', 'Amount', 'Status', 'Transaction ID', 'Paid', 'AC', 'Date', 'Actions'],
             editButton: 'Edit Booking', // General title for editing
             viewEditButton: 'View/Edit', // For table button
             viewBookingTitle: 'View Booking', // Title for view-only modal
@@ -213,7 +213,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             disclaimerCloseButton: 'बंद करें',
             newBookingButton: 'नई बुकिंग',
             previousBookingsHeading: 'आपकी बुकिंग',
-            tableHeaders: ['क्र.सं.', 'बुकिंग आईडी', 'हॉल का नाम', 'मंजिल', 'समारोह', 'राशि', 'स्थिति', 'अनुमति', 'भुगतान', 'एसी', 'तिथि', 'कार्रवाई'],
+            tableHeaders: ['क्र.सं.', 'बुकिंग आईडी', 'हॉल का नाम', 'मंजिल', 'समारोह', 'राशि', 'स्थिति', 'लेन-देन आईडी', 'भुगतान', 'एसी', 'तिथि', 'कार्रवाई'],
             editButton: 'बुकिंग संपादित करें', // General title for editing
             viewEditButton: 'देखें/संपादित करें', // For table button
             viewBookingTitle: 'बुकिंग देखें', // Title for view-only modal
@@ -825,29 +825,38 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             return;
         }
 
-        const actualPayLogic = async () => {
+         const actualPayLogic = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToPayState}/pay`, {
-                    method: 'PUT', headers: { 'Authorization': `Bearer ${token}` },
+                const response = await fetch(`${API_BASE_URL2}generate-eazypay-url?bid=${encodeURIComponent(bookingIdToPayState)}`, {
+                    method: 'GET', headers: { 'Authorization': `Bearer ${token}` },
                 });
-                if (!response.ok) {
-                    if (response.status === 401) { navigate('/login'); throw new Error(currentContent.authError); }
-                    if (response.status === 404) throw new Error(currentContent.bookingNotFound);
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-                }
-                await fetchBookings(); 
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('EazyPay URL:', data.url);
+                     const  eazypayUrl  =data.url;
+      if (eazypayUrl) {
+        window.open(eazypayUrl, '_blank'); 
+        
                 showToast(currentContent.paymentSuccess, 'success');
                 setShowPayNowConfirmModal(false);
                 setBookingIdToPayState(null);
                 setCaptchaInput(''); 
+                setTimeout(async() => {
+                       await fetchBookings(); 
+                }, 60000); // Refresh bookings after 2 seconds
+             
+      } else {
+        throw new Error("Failed to get payment URL from server.");
+      }
+                }
+        //      
             } catch (error) {
                 console.error('Error processing payment:', error);
                 showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
             }
         };
 
-        await verifyCaptchaAndProceed(actualPayLogic);
+       await verifyCaptchaAndProceed(actualPayLogic);
     };
 
 
@@ -1076,7 +1085,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                 {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
                                                 {!['Confirmed', 'Cancelled', 'Pending', 'AwaitingPayment'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
                                             </td>
-                                            <td data-label={currentContent.tableHeaders[7]}>{booking.isAllowed ? 'Yes' : 'No'}</td>
+                                            <td data-label={currentContent.tableHeaders[7]}>{booking.transaction_id || 'N/A'}</td>
                                             <td data-label={currentContent.tableHeaders[8]}>{booking.isPaid ? 'Yes' : 'No'}</td>
                                             <td data-label={currentContent.tableHeaders[9]}>{booking.is_ac ? currentContent.acOption : currentContent.nonAcOption}</td>
                                             <td data-label={currentContent.tableHeaders[10]}>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>

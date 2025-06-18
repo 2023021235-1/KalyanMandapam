@@ -7,8 +7,7 @@ const bookSchema = new mongoose.Schema({
   user_id:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Assuming user is authenticated
 
   booking_id:        { type: String, required: true, unique: true, trim: true }, // Unique ID for the booking
-  transaction_id:    { type: String, required: true, unique: true, trim: true }, // Unique ID for payment transaction
-
+  transaction_id:    { type: String,  unique: true, trim: true }, // Unique ID for payment transaction
   booking_date:      { type: Date, required: true },
   floor:             { type: Number, required: true, min: 1 },
 
