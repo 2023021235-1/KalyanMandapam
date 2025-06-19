@@ -114,7 +114,7 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
         switch (status?.toLowerCase()) {
             case 'confirmed': case 'approved': statusClass = 'admin-status-confirmed'; Icon = CheckCircle; statusText = 'Confirmed'; break;
             case 'rejected': statusClass = 'admin-status-rejected'; Icon = XCircle; statusText = 'Rejected'; break;
-            case 'pending': statusClass = 'admin-status-pending'; Icon = Clock; statusText = 'Pending'; break;
+            case 'pending-approval': statusClass = 'admin-status-pending'; Icon = Clock; statusText = 'Pending-Approval'; break;
             case 'awaitingpayment': statusClass = 'admin-status-awaiting-payment'; Icon = Ban; statusText = 'Awaiting Payment'; break; // New status
             case 'cancelled': statusClass = 'admin-status-cancelled'; Icon = XCircle; statusText = 'Cancelled'; break;
             case 'processed': statusClass = 'admin-status-confirmed'; Icon = CheckCircle; statusText = 'Processed'; break;
@@ -166,11 +166,11 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                                         <td>{booking.user_id?.email || 'N/A'}</td> {/* Display booker's email */}
                                         <td className="admin-table-actions">
                                             {/* Allow button: Only for Pending bookings */}
-                                            {booking.booking_status === 'Pending' && (
+                                            {booking.booking_status === 'Pending-Approval' && (
                                                 <button onClick={() => handleAllowBooking(booking.booking_id)} className="book-m-allow-button">Allow</button>
                                             )}
                                             {/* Confirm button: Can be used as an admin override, e.g., for AwaitingPayment or Pending */}
-                                            {['Pending', 'AwaitingPayment'].includes(booking.booking_status) && (
+                                            {['Pending-Approval', 'AwaitingPayment'].includes(booking.booking_status) && (
                                                 <button onClick={() => handleConfirmBooking(booking.booking_id)} className="book-m-confirm-button">Confirm</button>
                                             )}
                                             {/* Cancel button: If not already cancelled */}

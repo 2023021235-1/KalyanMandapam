@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/BookNow.css'; // Assuming BookNow.css is in a 'styles' subfolder
-import { CircleCheck,Clock, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon, RefreshCw } from 'lucide-react'; // Added HomeIcon for rooms and RefreshCw for CAPTCHA
+import { RefreshCcw,CircleCheck,Clock, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon, RefreshCw } from 'lucide-react'; // Added HomeIcon for rooms and RefreshCw for CAPTCHA
 import html2pdf from 'html2pdf.js';
 import BookingCertificate from './BookingCertificate'; // Import the new certificate component
 
@@ -108,6 +108,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             updateBookingButton: 'Update Booking', // Button text for submit in edit mode
             createBookingButton: 'Create Booking', // Button text for submit in new booking mode
             closeButtonText: 'Close', // Generic close button text
+
             cancelButton: 'Cancel',
             payNowButton: 'Pay Now',
             downloadButton: 'Download Certificate',
@@ -196,6 +197,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             confirmCancelButtonText: 'Confirm Cancel',
             confirmPayButtonText: 'Confirm Payment',
             dismissButtonText: 'Dismiss',
+            verifyPaymentButton: 'Verify' ,
         },
         hi: {
             sectionHeading: 'सामुदायिक भवन बुक करें',
@@ -308,6 +310,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             confirmCancelButtonText: 'रद्दीकरण की पुष्टि करें',
             confirmPayButtonText: 'भुगतान की पुष्टि करें',
             dismissButtonText: 'खारिज करें',
+            verifyPaymentButton: 'पुष्टि करें',
         },
     }), [languageType]);
 
@@ -466,7 +469,48 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         bookingFormData.num_ac_rooms_booked,
         bookingFormData.num_non_ac_rooms_booked,
     ]);
-    
+
+    const handleVerifyPayment = async (licenseId, paymentReferenceNo) => {
+const token = getAuthToken();
+    if (!token) {   
+        alert(languageType === 'en' ? 'Authentication failed. Please log in again.' : 'प्रमाणीकरण विफल। कृपया पुनः लॉग इन करें।');
+        navigate('/login');
+        return;
+    }
+
+    if (!paymentReferenceNo) {
+      alert(languageType === 'en' ? 'Payment reference number is not available.' : 'भुगतान संदर्भ संख्या उपलब्ध नहीं है।');
+      return;
+    }
+
+    try {
+  
+      // Construct the URL with pgreferenceno as a query parameter
+      const verificationUrl = `${API_BASE_URL2}verify-eazypay-payment?pgreferenceno=${paymentReferenceNo}`;
+
+      const response = await fetch(verificationUrl, {
+        method: 'GET', // Changed to GET
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        // Removed body as it's a GET request
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(languageType === 'en' ? data.message || 'Payment verification successful!' : data.message || 'भुगतान सत्यापन सफल रहा!');
+       // console.log("Payment verification successful:", data);
+        fetchBookings();// Refresh the list to show updated status
+      } else {
+        alert(languageType === 'en' ? data.message || 'Payment verification failed.' : data.message || 'भुगतान सत्यापन विफल रहा।');
+      }
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      alert(languageType === 'en' ? 'An error occurred during payment verification.' : 'भुगतान सत्यापन के दौरान एक त्रुटि हुई।');
+    }
+  };
     useEffect(() => {
         if (!isViewOnly) { // Only calculate and update if not in view-only mode
             const calculatedAmount = calculateBookingAmount();
@@ -721,7 +765,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     };
     
     const handleOpenBookingModal = async (booking) => {
-        const viewMode = booking.booking_status !== 'Pending';
+        const viewMode = booking.booking_status !== 'Pending-Approval';
         setIsEditing(true); 
         setIsViewOnly(viewMode); 
         setEditingBookingId(booking._id);
@@ -830,12 +874,18 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 const response = await fetch(`${API_BASE_URL2}generate-eazypay-url?bid=${encodeURIComponent(bookingIdToPayState)}`, {
                     method: 'GET', headers: { 'Authorization': `Bearer ${token}` },
                 });
+            
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('EazyPay URL:', data.url);
+                  //  console.log('EazyPay DATA:', data);
+                    if(data.success === false) {
+                        showToast(data.message,'error');
+          return
+
+                    }
                      const  eazypayUrl  =data.url;
-      if (eazypayUrl) {
-        window.open(eazypayUrl, '_blank'); 
+                     if (eazypayUrl) {
+                     window.open(eazypayUrl, '_blank'); 
         
                 showToast(currentContent.paymentSuccess, 'success');
                 setShowPayNowConfirmModal(false);
@@ -843,9 +893,12 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 setCaptchaInput(''); 
                 setTimeout(async() => {
                        await fetchBookings(); 
-                }, 60000); // Refresh bookings after 2 seconds
+                }, 60000); 
              
       } else {
+        console.error("Payment URL is empty or undefined.");
+        showToast('Failed to get payment URL from server.', 'error');
+
         throw new Error("Failed to get payment URL from server.");
       }
                 }
@@ -1078,13 +1131,38 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                             <td data-label={currentContent.tableHeaders[3]}>{booking.floor || 'N/A'}</td>
                                             <td data-label={currentContent.tableHeaders[4]}>{booking.function_type}</td>
                                             <td data-label={currentContent.tableHeaders[5]}>Rs. {booking.booking_amount?.toFixed(2)}</td>
-                                            <td data-label={currentContent.tableHeaders[6]} className="bn-table-status-cell">
-                                                {booking.booking_status === 'Confirmed' && <span className="bn-status-indicator bn-status-confirmed"><CircleCheck size={16} />{booking.booking_status}</span>}
-                                                {booking.booking_status === 'Cancelled' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{booking.booking_status}</span>}
-                                                {booking.booking_status === 'Pending' && <span className="bn-status-indicator bn-status-pending"><CircleDot size={16} />{booking.booking_status}</span>}
-                                                {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
-                                                {!['Confirmed', 'Cancelled', 'Pending', 'AwaitingPayment'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
-                                            </td>
+                                           <td data-label={currentContent.tableHeaders[6]} className="bn-table-status-cell">
+    {booking.booking_status === 'Confirmed' && <span className="bn-status-indicator bn-status-confirmed"><CircleCheck size={16} />{booking.booking_status}</span>}
+    {booking.booking_status === 'Cancelled' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{booking.booking_status}</span>}
+    {booking.booking_status === 'Pending-Approval' && <span className="bn-status-indicator bn-status-pending"><CircleDot size={16} />{booking.booking_status}</span>}
+    
+    {/* AwaitingPayment status without the nested button */}
+    {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
+    
+    {/* New separate condition for Payment-Processing */}
+    {booking.booking_status === 'Payment-Processing' && (
+        <span className="bn-status-indicator bn-status-awaiting-payment"> {/* Re-using a suitable style */}
+            <Clock size={16} />
+            {booking.booking_status}
+            {booking.transaction_id && (
+                <button
+                  className="user-dl-verify-payment-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleVerifyPayment(booking._id, booking.transaction_id);
+                  }}
+                  title={currentContent.verifyPaymentButton}
+                >
+                  <RefreshCcw size={14} />
+                 
+                </button>
+            )}
+        </span>
+    )}
+
+    {/* The fallback list of statuses is updated */}
+    {!['Pending-Approval', 'AwaitingPayment', 'Confirmed', 'Cancelled','Payment-Processing','Payment-Failed','Refunded', 'Refund-Pending'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
+</td>
                                             <td data-label={currentContent.tableHeaders[7]}>{booking.transaction_id || 'N/A'}</td>
                                             <td data-label={currentContent.tableHeaders[8]}>{booking.isPaid ? 'Yes' : 'No'}</td>
                                             <td data-label={currentContent.tableHeaders[9]}>{booking.is_ac ? currentContent.acOption : currentContent.nonAcOption}</td>
@@ -1099,7 +1177,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                         {currentContent.viewEditButton}
                                                     </button>
                                                     {/* Pay Now button: If status is AwaitingPayment and isAllowed is true */}
-                                                    {booking.booking_status === 'AwaitingPayment' && booking.isAllowed && (
+                                                    {(booking.booking_status === 'AwaitingPayment' || booking.booking_status === 'Payment-Failed' ) && booking.isAllowed && (
                                                         <button 
                                                             className="bn-button bn-pay-button" 
                                                             onClick={() => initiatePayNow(booking.booking_id)} 
