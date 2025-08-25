@@ -4,10 +4,11 @@ const mongoose = require('mongoose');
 const bookSchema = new mongoose.Schema({
   hall_id_string:    { type: String, required: true },
   hall_id:           { type: mongoose.Schema.Types.ObjectId, ref: 'Hall', required: true },
-  user_id:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Assuming user is authenticated
+  user_id:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
 
   booking_id:        { type: String, required: true, unique: true, trim: true }, // Unique ID for the booking
-  transaction_id:    { type: String,  unique: true, trim: true }, // Unique ID for payment transaction
+  transaction_id:    { type: String, trim: true, },
+
   booking_date:      { type: Date, required: true },
   floor:             { type: Number, required: true, min: 1 },
 
@@ -41,8 +42,8 @@ const bookSchema = new mongoose.Schema({
 
   booking_status: {
     type: String,
-    enum: ['Pending', 'AwaitingPayment', 'Confirmed', 'Cancelled'], // Updated statuses
-    default: 'Pending',
+    enum: ['Pending-Approval', 'AwaitingPayment', 'Confirmed', 'Cancelled','Payment-Processing','Payment-Failed','Refunded', 'Refund-Pending'], 
+    default: 'Pending-Approval',
     required: true,
   },
   booking_amount:      { type: Number, required: true },

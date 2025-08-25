@@ -253,7 +253,7 @@ const deleteHall = async (req, res) => {
 
         if (hall) {
             // Check if there are any active bookings for this hall before deleting
-            const activeBookings = await Booking.countDocuments({ hall_id: hall._id, booking_status: { $in: ['Confirmed', 'Pending'] } });
+            const activeBookings = await Booking.countDocuments({ hall_id: hall._id, booking_status: { $in: ['Confirmed', 'Pending-Approval'] } });
             if (activeBookings > 0) {
                 return res.status(400).json({ message: 'Cannot delete hall with active bookings.' });
             }

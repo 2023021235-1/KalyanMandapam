@@ -1,10 +1,11 @@
 // controllers/paymentController.js
 const crypto = require('crypto');
 require('dotenv').config();
+const Hall = require('../models/hallModel');
 const Booking = require('../models/bookModel');
 
 const ERROR_CODE_MAP = {
-    E000: 'Transaction successful',
+    E000: 'Transaction successful. Settlement process is initiated for the transaction.',
     E001: 'Unauthorized Payment Mode',
     E002: 'Unauthorized Key',
     E003: 'Unauthorized Packet',
@@ -12,8 +13,61 @@ const ERROR_CODE_MAP = {
     E005: 'Unauthorized Return URL',
     E006: 'Transaction is already paid',
     E007: 'Transaction Failed',
-    E008: 'Failure from Third Party',
+    E008: 'Failure from Third Party due to Technical Error',
     E009: 'Bill Already Expired',
+    E0031: 'Mandatory fields coming from merchant are empty',
+    E0032: 'Mandatory fields coming from database are empty',
+    E0033: 'Payment mode coming from merchant is empty',
+    E0034: 'PG Reference number coming from merchant is empty',
+    E0035: 'Sub merchant id coming from merchant is empty',
+    E0036: 'Transaction amount coming from merchant is empty',
+    E0037: 'Payment mode coming from merchant is other than 0 to 9',
+    E0038: 'Transaction amount coming from merchant is more than 9 digit length',
+    E0039: 'Mandatory value Email in wrong format',
+    E00310: 'Mandatory value mobile number in wrong format',
+    E00311: 'Mandatory value amount in wrong format',
+    E00312: 'Mandatory value Pan card in wrong format',
+    E00313: 'Mandatory value Date in wrong format',
+    E00314: 'Mandatory value String in wrong format',
+    E00315: 'Optional value Email in wrong format',
+    E00316: 'Optional value mobile number in wrong format',
+    E00317: 'Optional value amount in wrong format',
+    E00318: 'Optional value pan card number in wrong format',
+    E00319: 'Optional value date in wrong format',
+    E00320: 'Optional value string in wrong format',
+    E00321: 'Request packet mandatory columns is not equal to mandatory columns set in enrolment or optional columns are not equal to optional columns length set in enrolment',
+    E00322: 'Reference Number Blank',
+    E00323: 'Mandatory Columns are Blank',
+    E00324: 'Merchant Reference Number and Mandatory Columns are Blank',
+    E00325: 'Merchant Reference Number Duplicate',
+    E00326: 'Sub merchant id coming from merchant is non numeric',
+    E00327: 'Cash Challan Generated',
+    E00328: 'Cheque Challan Generated',
+    E00329: 'NEFT Challan Generated',
+    E00330: 'Transaction Amount and Mandatory Transaction Amount mismatch in Request URL',
+    E00331: 'UPI Transaction Initiated Please Accept or Reject the Transaction',
+    E00332: 'Challan Already Generated, Please re-initiate with unique reference number',
+    E00333: 'Referer is null/invalid Referer',
+    E00334: 'Mandatory Parameters Reference No and Request Reference No parameter values are not matched',
+    E00335: 'Transaction Cancelled By User',
+    E00336: 'WIRE Challan Generated',
+    E00337: 'Net_banking ICICI Transaction Pending for Checker Approval',
+    E0801: 'FAIL',
+    E0802: 'User Dropped',
+    E0803: 'Canceled by user',
+    E0804: 'User Request arrived but card brand not supported',
+    E0805: 'Checkout page rendered Card function not supported',
+    E0806: 'Forwarded / Exceeds withdrawal amount limit',
+    E0807: 'PG Fwd Fail / Issuer Authentication Server failure',
+    E0808: 'Session expiry / Failed Initiate Check, Card BIN not present',
+    E0809: 'Reversed / Expired Card',
+    E0810: 'Unable to Authorize',
+    E0811: 'Invalid Response Code or Guide received from Issuer',
+    E0812: 'Do not honor',
+    E0813: 'Invalid transaction',
+    E0814: 'Not Matched with the entered amount',
+    E0815: 'Not sufficient funds',
+    E0816: 'No Match with the card number',
 };
 
 const AES_KEY = Buffer.from(process.env.PG_TEST_KEY, 'ascii'); // 16 bytes
@@ -72,7 +126,44 @@ async function fetchAndPopulateTransactionDetails(pgreferenceno) {
     return result;
 }
 
-// Handle return callback
+const updateHallAvailability = async (hallId, bookingDate, floor, bookingId, markAsBooked) => {
+    const hall = await Hall.findById(hallId);
+    if (!hall) return false;
+
+    const normalizedBookingDate = new Date(bookingDate);
+    normalizedBookingDate.setUTCHours(0, 0, 0, 0);
+    const dateString = normalizedBookingDate.toISOString().split('T')[0];
+
+    const availabilityIndex = hall.availability_details.findIndex(
+        (detail) =>
+            detail.date.toISOString().split('T')[0] === dateString &&
+            detail.floor === floor
+    );
+
+    if (markAsBooked) {
+        if (availabilityIndex > -1) {
+            hall.availability_details[availabilityIndex].status = 'booked';
+            hall.availability_details[availabilityIndex].booking_id = bookingId;
+        } else {
+            hall.availability_details.push({
+                date: normalizedBookingDate,
+                floor: floor,
+                status: 'booked',
+                booking_id: bookingId,
+            });
+        }
+    } else { // Mark as available (e.g., on cancellation of a confirmed booking)
+        if (availabilityIndex > -1) {
+            // Only remove if it was booked by this specific booking
+            if (hall.availability_details[availabilityIndex].booking_id && hall.availability_details[availabilityIndex].booking_id.toString() === bookingId.toString()) {
+                hall.availability_details.splice(availabilityIndex, 1);
+            }
+        }
+    }
+    await hall.save();
+    return true;
+};
+
 exports.eazypayReturn = async (req, res) => {
     console.log('\n📥 Payment callback received:');
     console.log(req.body);
@@ -100,26 +191,55 @@ exports.eazypayReturn = async (req, res) => {
         `);
     };
 
+    const mand = req.body['mandatory fields'];
+    const parts = mand.split('|');
+    const bid = parts[parts.length - 1];
+    const booking = await Booking.findOne({ booking_id: bid });
+     const hall = await Hall.findById(booking.hall_id);
+        if (!hall) {
+            console.log('Hall not found for the booking.');
+            return res.status(404).json({ message: 'Hall not found for this booking.' });
+        }
+
+        const desiredBookingDate = new Date(booking.booking_date); // Use booking.booking_date
+        desiredBookingDate.setUTCHours(0, 0, 0, 0);
+
+        const isSlotConfirmedByOther = hall.availability_details.some(
+            (detail) =>
+                detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
+                detail.floor === booking.floor && // Use booking.floor
+                detail.status === 'booked'
+        );
+
+        if (isSlotConfirmedByOther) {
+            console.log('This hall floor is already confirmed by another booking for the selected date.');
+            booking.transaction_id = null;
+            booking.booking_status = 'Refund-Pending'; 
+            await booking.save();
+            return res.status(400).json({ message: 'This hall floor is already confirmed by another booking for the selected date. ' });
+        }
+        
+    if (code === 'E000') {
+        
     if (!signatureMatches) {
         console.warn('❌ Signature Mismatch. Transaction ignored.');
         return respondToUser('failure');
     }
-
-    if (code === 'E000') {
         console.log('🎉 SUCCESS:', message);
         try {
             // parse booking ID (bid) from mandatory fields: last segment
-            const mand = req.body['mandatory fields'];
-            const parts = mand.split('|');
-            const bid = parts[parts.length - 1];
+
             // find and update booking
-            const booking = await Booking.findOne({ booking_id: bid });
+
             if (booking) {
                 booking.transaction_id = req.body.ReferenceNo;
                 booking.isPaid = true;
                 booking.booking_status = 'Confirmed';
                 await booking.save();
                 console.log(`Updated booking ${bid} with transaction ${booking.transaction_id}`);
+                // Update hall availability
+                const hallUpdated = await updateHallAvailability(booking.hall_id, booking.booking_date, booking.floor, booking._id, true);
+                console.log(`Hall availability updated for booking ${bid}: ${hallUpdated}`);
             } else {
                 console.warn(`Booking not found for ID ${bid}`);
             }
@@ -129,12 +249,21 @@ exports.eazypayReturn = async (req, res) => {
             respondToUser('failure');
         }
     } else {
+
         console.warn('❌ FAILURE:', message);
+        if (booking) {
+            booking.booking_status = 'Payment-Failed';
+            booking.isPaid = false;
+            booking.transaction_id = null; // Clear transaction ID
+            await booking.save();
+            console.log(`Updated booking ${bid} to Payment-Failed status`);
+        } else {
+            console.warn(`Booking not found for ID ${bid}`);
+        }
         respondToUser('failure');
     }
 };
 
-// Verification endpoint
 exports.verifyEazypayPayment = async (req, res) => {
     try {
         const { pgreferenceno } = req.query;
@@ -156,12 +285,27 @@ exports.verifyEazypayPayment = async (req, res) => {
             paymentState = 'failed';
         }
 
-        // fetch booking by transaction_id
+        console.log(`Payment state determined: ${paymentState}`);
         const booking = await Booking.findOne({ transaction_id: pgreferenceno });
         console.log('Fetched booking for verification:', booking);
 
-        // optional: include booking in response
-        return res.json({ state: paymentState, booking });
+        if (!booking) {
+            return res.status(404).json({ error: 'Booking not found for this transaction' });
+        }
+
+        console.log(`Updating booking ${booking.booking_id} with payment state: ${paymentState}`);
+        if (paymentState === 'success') {
+            booking.isPaid = true;
+            booking.booking_status = 'Confirmed';
+        } else if (paymentState === 'processing') {
+            booking.booking_status = 'Payment-Processing';
+        } else {
+            booking.booking_status = 'Payment-Failed';
+            booking.isPaid = false;
+            booking.transaction_id = null; // Clear transaction ID on failure
+        }
+        await booking.save();
+        return res.json({ state: paymentState });
     } catch (err) {
         console.error('Verification error:', err);
         return res.status(500).json({ error: 'Verification failed', details: err.message });
@@ -171,13 +315,46 @@ exports.verifyEazypayPayment = async (req, res) => {
 
 exports.generateEazypayUrl = async (req, res) => {
     try {
-        const bid= req.query.bid; // Booking ID from query params
-         const booking = await Booking.findOne({ booking_id: bid });
-        var amt=0;
-            if (booking) {
-               amt= booking.booking_amount;
-            }
+        const bid = req.query.bid;
+        const booking = await Booking.findOne({ booking_id: bid });
+        var amt = 0;
         const uniqueRefNo = `REF${Date.now()}`;
+        if (!booking) {
+            return res.status(404).json({ success:false,message: 'Booking not found' });
+        }
+
+        if (booking) {
+            amt = booking.booking_amount;
+            booking.transaction_id = uniqueRefNo;
+            booking.booking_status = 'Payment-Processing';
+        }
+
+        // Fetch the Hall details to check availability
+        const hall = await Hall.findById(booking.hall_id);
+        if (!hall) {
+            console.log('Hall not found for the booking.');
+            return res.status(404).json({ success:false,message: 'Hall not found for this booking.' });
+        }
+
+        const desiredBookingDate = new Date(booking.booking_date); // Use booking.booking_date
+        desiredBookingDate.setUTCHours(0, 0, 0, 0);
+
+        const isSlotConfirmedByOther = hall.availability_details.some(
+            (detail) =>
+                detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
+                detail.floor === booking.floor && // Use booking.floor
+                detail.status === 'booked'
+        );
+
+        if (isSlotConfirmedByOther) {
+            console.log('This hall floor is already confirmed by another booking for the selected date.');
+            booking.transaction_id = null;
+            booking.booking_status = 'Cancelled'; // Set status to Cancelled if slot is taken
+            await booking.save();
+            return res.json({ success:false,message: 'This hall floor is already confirmed by another booking for the selected date.' });
+        }
+
+        await booking.save();
         console.log('Generating Eazypay URL with reference:', uniqueRefNo);
         const params = {
             merchantid: process.env.EAZYPAY_MERCHANT_ID, // Use env var
@@ -192,8 +369,8 @@ exports.generateEazypayUrl = async (req, res) => {
 
         const eazypayUrl = exports.generatePaymentURL(params); // Use the exported function
         console.log('Generated Eazypay URL:', eazypayUrl);
-        res.json({ url: eazypayUrl, reference: uniqueRefNo });
-   
+        res.json({ success:true,url: eazypayUrl, reference: uniqueRefNo });
+
     } catch (error) {
         console.error('Error generating URL:', error);
         res.status(500).send('Failed to generate Eazypay URL.');

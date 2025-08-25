@@ -2,7 +2,7 @@
 const Booking = require('../models/bookModel');
 const Hall = require('../models/hallModel');
 
-// Helper function to generate a unique ID
+
 const generateUniqueId = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -16,7 +16,6 @@ const generateUniqueId = () => {
     return `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}${random}`;
 };
 
-// Helper to calculate booking amount based on hall pricing
 const calculateBookingAmount = (hall, bookingData) => {
   const {
     function_type,
@@ -66,7 +65,7 @@ const calculateBookingAmount = (hall, bookingData) => {
   return totalAmount;
 };
 
-// Helper function to update hall availability
+
 const updateHallAvailability = async (hallId, bookingDate, floor, bookingId, markAsBooked) => {
     const hall = await Hall.findById(hallId);
     if (!hall) return false;
@@ -154,11 +153,7 @@ const createBooking = async (req, res) => {
         return res.status(400).json({ message: 'You have already applied for a booking for this hall on this date.' });
     }
     
-    // Availability check will now effectively happen before allowing payment / confirming
-    // For creation, we just check if the hall *can* be booked, not blocking the slot yet.
-    // A more complex check might look at other 'Confirmed' bookings if we want to prevent even applying.
-    // However, the prompt implies availability is affected *after* confirmation.
-    // For now, let's check if the specific date and floor is *already confirmed* by someone else.
+   
     const isSlotConfirmedByOther = hall.availability_details.some(
       (detail) =>
         detail.date.toISOString().split('T')[0] === desiredBookingDate.toISOString().split('T')[0] &&
@@ -173,7 +168,7 @@ const createBooking = async (req, res) => {
 
     const calculatedBookingAmount = calculateBookingAmount(hall, { ...req.body, num_ac_rooms_booked: numAcRoomsToBook, num_non_ac_rooms_booked: numNonAcRoomsToBook });
     const booking_id = generateUniqueId();
-    const transaction_id = generateUniqueId();
+
 
     const newBooking = new Booking({
       booking_id,
@@ -188,13 +183,14 @@ const createBooking = async (req, res) => {
       is_ac: is_ac || false, add_parking: add_parking || false,
       isAllowed: false, // New field
       isPaid: false,    // New field
-      booking_status: 'Pending', // Initial status
+      booking_status: 'Pending-Approval', // Initial status
     });
 
     const createdBooking = await newBooking.save();
     // DO NOT update hall availability here. It will be updated upon payment confirmation.
     res.status(201).json({ message: 'Booking application submitted successfully! Awaiting admin approval.', booking: createdBooking });
   } catch (error) {
+
     console.error('Error creating booking:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
@@ -212,8 +208,8 @@ const allowBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized for this action.' });
         }
 
-        if (booking.booking_status !== 'Pending') {
-            return res.status(400).json({ message: `Booking is not in 'Pending' state. Current status: ${booking.booking_status}` });
+        if (booking.booking_status !== 'Pending-Approval') {
+            return res.status(400).json({ message: `Booking is not in 'Pending-Approval' state. Current status: ${booking.booking_status}` });
         }
         
         // Additional check: ensure the slot isn't taken by a now-confirmed booking by someone else in the meantime
@@ -323,7 +319,7 @@ const getBookingById = async (req, res) => {
 };
 
 
-// @desc    Update an existing booking (Only if 'Pending')
+// @desc    Update an existing booking (Only if 'Pending-Approval')
 // @route   PUT /api/bookings/:id
 // @access  Private (Authenticated User/Admin)
 const updateBooking = async (req, res) => {
@@ -348,8 +344,8 @@ const updateBooking = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this booking' });
     }
 
-    if (existingBooking.booking_status !== 'Pending') {
-      return res.status(400).json({ message: `Only 'Pending' bookings can be edited. Current status: ${existingBooking.booking_status}` });
+    if (existingBooking.booking_status !== 'Pending-Approval') {
+      return res.status(400).json({ message: `Only 'Pending-Approval' bookings can be edited. Current status: ${existingBooking.booking_status}` });
     }
 
     const hall = await Hall.findOne({ hall_id: hall_id_string });
@@ -491,7 +487,7 @@ const updateBookingStatus = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized for this action.' });
         }
         
-        const allowedStatuses = ['Pending', 'AwaitingPayment', 'Confirmed', 'Cancelled'];
+        const allowedStatuses = ['Pending-Approval', 'AwaitingPayment', 'Confirmed', 'Cancelled','Payment-Processing','Payment-Failed','Refunded', 'Refund-Pending'];
         if (!allowedStatuses.includes(status)) {
             return res.status(400).json({ message: `Invalid status: ${status}.` });
         }
@@ -529,7 +525,7 @@ const updateBookingStatus = async (req, res) => {
             if (wasConfirmed) { // If it was confirmed, now it's not (e.g. payment failed, admin reverts)
                 await updateHallAvailability(booking.hall_id, booking.booking_date, booking.floor, booking._id, false);
             }
-        } else if (status === 'Pending') {
+        } else if (status === 'Pending-Approval') {
             booking.isAllowed = false;
             booking.isPaid = false;
             if (wasConfirmed) {
