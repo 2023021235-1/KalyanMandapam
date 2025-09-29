@@ -138,7 +138,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/profile', { // Ensure this matches your backend route prefix if any
+      const response = await fetch('https://kalyanmandapam.onrender.com/api/auth/profile', { // Ensure this matches your backend route prefix if any
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -184,8 +184,9 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
     ? [
         { hi: 'होम', en: 'Home', path: '/' },
         { hi: 'हॉल प्रबंधन', en: 'Hall Management', path: '/admin/hall-management' },
-        { hi: 'बुकिंग प्रबंधन', en: 'Booking Management', path: '/admin/booking-management' },
+                { hi: 'बुकिंग प्रबंधन', en: 'Booking Management', path: '/admin/booking-management' },
         { hi: 'बुकिंग सत्यापित करें', en: 'Verify Booking', path: '/admin/verify-booking' },
+        { hi: 'आंकड़े', en: 'Statistics', path: '/admin/stats' },
         
       ]
     : user

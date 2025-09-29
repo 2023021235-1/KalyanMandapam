@@ -20,7 +20,8 @@ app.use('/api/halls', require('./routes/hallRoutes'));
 app.use('/api/bookings', require('./routes/bookRoutes'));
 app.use('/api/otp', require('./routes/otpRoutes'));
 app.use('/', paymentRoutes);
-
+const statsRoutes = require('./routes/statsRoutes');
+app.use('/api/stats', statsRoutes);
 
 app.get('/health-check-polling', (req, res) => {
   res.status(200).send('OK');

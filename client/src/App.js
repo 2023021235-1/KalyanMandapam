@@ -20,7 +20,7 @@ import BookNowSection from "./components/Book"; // Keep AdminPanel for the main 
 import HallManagement from "./components/HallManagement"; // Import HallManagement
 import BookingManagement from "./components/BookingManagement"; // Import BookingManagement
 import VerifyBooking from "./components/VerifyBooking";
-
+import AdminStats from "./components/AdminStats"; 
 function App() {
   const [languageType, setLanguageType] = useState("en");
   const [user, setUser] = useState(null);
@@ -28,7 +28,7 @@ function App() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [showTokenExpiredDialog, setShowTokenExpiredDialog] = useState(false); // New state for dialog
-  const backend = "http://localhost:5000"; // Replace with your backend URL
+  const backend = "https://kalyanmandapam.onrender.com"; // Replace with your backend URL
 
   const handleLogin = (userData, token) => {
     localStorage.setItem("token", token);
@@ -143,7 +143,10 @@ function App() {
         />
         {/* Add other admin sub-routes here as needed, e.g., for verify-booking */}
         <Route path="/admin/verify-booking" element={isAdmin ? <VerifyBooking API_BASE_URL={backend}  getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} />
-
+          <Route 
+          path="/admin/stats" 
+          element={isAdmin ? <AdminStats API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} 
+        />
       </Routes>
 
       {/* Token Expired Dialog */}

@@ -7,7 +7,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { RefreshCw } from 'lucide-react'; // Added for CAPTCHA refresh
 
-const API = "http://localhost:5000/api"; 
+const API = "https://kalyanmandapam.onrender.com/api"; 
 
 function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
   const [view, setView] = useState("login");
@@ -318,7 +318,7 @@ const renderCaptchaFields = () => (
           {view === "login" && (
             <form onSubmit={handleLogin} className="login-form">
               <input
-                type="email"
+                type="text"
                 placeholder={languageType === "en" ? "Email" : "ईमेल"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

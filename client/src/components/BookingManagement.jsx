@@ -137,9 +137,8 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                         <table className="admin-table">
                             <thead>
                                 <tr>
-                                    <th>Booking ID</th><th>Trans. ID</th><th>Hall Name</th><th>Booking Date</th><th>Floor</th>
-                                    <th>Function</th><th>AC Rms</th><th>Non-AC Rms</th><th>Amount</th><th>Status</th>
-                                    <th>Allowed</th><th>Paid</th><th>Refund Status</th><th>Refund Amt.</th>
+                                    <th>Booking ID</th><th>Trans. ID</th><th>Hall Name</th><th>Booking Date</th><th>Amount</th><th>Status</th>
+                                    <th>Allowed</th><th>Paid</th><th>Refund Status</th>
                                     <th>Booker Name</th> {/* Added Booker Name */}
                                     <th>Booker Email</th> {/* Added Booker Email */}
                                     <th>Actions</th>
@@ -152,16 +151,11 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                                         <td>{booking.transaction_id || 'N/A'}</td>
                                         <td>{booking.hall_id?.hall_name || 'N/A'}</td>
                                         <td>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>
-                                        <td>{booking.floor}</td>
-                                        <td>{booking.function_type}</td>
-                                        <td>{booking.num_ac_rooms_booked ?? 0}</td>
-                                        <td>{booking.num_non_ac_rooms_booked ?? 0}</td>
                                         <td>Rs. {booking.booking_amount}</td>
                                         <td>{renderStatus(booking.booking_status)}</td>
                                         <td>{booking.isAllowed ? 'Yes' : 'No'}</td> {/* Display isAllowed */}
                                         <td>{booking.isPaid ? 'Yes' : 'No'}</td>       {/* Display isPaid */}
                                         <td>{renderStatus(booking.refund_status)}</td>
-                                        <td>{booking.refund_amount ?? 'N/A'}</td>
                                         <td>{booking.user_id?.name || 'N/A'}</td> {/* Display booker's name */}
                                         <td>{booking.user_id?.email || 'N/A'}</td> {/* Display booker's email */}
                                         <td className="admin-table-actions">
