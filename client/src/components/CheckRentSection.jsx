@@ -223,7 +223,7 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                                     {selectedHallDetails.location && (
                                       <p><strong><MapPin size={16} className="icon-inline" /> {currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
                                     )}
-                                    <p><strong><DollarSign size={16} className="icon-inline" /> {currentContent.priceLabel}:</strong> 
+                                    <p><strong> {currentContent.priceLabel}:</strong> 
                                         <span className="price-highlight">Rs. {selectedHallDetails.pricing.toLocaleString()}</span>
                                     </p>
                                 </div>
