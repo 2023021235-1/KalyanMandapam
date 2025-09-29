@@ -1,0 +1,211 @@
+/* VerifyBooking.css */
+
+/* Define variables for consistent styling */
+:root {
+    --verify-primary-color: #800000; /* Maroon */
+    --verify-secondary-color: #ff9900; /* Orange */
+    --verify-text-color: #000000; /* Black */
+    --verify-white-bg: #FFFFFF;
+    --verify-light-grey: #f8f9fa;
+    --verify-border-color: #dee2e6;
+    --verify-success-bg: #d4edda;
+    --verify-success-text: #155724;
+    --verify-success-border: #c3e6cb;
+    --verify-error-bg: #f8d7da;
+    --verify-error-text: #721c24;
+    --verify-error-border: #f5c6cb;
+    --verify-approve-bg: #28a745; /* Green */
+    --verify-approve-hover-bg: #218838;
+    --verify-reject-bg: #dc3545; /* Red */
+    --verify-reject-hover-bg: #c82333;
+    --verify-spacing-sm: 10px;
+    --verify-spacing-md: 15px;
+    --verify-spacing-lg: 20px;
+    --verify-spacing-xl: 30px;
+    --verify-radius-sm: 4px;
+    --verify-radius-md: 8px;
+    --verify-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Main container for the component */
+.verify-booking-container {
+    padding: var(--verify-spacing-xl);
+    max-width: 800px;
+    margin: 0 auto;
+    color: var(--verify-text-color);
+}
+
+/* Card layout wrapping the content */
+.verify-booking-container .verify-booking-card {
+    background-color: var(--verify-white-bg);
+    border-radius: var(--verify-radius-md);
+    box-shadow: var(--verify-card-shadow);
+    padding: var(--verify-spacing-xl);
+}
+
+/* Header section */
+.verify-booking-container .verify-booking-header h2 {
+    margin-top: 0;
+    margin-bottom: var(--verify-spacing-lg);
+    color: var(--verify-primary-color);
+    border-bottom: 1px solid var(--verify-border-color);
+    padding-bottom: var(--verify-spacing-sm);
+}
+
+/* Search form styles */
+.verify-booking-container .verify-booking-search-form {
+    display: flex;
+    gap: var(--verify-spacing-md);
+    align-items: flex-end;
+    margin-bottom: var(--verify-spacing-xl);
+    flex-wrap: wrap;
+}
+
+.verify-booking-container .verify-booking-form-group {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.verify-booking-container .verify-booking-form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.verify-booking-container .verify-booking-form-group input {
+    padding: var(--verify-spacing-sm);
+    border: 1px solid #ccc;
+    border-radius: var(--verify-radius-sm);
+    font-size: 1em;
+    height: 42px; /* Set fixed height */
+    box-sizing: border-box;
+}
+
+.verify-booking-container .verify-booking-submit-btn {
+    padding: var(--verify-spacing-sm) var(--verify-spacing-lg);
+    background-color: var(--verify-primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--verify-radius-sm);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: 500;
+    white-space: nowrap;
+    height: 42px; /* Align with input height */
+}
+
+.verify-booking-container .verify-booking-submit-btn:hover {
+    background-color: #600000; /* Darker maroon */
+}
+
+/* Message boxes for success/error feedback */
+.verify-booking-container .verify-booking-message {
+    padding: var(--verify-spacing-md);
+    margin: var(--verify-spacing-lg) 0;
+    border-radius: var(--verify-radius-sm);
+    text-align: center;
+    font-weight: 500;
+}
+
+.verify-booking-container .verify-booking-message.error {
+    background-color: var(--verify-error-bg);
+    color: var(--verify-error-text);
+    border: 1px solid var(--verify-error-border);
+}
+
+.verify-booking-container .verify-booking-message.success {
+    background-color: var(--verify-success-bg);
+    color: var(--verify-success-text);
+    border: 1px solid var(--verify-success-border);
+}
+
+/* Details card for displaying booking info */
+.verify-booking-container .verify-booking-details-card {
+    margin-top: var(--verify-spacing-lg);
+    padding: var(--verify-spacing-lg);
+    border: 1px solid var(--verify-border-color);
+    border-radius: var(--verify-radius-md);
+    background-color: var(--verify-light-grey);
+}
+
+.verify-booking-container .verify-booking-details-card h3 {
+    margin-top: 0;
+    margin-bottom: var(--verify-spacing-lg);
+    color: var(--verify-primary-color);
+    text-align: center;
+    border-bottom: 1px solid var(--verify-border-color);
+    padding-bottom: var(--verify-spacing-sm);
+}
+
+.verify-booking-container .verify-booking-detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 12px 5px;
+    border-bottom: 1px dashed var(--verify-border-color);
+    font-size: 1.05em;
+}
+
+.verify-booking-container .verify-booking-detail-row:last-child {
+    border-bottom: none;
+}
+
+.verify-booking-container .verify-booking-detail-label {
+    color: #333;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.verify-booking-container .verify-booking-detail-value {
+    text-align: right;
+}
+
+/* Status indicator styles */
+.verify-booking-container .verify-booking-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: white;
+}
+
+.verify-booking-container .verify-booking-status-confirmed { background-color: #4CAF50; } /* Green */
+.verify-booking-container .verify-booking-status-pending { background-color: #ff9800; } /* Orange */
+.verify-booking-container .verify-booking-status-rejected { background-color: #f44336; } /* Red */
+.verify-booking-container .verify-booking-status-na { background-color: #6c757d; } /* Grey */
+
+/* Action buttons section */
+.verify-booking-container .verify-booking-actions {
+    margin-top: var(--verify-spacing-xl);
+    display: flex;
+    justify-content: center;
+    gap: var(--verify-spacing-md);
+    flex-wrap: wrap;
+}
+
+.verify-booking-container .verify-booking-approve-btn, 
+.verify-booking-container .verify-booking-reject-btn {
+    color: white;
+    padding: 10px 20px;
+    border-radius: var(--verify-radius-sm);
+    font-size: 0.95em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    font-weight: 500;
+}
+
+.verify-booking-container .verify-booking-approve-btn { background-color: var(--verify-approve-bg); }
+.verify-booking-container .verify-booking-approve-btn:hover {
+    background-color: var(--verify-approve-hover-bg);
+    transform: translateY(-1px);
+}
+
+.verify-booking-container .verify-booking-reject-btn { background-color: var(--verify-reject-bg); }
+.verify-booking-container .verify-booking-reject-btn:hover {
+    background-color: var(--verify-reject-hover-bg);
+    transform: translateY(-1px);
+}

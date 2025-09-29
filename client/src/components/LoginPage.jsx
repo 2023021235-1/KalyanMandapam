@@ -7,7 +7,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { RefreshCw } from 'lucide-react'; // Added for CAPTCHA refresh
 
-const API = "https://kalyanmandapam.onrender.com/api"; 
+const API = "http://localhost:5000/api"; 
 
 function LoginPage({ setUser, setIsAdmin, languageType, toggleLanguage }) {
   const [view, setView] = useState("login");

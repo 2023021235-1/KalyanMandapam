@@ -1,159 +1,109 @@
 // CheckRentSection.jsx
 import React, { useState, useEffect } from 'react';
 import './styles/CheckRent.css';
-import { Home, MapPin, Users, Info, DollarSign, Zap, Droplet, Car, Building, Utensils, TreePine, BedDouble, BookOpen, CalendarDays } from 'lucide-react';
-import axios from 'axios'; // Import axios
+import { Home, MapPin, DollarSign, BookOpen, Building } from 'lucide-react';
+import axios from 'axios';
 
 const CheckRentSection = ({ languageType = 'en' }) => {
-    // State to store the list of available halls fetched from the API
+    // State to store the list of available halls
     const [availableHalls, setAvailableHalls] = useState([]);
     const [loadingHalls, setLoadingHalls] = useState(true);
     const [hallsError, setHallsError] = useState(null);
 
-    // State for the selected hall details (including rent, location, capacity)
+    // State for the selected hall
     const [selectedHallId, setSelectedHallId] = useState('');
-    const [selectedHallDetails, setSelectedHallDetails] = useState(null); // State to display details for the selected hall
+    const [selectedHallDetails, setSelectedHallDetails] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [detailsError, setDetailsError] = useState(null);
     const [showDetailsAfterCaptcha, setShowDetailsAfterCaptcha] = useState(false);
 
-    // CAPTCHA STATES
+    // CAPTCHA States
     const [captchaSvg, setCaptchaSvg] = useState("");
-    const [captchaToken, setCaptchaToken] = useState("");   // JWT from server
+    const [captchaToken, setCaptchaToken] = useState("");
     const [captchaInput, setCaptchaInput] = useState("");
     const [captchaError, setCaptchaError] = useState("");
 
+    // --- CONFIGURATION & CONTENT ---
 
-    // Base URL for API calls
-    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    const API_BASE_URL = 'http://localhost:5000/api';
 
-    // Content for the section (updated to include new pricing labels)
+    // Content updated for the new simplified pricing model
     const content = {
         en: {
             sectionHeading: 'Check Rent & Details',
-            dropdownLabel: 'BaratGhar Name',
-            selectHallPlaceholder: 'Select BaratGhar',
-            notesHeading: 'Terms & Conditions', // Updated heading
-            note1: 'The rates given above are different for AC booking and Non-AC booking and will be applicable as per the above list.', // Updated note
-            note2: 'The charges for AC hall will be as per the above table and the rate will be applicable for booking the entire hall. Partial booking of the hall will not be applicable.', // Updated note
-            note3: '', // Removed or left empty if only two notes
+            dropdownLabel: 'Community Hall Name',
+            selectHallPlaceholder: 'Select a Hall',
+            notesHeading: 'Terms & Conditions',
+            // Updated notes to be more generic
+            note1: 'The rent displayed is a fixed price per booking event.',
+            note2: 'All bookings are subject to availability. Please proceed to the booking section to secure your date.',
+            note3: 'GST and other applicable taxes may be charged separately.',
             locationLabel: 'Location',
-            capacityLabel: 'Capacity',
-            totalFloorsLabel: 'Total Floors', // New label
-            descriptionLabel: 'Description', // New label
+            priceLabel: 'Booking Price',
             loadingHallsMessage: 'Loading halls...',
             fetchingDetailsMessage: 'Fetching details...',
-            selectHallMessage: 'Please select a BaratGhar to see details.',
+            selectHallMessage: 'Please select a hall to see its price.',
             hallNotFound: 'Details not found for the selected hall.',
-            enterCaptcha: 'Enter CAPTCHA',
+            enterCaptcha: 'Please enter the CAPTCHA text.',
             showDetailsButton: 'Show Rent Details',
-            invalidCaptcha: 'Invalid CAPTCHA',
-            failedToLoadCaptcha: 'Failed to load CAPTCHA',
-
-            // New pricing labels
-            acPricesHeading: 'AC Prices', // Heading for AC table
-            nonAcPricesHeading: 'Non-AC Prices', // Heading for Non-AC table
-            categoryHeader: 'Category',
-            municipalHeader: 'Municipal',
-            municipalityHeader: 'Municipality',
-            panchayatHeader: 'Panchayat',
-
-            // Fixed block names
-            conferenceHallAc: 'Conference Hall',
-            conferenceHallNonAc: 'Conference Hall',
-            foodPrepAreaAc: 'Food Prep Area',
-            foodPrepAreaNonAc: 'Food Prep Area',
-            lawnAc: 'Lawn',
-            lawnNonAc: 'Lawn',
-            roomRentAc: 'Room Rent',
-            roomRentNonAc: 'Room Rent',
-            parking: 'Parking',
-            electricityAc: 'Electricity',
-            electricityNonAc: 'Electricity',
-            cleaning: 'Cleaning',
+            invalidCaptcha: 'Invalid CAPTCHA. Please try again.',
+            failedToLoadCaptcha: 'Failed to load CAPTCHA. Please refresh.',
         },
         hi: {
             sectionHeading: 'किराया और विवरण जांचें',
-            dropdownLabel: 'बारात घर का नाम',
-            selectHallPlaceholder: 'बारात घर चुनें',
-            notesHeading: 'नियम एवं शर्तें', // Updated heading
-            note1: 'ऊपर दी गई दरें ए०सी० बुकिंग के साथ - साथ नॉन ए०सी० बुकिंग के लिए अलग-अलग हैं एवं उपरोक्त सूची के अनुसार लागू होगी ।', // Updated note
-            note2: 'ए०सी० हॉल के लिए शुल्क उपरोक्त तालिका के अनुसार होगा और दर पूरे हॉल की बुकिंग पर लागू होगी । हॉल की आशिक बुकिंग लागू नहीं होगी ।', // Updated note
-            note3: '', // Removed or left empty if only two notes
+            dropdownLabel: 'सामुदायिक भवन का नाम',
+            selectHallPlaceholder: 'एक हॉल चुनें',
+            notesHeading: 'नियम एवं शर्तें',
+            note1: 'प्रदर्शित किराया प्रति बुकिंग कार्यक्रम के लिए एक निश्चित मूल्य है।',
+            note2: 'सभी बुकिंग उपलब्धता के अधीन हैं। अपनी तिथि सुरक्षित करने के लिए कृपया बुकिंग अनुभाग पर जाएँ।',
+            note3: 'जीएसटी और अन्य लागू कर अलग से लिए जा सकते हैं।',
             locationLabel: 'स्थान',
-            capacityLabel: 'क्षमता',
-            totalFloorsLabel: 'कुल मंजिलें', // New label
-            descriptionLabel: 'विवरण', // New label
-            loadingHallsMessage: 'बारात घर लोड हो रहे हैं...',
+            priceLabel: 'बुकिंग मूल्य',
+            loadingHallsMessage: 'हॉल लोड हो रहे हैं...',
             fetchingDetailsMessage: 'विवरण प्राप्त हो रहा है...',
-            selectHallMessage: 'विवरण देखने के लिए कृपया एक बारात घर चुनें।',
-            hallNotFound: 'चयनित बारात घर के लिए विवरण नहीं मिला।',
-            enterCaptcha: 'कैप्चा दर्ज करें',
+            selectHallMessage: 'कीमत देखने के लिए कृपया एक हॉल चुनें।',
+            hallNotFound: 'चयनित हॉल के लिए विवरण नहीं मिला।',
+            enterCaptcha: 'कृपया कैप्चा टेक्स्ट दर्ज करें।',
             showDetailsButton: 'किराया विवरण दिखाएं',
-            invalidCaptcha: 'अमान्य कैप्चा',
-            failedToLoadCaptcha: 'कैप्चा लोड करने में विफल',
-
-            // New pricing labels
-            acPricesHeading: 'एसी मूल्य', // Heading for AC table
-            nonAcPricesHeading: 'गैर-एसी मूल्य', // Heading for Non-AC table
-            categoryHeader: 'श्रेणी',
-            municipalHeader: 'नगरपालिका',
-            municipalityHeader: 'नगर निगम',
-            panchayatHeader: 'पंचायत',
-
-            // Fixed block names
-            conferenceHallAc: 'सम्मेलन कक्ष',
-            conferenceHallNonAc: 'सम्मेलन कक्ष',
-            foodPrepAreaAc: 'भोजन तैयारी क्षेत्र',
-            foodPrepAreaNonAc: 'भोजन तैयारी क्षेत्र',
-            lawnAc: 'लॉन',
-            lawnNonAc: 'लॉन',
-            roomRentAc: 'कमरे का किराया',
-            roomRentNonAc: 'कमरे का किराया',
-            parking: 'पार्किंग',
-            electricityAc: 'बिजली',
-            electricityNonAc: 'बिजली',
-            cleaning: 'सफाई',
+            invalidCaptcha: 'अमान्य कैप्चा। कृपया पुन प्रयास करें।',
+            failedToLoadCaptcha: 'कैप्चा लोड करने में विफल। कृपया रीफ़्रेश करें।',
         },
     };
 
     const currentContent = content[languageType] || content.en;
 
-    // Fetch the list of all halls when the component mounts
+    // --- API CALLS & EFFECTS ---
+
+    // Fetch the list of all halls on component mount
     useEffect(() => {
         const fetchAllHalls = async () => {
             setLoadingHalls(true);
             setHallsError(null);
             try {
-                const response = await fetch(`${API_BASE_URL}/halls`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setAvailableHalls(data);
+                const response = await axios.get(`${API_BASE_URL}/halls`);
+                setAvailableHalls(response.data);
             } catch (error) {
                 console.error('Error fetching halls:', error);
-                setHallsError(currentContent.loadingHallsMessage + ' failed.');
+                setHallsError('Failed to fetch the list of halls.');
             } finally {
                 setLoadingHalls(false);
             }
         };
-
         fetchAllHalls();
-    }, [API_BASE_URL, currentContent.loadingHallsMessage]); // Dependencies: API_BASE_URL and content for error message
+    }, [API_BASE_URL]);
 
-    // Fetch a new CAPTCHA when a hall is selected or component mounts
+    // Fetch a new CAPTCHA when a hall is selected
     useEffect(() => {
         if (selectedHallId) {
+            // Reset states for the new selection
             setCaptchaError("");
-            setCaptchaInput(""); // Clear input when new captcha is loaded
+            setCaptchaInput("");
             setCaptchaSvg("");
             setCaptchaToken("");
-            setSelectedHallDetails(null); // Clear previous details when a new hall is selected
-            setShowDetailsAfterCaptcha(false); // Reset display flag
+            setSelectedHallDetails(null);
+            setShowDetailsAfterCaptcha(false);
 
-            axios
-                .get(`${API_BASE_URL}/captcha/get-captcha`)
+            axios.get(`${API_BASE_URL}/captcha/get-captcha`)
                 .then((res) => {
                     setCaptchaSvg(res.data.svg);
                     setCaptchaToken(res.data.token);
@@ -163,183 +113,80 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                     setCaptchaError(currentContent.failedToLoadCaptcha);
                 });
         }
-    }, [selectedHallId, languageType, API_BASE_URL, currentContent.failedToLoadCaptcha]);
+    }, [selectedHallId, API_BASE_URL, currentContent.failedToLoadCaptcha]);
 
+    // --- EVENT HANDLERS ---
 
-    // Handle dropdown change - only sets the selected hall ID, doesn't fetch details yet
     const handleDropdownChange = (event) => {
-        const selectedValue = event.target.value;
-        setSelectedHallId(selectedValue);
-        setDetailsError(null); // Clear previous errors
+        setSelectedHallId(event.target.value);
+        setDetailsError(null);
         setCaptchaError("");
     };
 
-    // Handle "Show Rent Details" button click
+    // Verify CAPTCHA and fetch the simplified hall details
     const handleShowDetails = async () => {
+        if (!captchaInput) {
+            setCaptchaError(currentContent.enterCaptcha);
+            return;
+        }
         setLoadingDetails(true);
         setDetailsError(null);
         setCaptchaError("");
-        setShowDetailsAfterCaptcha(false); // Hide details until re-verified
-
-        if (!captchaInput) {
-            setCaptchaError(currentContent.enterCaptcha);
-            setLoadingDetails(false);
-            return;
-        }
+        setShowDetailsAfterCaptcha(false);
 
         try {
-            // 1. Verify CAPTCHA first
-            const captchaRes = await axios.post(`${API_BASE_URL}/captcha/verify-captcha`, {
-                captchaInput,
-                captchaToken,
-            });
-
+            // 1. Verify CAPTCHA
+            const captchaRes = await axios.post(`${API_BASE_URL}/captcha/verify-captcha`, { captchaInput, captchaToken });
             if (!captchaRes.data?.success) {
                 throw new Error(currentContent.invalidCaptcha);
             }
 
-            // If CAPTCHA is successful, proceed with fetching hall details
+            // 2. If CAPTCHA is valid, fetch hall details
             const response = await axios.get(`${API_BASE_URL}/halls/${selectedHallId}`);
-            if (!response.data) {
-                throw new Error(currentContent.hallNotFound);
-            }
             setSelectedHallDetails(response.data);
-            setShowDetailsAfterCaptcha(true); // Display details after successful CAPTCHA and fetch
+            setShowDetailsAfterCaptcha(true);
 
         } catch (err) {
-            console.error("Details fetch/CAPTCHA error:", err.response || err.message);
-            let errorMessage = err.message || currentContent.fetchingDetailsMessage + ' failed.';
+            const errorMessage = err.message === currentContent.invalidCaptcha 
+                ? err.message 
+                : err.response?.data?.message || currentContent.hallNotFound;
 
             if (err.message === currentContent.invalidCaptcha) {
-                setCaptchaError(errorMessage); // Specific error for CAPTCHA
-            } else if (err.response?.data?.message) {
-                setDetailsError(err.response.data.message);
+                setCaptchaError(errorMessage);
             } else {
                 setDetailsError(errorMessage);
             }
-
-            // Always try to refresh CAPTCHA on any error
-            try {
-                const r2 = await axios.get(`${API_BASE_URL}/captcha/get-captcha`);
-                setCaptchaSvg(r2.data.svg);
-                setCaptchaToken(r2.data.token);
-                setCaptchaInput(""); // Clear input on refresh
-            } catch (e2) {
-                console.error("Failed to reload CAPTCHA after error:", e2);
-                setCaptchaError(currentContent.failedToLoadCaptcha);
-            }
+            
+            // Refresh CAPTCHA on error
+            axios.get(`${API_BASE_URL}/captcha/get-captcha`)
+                .then(res => {
+                    setCaptchaSvg(res.data.svg);
+                    setCaptchaToken(res.data.token);
+                    setCaptchaInput("");
+                });
         } finally {
             setLoadingDetails(false);
         }
     };
 
-
-    // Helper function to render fixed price tables for AC or Non-AC, now including event pricing
-    const renderFixedPriceTable = (data, title, type, eventPricing) => {
-        let combinedData = [];
-
-        // Add event pricing first
-        if (eventPricing && eventPricing.length > 0) {
-            eventPricing.forEach(event => {
-                let prices;
-                if (type === 'AC') {
-                    prices = event.prices_per_sqft_ac;
-                } else if (type === 'Non-AC') {
-                    prices = event.prices_per_sqft_nonac;
-                }
-                if (prices) {
-                    // Store a flag to indicate it's an event for styling
-                    combinedData.push([event.event_type, prices, true]);
-                }
-            });
-        }
-
-        // Add fixed price items
-        Object.entries(data).forEach(([key, prices]) => {
-            // Only add items relevant to the current table type (AC or Non-AC)
-            // and ensure common items like parking/cleaning are added only once
-            const isAcItem = key.endsWith('Ac');
-            const isNonAcItem = key.endsWith('NonAc');
-            const isCommonItem = ['parking', 'cleaning'].includes(key);
-
-            if (
-                (type === 'AC' && (isAcItem || isCommonItem || key === 'electricityAc')) ||
-                (type === 'Non-AC' && (isNonAcItem || isCommonItem || key === 'electricityNonAc'))
-            ) {
-                // Ensure unique entry for common items like parking/cleaning
-                if (!combinedData.some(item => item[0] === key)) {
-                    combinedData.push([key, prices, false]); // false indicates it's not an event
-                }
-            }
-        });
-
-        if (combinedData.length === 0) {
-            return null; // Don't render table if no items after filtering
-        }
-
-        return (
-            <div className="rental-details-chart">
-                <h4><DollarSign size={20} className="icon-inline" /> {title}</h4>
-                <table className="rental-details-chart__table">
-                    <thead>
-                        <tr>
-                            <th>{currentContent.categoryHeader}</th>
-                            <th>{currentContent.municipalHeader}</th>
-                            <th>{currentContent.municipalityHeader}</th>
-                            <th>{currentContent.panchayatHeader}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {combinedData.map(([key, prices, isEvent], index) => {
-                            let displayKey = currentContent[key] || key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim();
-                            // Remove "(AC)" or "(Non-AC)" if present
-                            displayKey = displayKey.replace(/\s*\(AC\)\s*$/, '').replace(/\s*\(Non-AC\)\s*$/, '');
-
-                            return (
-                                <tr key={index}>
-                                    <td>
-                                        {isEvent ? <strong>{displayKey}</strong> : displayKey}
-                                    </td>
-                                    <td>Rs. {prices.municipal}</td>
-                                    <td>Rs. {prices.municipality}</td>
-                                    <td>Rs. {prices.panchayat}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-        );
-    };
-
+    // --- RENDER ---
 
     return (
         <section className="rental-section">
             <div className="rental-container">
                 <h2 className="rental-section__heading"><Home size={36} className="icon-inline" /> {currentContent.sectionHeading}</h2>
-
                 <div className="rental-section__content">
-                    <div className="rental-form-block"> {/* The white card */}
-                        <div className="rental-form-group"> {/* Reuse form-group styling for label+select */}
+                    <div className="rental-form-block">
+                        <div className="rental-form-group">
                             <label htmlFor="baratghar-select">
-                                <MapPin size={18} className="icon-inline" /> {currentContent.dropdownLabel}
+                                <Building size={18} className="icon-inline" /> {currentContent.dropdownLabel}
                             </label>
-                            {loadingHalls ? (
-                                <p className="ca-availability-message">
-                                    {currentContent.loadingHallsMessage}
-                                </p>
-                            ) : hallsError ? (
-                                <p className="rental-info-message rental-message--error"> {hallsError}</p>
-                            ) : (
-                                <select
-                                    id="baratghar-select"
-                                    value={selectedHallId}
-                                    onChange={handleDropdownChange}
-                                    required
-                                >
+                            {loadingHalls ? <p>{currentContent.loadingHallsMessage}</p> : hallsError ? <p className="rental-info-message rental-message--error">{hallsError}</p> : (
+                                <select id="baratghar-select" value={selectedHallId} onChange={handleDropdownChange} required>
                                     <option value="">{currentContent.selectHallPlaceholder}</option>
+                                    {/* MODIFIED: Use hall._id for key and value to match MongoDB */}
                                     {availableHalls.map((hall) => (
-                                        <option key={hall.hall_id} value={hall.hall_id}>
+                                        <option key={hall._id} value={hall._id}>
                                             {hall.hall_name}
                                         </option>
                                     ))}
@@ -347,103 +194,51 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                             )}
                         </div>
 
-                        {/* Display messages based on state */}
-                        {!selectedHallId && !loadingHalls && !hallsError && (
-                            <p className="ca-availability-message"> {currentContent.selectHallMessage}</p>
-                        )}
+                        {!selectedHallId && !loadingHalls && <p className="ca-availability-message">{currentContent.selectHallMessage}</p>}
 
-                        {selectedHallId && !loadingHalls && !hallsError && !showDetailsAfterCaptcha && (
+                        {/* CAPTCHA section appears after selecting a hall */}
+                        {selectedHallId && !showDetailsAfterCaptcha && (
                             <div className="captcha-and-details-section">
-                                {/* CAPTCHA IMAGE & INPUT */}
                                 {captchaSvg && (
                                     <div className="captcha-wrapper">
-                                        <input
-                                            type="text"
-                                            placeholder={currentContent.enterCaptcha}
-                                            value={captchaInput}
-                                            onChange={(e) => setCaptchaInput(e.target.value)}
-                                            required
-                                        />
-                                        <div
-                                            dangerouslySetInnerHTML={{ __html: captchaSvg }}
-                                            style={{ marginBottom: "0.5rem" }}
-                                        />
+                                        <input type="text" placeholder={currentContent.enterCaptcha} value={captchaInput} onChange={(e) => setCaptchaInput(e.target.value)} required />
+                                        <div dangerouslySetInnerHTML={{ __html: captchaSvg }} />
                                     </div>
                                 )}
-
-                                {/* Error/Success Messages for CAPTCHA */}
                                 {captchaError && <div className="rental-message rental-message--error">{captchaError}</div>}
-
-
-                                <button
-                                    className="show-details-button"
-                                    onClick={handleShowDetails}
-                                    disabled={!selectedHallId || loadingDetails}
-                                >
+                                <button className="show-details-button" onClick={handleShowDetails} disabled={loadingDetails}>
                                     {loadingDetails ? currentContent.fetchingDetailsMessage : currentContent.showDetailsButton}
                                 </button>
                             </div>
                         )}
 
+                        {loadingDetails && <p className="ca-availability-message">{currentContent.fetchingDetailsMessage}</p>}
+                        {detailsError && <p className="ca-availability-message rental-message--error">{detailsError}</p>}
 
-                        {loadingDetails && !selectedHallDetails && (
-                            <p className="ca-availability-message"> {currentContent.fetchingDetailsMessage}</p>
-                        )}
-
-                        {detailsError && (
-                            <p className="ca-availability-message rental-message--error"> {detailsError}</p>
-                        )}
-
-                        {/* Hall Details (Location, Capacity, Total Floors, Description) and Pricing Tables */}
-                        {selectedHallDetails && !loadingDetails && !detailsError && showDetailsAfterCaptcha && (
+                        {/* --- MODIFIED & SIMPLIFIED DETAILS DISPLAY --- */}
+                        {selectedHallDetails && showDetailsAfterCaptcha && (
                             <div className="rental-hall-details">
-                                <h4> {selectedHallDetails.hall_name} Details</h4>
-                               <div className='det'>
-                                <p><strong><MapPin size={16} className="icon-inline" /> {currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
-                                <p><strong><Users size={16} className="icon-inline" /> {currentContent.capacityLabel}:</strong> {selectedHallDetails.capacity}</p>
-                                <p><strong><Building size={16} className="icon-inline" /> {currentContent.totalFloorsLabel}:</strong> {selectedHallDetails.total_floors}</p>
-                                </div>
-                                {selectedHallDetails.description && (
-                                    <p><strong><BookOpen size={16} className="icon-inline" /> {currentContent.descriptionLabel}:</strong> {selectedHallDetails.description}</p>
-                                )}
-
-                                <div className="rental-pricing-tables-wrapper">
-                                    {/* AC Fixed Price Blocks Table */}
-                                    {renderFixedPriceTable({
-                                        conferenceHallAc: selectedHallDetails.conference_hall_ac,
-                                        foodPrepAreaAc: selectedHallDetails.food_prep_area_ac,
-                                        lawnAc: selectedHallDetails.lawn_ac,
-                                        roomRentAc: selectedHallDetails.room_rent_ac,
-                                        parking: selectedHallDetails.parking, // Common item
-                                        electricityAc: selectedHallDetails.electricity_ac,
-                                        cleaning: selectedHallDetails.cleaning, // Common item
-                                    }, currentContent.acPricesHeading, 'AC', selectedHallDetails.event_pricing)}
-
-                                    {/* Non-AC Fixed Price Blocks Table */}
-                                    {renderFixedPriceTable({
-                                        conferenceHallNonAc: selectedHallDetails.conference_hall_nonac,
-                                        foodPrepAreaNonAc: selectedHallDetails.food_prep_area_nonac,
-                                        lawnNonAc: selectedHallDetails.lawn_nonac,
-                                        roomRentNonAc: selectedHallDetails.room_rent_nonac,
-                                        parking: selectedHallDetails.parking, // Common item
-                                        electricityNonAc: selectedHallDetails.electricity_nonac,
-                                        cleaning: selectedHallDetails.cleaning, // Common item
-                                    }, currentContent.nonAcPricesHeading, 'Non-AC', selectedHallDetails.event_pricing)}
+                                <h4>{selectedHallDetails.hall_name}</h4>
+                                <div className='det'>
+                                    {selectedHallDetails.location && (
+                                      <p><strong><MapPin size={16} className="icon-inline" /> {currentContent.locationLabel}:</strong> {selectedHallDetails.location}</p>
+                                    )}
+                                    <p><strong><DollarSign size={16} className="icon-inline" /> {currentContent.priceLabel}:</strong> 
+                                        <span className="price-highlight">Rs. {selectedHallDetails.pricing.toLocaleString()}</span>
+                                    </p>
                                 </div>
                             </div>
                         )}
 
-                        {/* Notes Section (Inside the card) */}
+                        {/* Notes Section */}
                         <div className="rental-notes-card" style={{ marginTop: '20px' }}>
                             <h3 className="rental-notes-card__heading"><BookOpen size={22} className="icon-inline" /> {currentContent.notesHeading}</h3>
                             <ul className="rental-notes-card__list">
-                                {/* Only render if note is not empty */}
-                                {currentContent.note1 && <li className="rental-notes-card__list-item">1. {currentContent.note1}</li>}
-                                {currentContent.note2 && <li className="rental-notes-card__list-item">2. {currentContent.note2}</li>}
-                                {currentContent.note3 && <li className="rental-notes-card__list-item">3. {currentContent.note3}</li>}
+                                {currentContent.note1 && <li>1. {currentContent.note1}</li>}
+                                {currentContent.note2 && <li>2. {currentContent.note2}</li>}
+                                {currentContent.note3 && <li>3. {currentContent.note3}</li>}
                             </ul>
                         </div>
-
                     </div>
                 </div>
             </div>

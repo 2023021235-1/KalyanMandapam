@@ -138,7 +138,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
     }
 
     try {
-      const response = await fetch('https://kalyanmandapam.onrender.com/api/auth/profile', { // Ensure this matches your backend route prefix if any
+      const response = await fetch('http://localhost:5000/api/auth/profile', { // Ensure this matches your backend route prefix if any
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
