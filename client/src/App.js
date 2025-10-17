@@ -16,30 +16,34 @@ import QueryFeedbackSection from "./components/QueryFeedbackSection";
 import CheckRentSection from "./components/CheckRentSection";
 import CheckAvailabilitySection from "./components/CheckAvailabilitySection";
 import CheckRefundStatusSection from "./components/CheckRefundStatusSection";
-import BookNowSection from "./components/Book"; // Keep AdminPanel for the main admin route
-import HallManagement from "./components/HallManagement"; // Import HallManagement
-import BookingManagement from "./components/BookingManagement"; // Import BookingManagement
+import BookNowSection from "./components/Book";
+import HallManagement from "./components/HallManagement";
+import BookingManagement from "./components/BookingManagement";
 import VerifyBooking from "./components/VerifyBooking";
-import AdminStats from "./components/AdminStats"; 
+import AdminStats from "./components/AdminStats";
+
+// Set axios to send cookies with every request
+axios.defaults.withCredentials = true;
+
 function App() {
   const [languageType, setLanguageType] = useState("en");
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // This state is key to the fix
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showTokenExpiredDialog, setShowTokenExpiredDialog] = useState(false); // New state for dialog
-  const backend = "https://kalyanmandapam.onrender.com"; // Replace with your backend URL
+  const [showTokenExpiredDialog, setShowTokenExpiredDialog] = useState(false);
+  const backend = "http://localhost:5000";
 
-  const handleLogin = (userData, token) => {
-    localStorage.setItem("token", token);
-    setUser(userData);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setIsAdmin(false);
-    localStorage.removeItem("token");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${backend}/api/auth/logout`);
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      setUser(null);
+      setIsAdmin(false); // Also reset admin status on logout
+      navigate("/login");
+    }
   };
 
   useEffect(() => {
@@ -47,33 +51,16 @@ function App() {
     const startTime = Date.now();
 
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        const elapsed = Date.now() - startTime;
-        const delay = Math.max(0, MINIMUM_LOAD_TIME - elapsed);
-        setTimeout(() => setLoading(false), delay);
-        return;
-      }
-
       try {
-        const res = await axios.get(`${backend}/api/auth/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
+        const res = await axios.get(`${backend}/api/auth/profile`);
         setUser(res.data.user);
-        if (res.data.user.userType === 'Admin') {
-          setIsAdmin(true);
-          // Navigate to a default admin sub-route, e.g., hall management
-   
+        if (res.data.user.role === 'Admin') {
+            setIsAdmin(true);
         }
       } catch (err) {
-        console.error("Failed to fetch user profile", err);
-        localStorage.removeItem("token");
         setUser(null);
-        setIsAdmin(false);
         if (err.response && err.response.status === 401) {
-          setShowTokenExpiredDialog(true);
+          console.log("Session expired, user will be prompted to log in.");
         }
       } finally {
         const elapsed = Date.now() - startTime;
@@ -83,14 +70,25 @@ function App() {
     };
 
     fetchUser();
+  }, [navigate]);
 
-    // Set up a periodic check every hour (3600000 milliseconds)
-    const tokenCheckInterval = setInterval(fetchUser, 3600000);
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response && error.response.status === 401 && user) {
+          setUser(null);
+          setIsAdmin(false);
+          setShowTokenExpiredDialog(true);
+        }
+        return Promise.reject(error);
+      }
+    );
 
-    // Clear the interval when the component unmounts
-    return () => clearInterval(tokenCheckInterval);
-
-  }, [backend, navigate]); // Added navigate to dependency array
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [user]);
 
   return (
     <div className="App">
@@ -98,56 +96,60 @@ function App() {
         languageType={languageType}
         user={user}
         isAdmin={isAdmin}
-        onLogin={handleLogin}
         onLogout={handleLogout}
         setLanguageType={setLanguageType}
+        setUser={setUser}
       />
 
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            !user ? (
-              <LoginPage
-                languageType={languageType}
-                setIsAdmin={setIsAdmin}
-                onLogin={handleLogin}
-                setUser={setUser}
-              />
-            ) : isAdmin ? (
-              <Navigate to="/admin/hall-management" /> // Redirect admin to a specific admin sub-route
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
+      {/* This conditional rendering fixes the race condition */}
+      {loading ? (
+        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+            <h2>Loading...</h2>
+        </div>
+      ) : (
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              !user ? (
+                <LoginPage
+                  languageType={languageType}
+                  setIsAdmin={setIsAdmin}
+                  setUser={setUser}
+                />
+              ) : isAdmin ? (
+                <Navigate to="/admin/hall-management" />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
 
-        <Route path="/" element={<HomePage languageType={languageType} />} />
-        <Route path="/home" element={<HomePage languageType={languageType} />} />
-        <Route path="/book" element={user ? <BookNowSection user={user} languageType={languageType} /> : <Navigate to="/login" />} />
-        <Route path="/contact" element={<ContactUsSection languageType={languageType} />} />
-        <Route path="/feedback" element={<QueryFeedbackSection languageType={languageType} />} />
-        <Route path="/check-rent" element={<CheckRentSection languageType={languageType} />} />
-        <Route path="/availability" element={<CheckAvailabilitySection languageType={languageType} />} />
-        <Route path="/refund-status" element={<CheckRefundStatusSection user={user} languageType={languageType} />} />
-     
-     
-        {/* New specific admin sub-routes */}
-        <Route 
-          path="/admin/hall-management" 
-          element={isAdmin ? <HallManagement API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} 
-        />
-        <Route 
-          path="/admin/booking-management" 
-          element={isAdmin ? <BookingManagement API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} 
-        />
-        {/* Add other admin sub-routes here as needed, e.g., for verify-booking */}
-        <Route path="/admin/verify-booking" element={isAdmin ? <VerifyBooking API_BASE_URL={backend}  getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} />
-          <Route 
-          path="/admin/stats" 
-          element={isAdmin ? <AdminStats API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} 
-        />
-      </Routes>
+          <Route path="/" element={<HomePage languageType={languageType} />} />
+          <Route path="/home" element={<HomePage languageType={languageType} />} />
+          <Route path="/book" element={user ? <BookNowSection user={user} languageType={languageType} /> : <Navigate to="/login" />} />
+          <Route path="/contact" element={<ContactUsSection languageType={languageType} />} />
+          <Route path="/feedback" element={<QueryFeedbackSection languageType={languageType} />} />
+          <Route path="/check-rent" element={<CheckRentSection languageType={languageType} />} />
+          <Route path="/availability" element={<CheckAvailabilitySection languageType={languageType} />} />
+          <Route path="/refund-status" element={<CheckRefundStatusSection user={user} languageType={languageType} />} />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin/hall-management"
+            element={isAdmin ? <HallManagement API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/admin/booking-management"
+            element={isAdmin ? <BookingManagement API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />}
+          />
+          <Route path="/admin/verify-booking" element={isAdmin ? <VerifyBooking API_BASE_URL={backend} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />} />
+          <Route
+            path="/admin/stats"
+            element={isAdmin ? <AdminStats API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />}
+          />
+        </Routes>
+      )}
 
       {/* Token Expired Dialog */}
       {showTokenExpiredDialog && (
@@ -167,7 +169,7 @@ function App() {
           <p>Your session has expired. Please log in again.</p>
           <button onClick={() => {
             setShowTokenExpiredDialog(false);
-            navigate("/login"); // Redirect to login page
+            navigate("/login");
           }} style={{
             padding: '10px 20px',
             backgroundColor: '#007bff',

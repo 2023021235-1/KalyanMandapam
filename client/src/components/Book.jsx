@@ -1,9 +1,13 @@
 import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // <-- IMPORTED AXIOS
 import './styles/BookNow.css';
 import { RefreshCcw,CircleCheck,Clock, CircleX, CircleDot, CalendarDays, Edit3, XSquare, PlusCircle, AlertTriangle, Info as InfoIcon, Building as BuildingIcon, DollarSign as DollarSignIcon, Zap as ZapIcon, Users as UsersIcon, MapPin as MapPinIcon, X as CloseIcon, Download as DownloadIcon, Home as HomeIcon, RefreshCw } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import BookingCertificate from './BookingCertificate'; // Import the new certificate component
+
+// This line ensures that all axios requests automatically include credentials (cookies)
+axios.defaults.withCredentials = true;
 
 const BookNowSection = ({ languageType = 'en', user }) => {
     const navigate = useNavigate();
@@ -45,10 +49,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const [showPayNowConfirmModal, setShowPayNowConfirmModal] = useState(false);
     const [bookingIdToPayState, setBookingIdToPayState] = useState(null);
 
-    // --- API and Auth ---
-    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
-    const API_BASE_URL2 = 'https://kalyanmandapam.onrender.com/';
-    const getAuthToken = () => localStorage.getItem('token');
+    // --- API ---
+    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL2 = 'http://localhost:5000/';
+    
+    // The getAuthToken function is no longer needed as we are using cookie-based auth.
 
     // --- Toast Notifications ---
     const showToast = (message, type = 'info', duration = 4000) => {
@@ -104,7 +109,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             errorPrefix: 'Error: ',
             authError: 'Authentication failed. Please log in again.',
             bookingNotFound: 'Booking not found.',
-            // ... other content entries
             captchaLabel: 'CAPTCHA:',
             captchaPlaceholder: 'Enter CAPTCHA',
             captchaRefreshAlt: 'Refresh CAPTCHA',
@@ -120,7 +124,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             dismissButtonText: 'Dismiss',
             verifyPaymentButton: 'Verify' ,
         },
-        // Hindi translations would go here
     }), [languageType]);
     const currentContent = content[languageType] || content.en;
 
@@ -175,6 +178,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             return false;
         }
     };
+
     // --- Data Fetching Hooks ---
     useEffect(() => {
         if (!user) {
@@ -194,7 +198,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     }, [bookingFormData.hall_id_string]);
     
     useEffect(() => {
-        // Fetch CAPTCHA for modals
         if ((showModal && modalStep === 2 && !isViewOnly) || showCancelConfirmModal || showPayNowConfirmModal) {
             fetchNewCaptcha();
         }
@@ -204,16 +207,9 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const fetchBookings = async () => { 
         setLoadingBookings(true);
         setBookingError(null);
-        const token = getAuthToken();
-        if (!token) {
-            setBookingError(currentContent.authError);
-            setLoadingBookings(false);
-            navigate('/login');
-            return;
-        }
         try {
             const response = await fetch(`${API_BASE_URL}/bookings`, {
-                headers: { 'Authorization': `Bearer ${token}` },
+                credentials: 'include' // <-- SEND COOKIES
             });
             if (!response.ok) {
                 if (response.status === 401) {
@@ -236,11 +232,12 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             setLoadingBookings(false);
         }
     };
+
     const fetchAllHalls = async () => {
         setLoadingHalls(true);
         setHallsError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/halls`);
+            const response = await fetch(`${API_BASE_URL}/halls`); // No auth needed for this
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             setAvailableHalls(data);
@@ -251,11 +248,12 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             setLoadingHalls(false);
         }
     };
+
     const fetchHallFullDetails = async (hallId) => {
         setLoadingHallDetails(true);
         setHallDetailsError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/halls/${hallId}`);
+            const response = await fetch(`${API_BASE_URL}/halls/${hallId}`); // No auth needed for this
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             setSelectedHallFullDetails(data);
@@ -306,12 +304,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         e.preventDefault();
         if (isViewOnly) return;
 
-        const token = getAuthToken();
-        if (!token) {
-            showToast(currentContent.authError, 'error');
-            return navigate('/login');
-        }
-
         // Simplified validation
         if (!bookingFormData.hall_id_string) {
             showToast(currentContent.formValidation.hallRequired, 'error');
@@ -326,7 +318,6 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             const method = isEditing ? 'PUT' : 'POST';
             const url = isEditing ? `${API_BASE_URL}/bookings/${editingBookingId}` : `${API_BASE_URL}/bookings`;
             
-            // Simplified request body
             const requestBody = {
                 hall_id: bookingFormData.hall_id_string,
                 booking_date: bookingFormData.booking_date,
@@ -335,11 +326,13 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             try {
                 const response = await fetch(url, {
                     method,
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    credentials: 'include', // <-- SEND COOKIES
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody),
                 });
                 const data = await response.json();
                 if (!response.ok) {
+                    if (response.status === 401) navigate('/login');
                     throw new Error(data.message || `HTTP error! status: ${response.status}`);
                 }
                 await fetchBookings();
@@ -348,7 +341,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             } catch (error) {
                 console.error('Error saving booking:', error);
                 showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
-                fetchNewCaptcha(); // Refresh CAPTCHA on error
+                fetchNewCaptcha();
             }
         };
         await verifyCaptchaAndProceed(actualSubmitLogic);
@@ -358,16 +351,14 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         const viewMode = booking.booking_status !== 'Pending-Approval';
         setIsEditing(true);
         setIsViewOnly(viewMode);
-        setEditingBookingId(booking.booking_id); // Use booking_id for API calls
+        setEditingBookingId(booking.booking_id);
 
-        // The hall_id is now a direct reference
         const hallIdForModal = booking.hall_id?._id || null;
         
         if (hallIdForModal) {
             await fetchHallFullDetails(hallIdForModal);
         }
 
-        // Set simplified form data
         setBookingFormData({
             hall_id_string: hallIdForModal || '',
             booking_date: booking.booking_date ? new Date(booking.booking_date).toISOString().split('T')[0] : '',
@@ -376,7 +367,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
         setModalStep(2);
         setShowModal(true);
     };
-  const renderCaptchaSection = (actionContext = "") => (
+
+    const renderCaptchaSection = (actionContext = "") => (
         <div className="bn-form-group bn-captcha-section bn-form-group-full">
             <label htmlFor="captcha_input" style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block' }}>
                 {currentContent.captchaLabel}
@@ -410,149 +402,54 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             {captchaError && <p className="bn-error-text" style={{color: 'var(--bn-color-error)', fontSize: '0.9em', marginTop: '5px'}}>{captchaError}</p>}
         </div>
     );
-//     // --- Action Handlers (Cancel, Pay, Certificate) ---
-//    const calculateBookingAmount = useMemo(() => () => {
-//         let totalAmount = 0;
-//         if (!selectedHallFullDetails || !bookingFormData.booking_type) return 0;
-
-//         const hall = selectedHallFullDetails;
-//         const bookingType = bookingFormData.booking_type;
-
-//         if (bookingFormData.is_parking && hall.parking) totalAmount += getTieredPrice(hall.parking, bookingType);
-//         if (bookingFormData.is_conference_hall && (isAcSelected ? hall.conference_hall_ac : hall.conference_hall_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.conference_hall_ac : hall.conference_hall_nonac, bookingType);
-//         if (bookingFormData.is_food_prep_area && (isAcSelected ? hall.food_prep_area_ac : hall.food_prep_area_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.food_prep_area_ac : hall.food_prep_area_nonac, bookingType);
-//         if (bookingFormData.is_lawn && (isAcSelected ? hall.lawn_ac : hall.lawn_nonac)) totalAmount += getTieredPrice(isAcSelected ? hall.lawn_ac : hall.lawn_nonac, bookingType);
-        
-//         if (bookingFormData.num_ac_rooms_booked > 0 && hall.room_rent_ac) {
-//             totalAmount += Number(bookingFormData.num_ac_rooms_booked) * getTieredPrice(hall.room_rent_ac, bookingType);
-//         }
-//         if (bookingFormData.num_non_ac_rooms_booked > 0 && hall.room_rent_nonac) {
-//             totalAmount += Number(bookingFormData.num_non_ac_rooms_booked) * getTieredPrice(hall.room_rent_nonac, bookingType);
-//         }
-
-//         if (isAcSelected ? hall.electricity_ac : hall.electricity_nonac) totalAmount += getTieredPrice(isAcSelected ? hall.electricity_ac : hall.electricity_nonac, bookingType);
-//         if (hall.cleaning) totalAmount += getTieredPrice(hall.cleaning, bookingType);
-
-//         if (bookingFormData.function_type && Number(bookingFormData.area_sqft) > 0) {
-//             const eventPrice = hall.event_pricing?.find(event =>
-//                 event.event_type.toLowerCase() === bookingFormData.function_type.toLowerCase()
-//             );
-//             if (eventPrice) {
-//                 const perSqftPrices = isAcSelected ? eventPrice.prices_per_sqft_ac : eventPrice.prices_per_sqft_nonac;
-//                 if (perSqftPrices) {
-//                     const perSqftRate = getTieredPrice(perSqftPrices, bookingType);
-//                     totalAmount += (Number(bookingFormData.area_sqft) * perSqftRate);
-//                 }
-//             }
-//         }
-//         return parseFloat(totalAmount.toFixed(2));
-//     }, [
-//         selectedHallFullDetails, 
-//         isAcSelected, 
-//         bookingFormData.booking_type, 
-//         bookingFormData.function_type, 
-//         bookingFormData.area_sqft, 
-//         bookingFormData.is_parking, 
-//         bookingFormData.is_conference_hall, 
-//         bookingFormData.is_food_prep_area, 
-//         bookingFormData.is_lawn,
-//         bookingFormData.num_ac_rooms_booked,
-//         bookingFormData.num_non_ac_rooms_booked,
-//     ]);
-
+    
     const handleVerifyPayment = async (licenseId, paymentReferenceNo) => {
-const token = getAuthToken();
-    if (!token) {   
-        alert(languageType === 'en' ? 'Authentication failed. Please log in again.' : 'प्रमाणीकरण विफल। कृपया पुनः लॉग इन करें।');
-        navigate('/login');
-        return;
-    }
+        if (!paymentReferenceNo) {
+            alert(languageType === 'en' ? 'Payment reference number is not available.' : 'भुगतान संदर्भ संख्या उपलब्ध नहीं है।');
+            return;
+        }
 
-    if (!paymentReferenceNo) {
-      alert(languageType === 'en' ? 'Payment reference number is not available.' : 'भुगतान संदर्भ संख्या उपलब्ध नहीं है।');
-      return;
-    }
+        try {
+            const verificationUrl = `${API_BASE_URL2}verify-eazypay-payment?pgreferenceno=${paymentReferenceNo}`;
+            const response = await fetch(verificationUrl, {
+                method: 'GET',
+                credentials: 'include', // <-- SEND COOKIES
+                headers: { 'Content-Type': 'application/json' },
+            });
 
-    try {
-  
-      // Construct the URL with pgreferenceno as a query parameter
-      const verificationUrl = `${API_BASE_URL2}verify-eazypay-payment?pgreferenceno=${paymentReferenceNo}`;
+            const data = await response.json();
 
-      const response = await fetch(verificationUrl, {
-        method: 'GET', // Changed to GET
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        // Removed body as it's a GET request
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert(languageType === 'en' ? data.message || 'Payment verification successful!' : data.message || 'भुगतान सत्यापन सफल रहा!');
-       // console.log("Payment verification successful:", data);
-        fetchBookings();// Refresh the list to show updated status
-      } else {
-        alert(languageType === 'en' ? data.message || 'Payment verification failed.' : data.message || 'भुगतान सत्यापन विफल रहा।');
-      }
-    } catch (error) {
-      console.error("Error verifying payment:", error);
-      alert(languageType === 'en' ? 'An error occurred during payment verification.' : 'भुगतान सत्यापन के दौरान एक त्रुटि हुई।');
-    }
-  };
-    // useEffect(() => {
-    //     if (!isViewOnly) { // Only calculate and update if not in view-only mode
-    //         const calculatedAmount = calculateBookingAmount();
-    //         setBookingFormData(prevData => ({
-    //             ...prevData,
-    //             booking_amount: calculatedAmount,
-    //             is_ac: isAcSelected,
-    //         }));
-    //     }
-    // }, [
-    //     isAcSelected,
-    //     calculateBookingAmount,
-    //     isViewOnly // Add isViewOnly to dependency array
-    // ]);
-
-
-
-
-
-
-   
+            if (response.ok) {
+                alert(languageType === 'en' ? data.message || 'Payment verification successful!' : data.message || 'भुगतान सत्यापन सफल रहा!');
+                fetchBookings();
+            } else {
+                 if (response.status === 401) navigate('/login');
+                alert(languageType === 'en' ? data.message || 'Payment verification failed.' : data.message || 'भुगतान सत्यापन विफल रहा।');
+            }
+        } catch (error) {
+            console.error("Error verifying payment:", error);
+            alert(languageType === 'en' ? 'An error occurred during payment verification.' : 'भुगतान सत्यापन के दौरान एक त्रुटि हुई।');
+        }
+    };
 
     const handleDisclaimerAgreedInModal = () => {
         setModalStep(2);
     }
-
-
  
-
-    
-  
-
     const initiateCancelBooking = (bookingId) => {
         setBookingIdToCancelState(bookingId);
-        // fetchNewCaptcha(); // CAPTCHA fetched by useEffect for this modal
         setShowCancelConfirmModal(true);
     };
 
     const confirmAndExecuteCancelBooking = async () => {
         if (!bookingIdToCancelState) return;
-        const token = getAuthToken();
-        if (!token) { 
-            showToast(currentContent.authError, 'error'); 
-            navigate('/login'); 
-            setShowCancelConfirmModal(false);
-            return; 
-        }
-
+        
         const actualCancelLogic = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/bookings/${bookingIdToCancelState}/cancel`, {
-                    method: 'PUT', headers: { 'Authorization': `Bearer ${token}` },
+                    method: 'PUT',
+                    credentials: 'include', // <-- SEND COOKIES
+                    headers: { 'Content-Type': 'application/json' },
                 });
                 if (!response.ok) {
                     if (response.status === 401) { navigate('/login'); throw new Error(currentContent.authError); }
@@ -576,54 +473,45 @@ const token = getAuthToken();
 
     const initiatePayNow = (bookingId) => {
         setBookingIdToPayState(bookingId);
-        // fetchNewCaptcha(); // CAPTCHA fetched by useEffect for this modal
         setShowPayNowConfirmModal(true);
     };
 
     const confirmAndExecutePayNow = async () => {
         if (!bookingIdToPayState) return;
-        const token = getAuthToken();
-        if (!token) {
-            showToast(currentContent.authError, 'error');
-            navigate('/login');
-            setShowPayNowConfirmModal(false);
-            return;
-        }
 
          const actualPayLogic = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL2}generate-eazypay-url?bid=${encodeURIComponent(bookingIdToPayState)}`, {
-                    method: 'GET', headers: { 'Authorization': `Bearer ${token}` },
+                    method: 'GET',
+                    credentials: 'include', // <-- SEND COOKIES
                 });
             
                 if (response.ok) {
                     const data = await response.json();
-                  //  console.log('EazyPay DATA:', data);
                     if(data.success === false) {
                         showToast(data.message,'error');
-          return
-
+                        return;
                     }
-                     const  eazypayUrl  =data.url;
+                     const eazypayUrl = data.url;
                      if (eazypayUrl) {
-                     window.open(eazypayUrl, '_blank'); 
-        
-                showToast(currentContent.paymentSuccess, 'success');
-                setShowPayNowConfirmModal(false);
-                setBookingIdToPayState(null);
-                setCaptchaInput(''); 
-                setTimeout(async() => {
-                       await fetchBookings(); 
-                }, 60000); 
-             
-      } else {
-        console.error("Payment URL is empty or undefined.");
-        showToast('Failed to get payment URL from server.', 'error');
-
-        throw new Error("Failed to get payment URL from server.");
-      }
+                        window.open(eazypayUrl, '_blank'); 
+                        showToast(currentContent.paymentSuccess, 'success');
+                        setShowPayNowConfirmModal(false);
+                        setBookingIdToPayState(null);
+                        setCaptchaInput(''); 
+                        setTimeout(async() => {
+                               await fetchBookings(); 
+                        }, 60000); 
+                    } else {
+                        console.error("Payment URL is empty or undefined.");
+                        showToast('Failed to get payment URL from server.', 'error');
+                        throw new Error("Failed to get payment URL from server.");
+                    }
+                } else {
+                    if (response.status === 401) navigate('/login');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to generate payment URL');
                 }
-        //      
             } catch (error) {
                 console.error('Error processing payment:', error);
                 showToast(`${currentContent.errorPrefix}${error.message}`, 'error');
@@ -633,15 +521,12 @@ const token = getAuthToken();
        await verifyCaptchaAndProceed(actualPayLogic);
     };
 
-
     const openCertificatePreview = (booking) => {
         setCurrentBookingForCertificate(booking);
         setShowCertificatePreviewModal(true);
-        // CAPTCHA is removed for certificate download
     };
 
     const downloadCertificateFromPreview = async () => {
-        // CAPTCHA verification is removed from here
         if (certificatePreviewRef.current && currentBookingForCertificate) {
             const elementToCapture = certificatePreviewRef.current.querySelector('.user-dl-pdf-layout');
             if (elementToCapture) {
@@ -665,7 +550,6 @@ const token = getAuthToken();
             showToast('Error: Cannot download certificate.', 'error');
         }
     };
-
 
  
     return (
@@ -717,51 +601,43 @@ const token = getAuthToken();
                                             <td data-label={currentContent.tableHeaders[1]}>{booking.booking_id}</td>
                                             <td data-label={currentContent.tableHeaders[2]}>{booking.hall_display_name}</td>
                                             <td data-label={currentContent.tableHeaders[3]}>Rs. {booking.booking_amount?.toFixed(2)}</td>
-                                                <td data-label={currentContent.tableHeaders[6]} className="bn-table-status-cell">
-    {booking.booking_status === 'Confirmed' && <span className="bn-status-indicator bn-status-confirmed"><CircleCheck size={16} />{booking.booking_status}</span>}
-    {booking.booking_status === 'Cancelled' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{booking.booking_status}</span>}
-    {booking.booking_status === 'Pending-Approval' && <span className="bn-status-indicator bn-status-pending"><CircleDot size={16} />{booking.booking_status}</span>}
-    
-    {/* AwaitingPayment status without the nested button */}
-    {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
-    
-    {/* New separate condition for Payment-Processing */}
-    {booking.booking_status === 'Payment-Processing' && (
-        <span className="bn-status-indicator bn-status-awaiting-payment"> {/* Re-using a suitable style */}
-            <Clock size={16} />
-            {booking.booking_status}
-            {booking.transaction_id && (
-                <button
-                  className="user-dl-verify-payment-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleVerifyPayment(booking._id, booking.transaction_id);
-                  }}
-                  title={currentContent.verifyPaymentButton}
-                >
-                  <RefreshCcw size={14} />
-                 
-                </button>
-            )}
-        </span>
-    )}
-
-    {/* The fallback list of statuses is updated */}
-    {!['Pending-Approval', 'AwaitingPayment', 'Confirmed', 'Cancelled','Payment-Processing','Payment-Failed','Refunded', 'Refund-Pending'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
-</td>
+                                            <td data-label={currentContent.tableHeaders[4]} className="bn-table-status-cell">
+                                                {booking.booking_status === 'Confirmed' && <span className="bn-status-indicator bn-status-confirmed"><CircleCheck size={16} />{booking.booking_status}</span>}
+                                                {booking.booking_status === 'Cancelled' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{booking.booking_status}</span>}
+                                                {booking.booking_status === 'Pending-Approval' && <span className="bn-status-indicator bn-status-pending"><CircleDot size={16} />{booking.booking_status}</span>}
+                                                {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
+                                                {booking.booking_status === 'Payment-Processing' && (
+                                                    <span className="bn-status-indicator bn-status-awaiting-payment">
+                                                        <Clock size={16} />
+                                                        {booking.booking_status}
+                                                        {booking.transaction_id && (
+                                                            <button
+                                                              className="user-dl-verify-payment-button"
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleVerifyPayment(booking._id, booking.transaction_id);
+                                                              }}
+                                                              title={currentContent.verifyPaymentButton}
+                                                            >
+                                                              <RefreshCcw size={14} />
+                                                            </button>
+                                                        )}
+                                                    </span>
+                                                )}
+                                                {!['Pending-Approval', 'AwaitingPayment', 'Confirmed', 'Cancelled','Payment-Processing','Payment-Failed','Refunded', 'Refund-Pending'].includes(booking.booking_status) && <span>{booking.booking_status}</span>}
+                                            </td>
                                             <td data-label={currentContent.tableHeaders[5]}>{booking.transaction_id || 'N/A'}</td>
                                             <td data-label={currentContent.tableHeaders[6]}>{booking.isPaid ? 'Yes' : 'No'}</td>
                                             <td data-label={currentContent.tableHeaders[7]}>{new Date(booking.booking_date).toLocaleDateString()}</td>
                                             <td data-label={currentContent.tableHeaders[8]}>
                                                   <div className="bn-table-actions">
                                                     <button 
-                                                        className="bn-button bn-view-edit-button" // Class for View/Edit button
+                                                        className="bn-button bn-view-edit-button"
                                                         onClick={() => handleOpenBookingModal(booking)} 
                                                         aria-label={`${currentContent.viewEditButton} for booking ${booking.booking_id}`}
                                                     >
                                                         {currentContent.viewEditButton}
                                                     </button>
-                                                    {/* Pay Now button: If status is AwaitingPayment and isAllowed is true */}
                                                     {(booking.booking_status === 'AwaitingPayment' || booking.booking_status === 'Payment-Failed' ) && booking.isAllowed && (
                                                         <button 
                                                             className="bn-button bn-pay-button" 
@@ -771,7 +647,6 @@ const token = getAuthToken();
                                                             {currentContent.payNowButton}
                                                         </button>
                                                     )}
-                                                    {/* Cancel button: If status is not Cancelled (and not Confirmed - adjust as per business rule) */}
                                                     {booking.booking_status !== 'Cancelled' && booking.booking_status !== 'Confirmed' && (
                                                         <button 
                                                             className="bn-button bn-cancel-button" 
@@ -781,7 +656,6 @@ const token = getAuthToken();
                                                             {currentContent.cancelButton}
                                                         </button>
                                                     )}
-                                                    {/* Download Certificate button: Only if status is Confirmed */}
                                                     {booking.booking_status === 'Confirmed' && (
                                                         <button
                                                             className="bn-button bn-download-button"
@@ -832,7 +706,6 @@ const token = getAuthToken();
                                         </div>
                                     )}
 
-                                    {/* --- SIMPLIFIED FORM FIELDS --- */}
                                     <div className="bn-form-group">
                                         <label htmlFor="hall_id_string"><BuildingIcon size={16} /> Hall:</label>
                                         <select 
@@ -856,7 +729,6 @@ const token = getAuthToken();
                                             min={new Date().toISOString().split("T")[0]} />
                                     </div>
                                     
-                                    {/* --- Display Hall Details & Fixed Price --- */}
                                     {loadingHallDetails && <p className="bn-message bn-loading-message">{currentContent.loadingDetailsMessage}</p>}
                                     {hallDetailsError && <p className="bn-message bn-error-message">{hallDetailsError}</p>}
                                     
@@ -903,8 +775,6 @@ const token = getAuthToken();
                 </div>
             )}
             
-            
-            {/* Certificate Preview Modal - CAPTCHA REMOVED */}
             {showCertificatePreviewModal && currentBookingForCertificate && (
                 <div 
                     className="bn-modal-overlay" 
@@ -916,11 +786,11 @@ const token = getAuthToken();
                         style={{maxWidth: '850px', maxHeight: '95vh'}}
                     >
                         <div className="bn-modal-header">
-                            <h3>{currentContent.previewModalTitle}</h3>
+                            <h3>{currentContent.previewModalTitle || "Booking Certificate"}</h3>
                             <button 
                                 className="bn-modal-close-button" 
                                 onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null);}} 
-                                aria-label={currentContent.previewModalCloseButton}
+                                aria-label={currentContent.previewModalCloseButton || "Close"}
                             >
                                 &times;
                             </button>
@@ -936,34 +806,31 @@ const token = getAuthToken();
                                 <BookingCertificate
                                     bookingDetails={{
                                         ...currentBookingForCertificate,
-                                        hall_id_string: currentBookingForCertificate.hall_display_name || 'N/A', // Use display name
+                                        hall_id_string: currentBookingForCertificate.hall_display_name || 'N/A',
                                         createdAt: currentBookingForCertificate.createdAt 
                                     }}
                                     userName={user?.name || 'N/A'}
                                 />
                             </div>
-                             {/* CAPTCHA Section REMOVED from Certificate Download */}
                         </div>
                         <div className="bn-modal-footer">
                             <button 
                                 className="bn-button bn-modal-action-button bn-modal-cancel-button" 
                                 onClick={() => { setShowCertificatePreviewModal(false); setCurrentBookingForCertificate(null);}}
                             >
-                                {currentContent.previewModalCloseButton}
+                                {currentContent.previewModalCloseButton || "Close"}
                             </button>
                             <button
                                 className="bn-button bn-modal-action-button bn-submit-button"
                                 onClick={downloadCertificateFromPreview}
-                                // No captchaToken check needed here anymore
                             >
-                                <DownloadIcon size={16} /> {currentContent.previewModalDownloadButton}
+                                <DownloadIcon size={16} /> {currentContent.previewModalDownloadButton || "Download"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Cancel Confirmation Modal */}
             {showCancelConfirmModal && (
                 <div className="bn-modal-overlay" onClick={() => {setShowCancelConfirmModal(false); setBookingIdToCancelState(null); setCaptchaInput(''); setCaptchaError('');}}>
                     <div className="bn-modal-content" style={{maxWidth: '500px'}} onClick={(e) => e.stopPropagation()}>
@@ -972,13 +839,13 @@ const token = getAuthToken();
                             <button 
                                 className="bn-modal-close-button" 
                                 onClick={() => {setShowCancelConfirmModal(false); setBookingIdToCancelState(null); setCaptchaInput(''); setCaptchaError('');}}
-                                aria-label={currentContent.closeModalButton}
+                                aria-label={currentContent.closeModalButton || "Close"}
                             >
                                 &times;
                             </button>
                         </div>
                         <div className="bn-modal-body">
-                            <p style={{marginBottom: '20px'}}>{currentContent.confirmCancelMessage}</p>
+                            <p style={{marginBottom: '20px'}}>{currentContent.confirmCancelMessage || "Are you sure you want to cancel this booking?"}</p>
                             {renderCaptchaSection(currentContent.confirmActionPrompt(languageType === 'en' ? 'cancel this booking' : 'यह बुकिंग रद्द करें'))}
                         </div>
                         <div className="bn-modal-footer">
@@ -1000,7 +867,6 @@ const token = getAuthToken();
                 </div>
             )}
 
-            {/* Pay Now Confirmation Modal */}
             {showPayNowConfirmModal && (
                 <div className="bn-modal-overlay" onClick={() => {setShowPayNowConfirmModal(false); setBookingIdToPayState(null); setCaptchaInput(''); setCaptchaError('');}}>
                     <div className="bn-modal-content" style={{maxWidth: '500px'}} onClick={(e) => e.stopPropagation()}>
@@ -1009,13 +875,13 @@ const token = getAuthToken();
                             <button 
                                 className="bn-modal-close-button" 
                                 onClick={() => {setShowPayNowConfirmModal(false); setBookingIdToPayState(null); setCaptchaInput(''); setCaptchaError('');}}
-                                aria-label={currentContent.closeModalButton}
+                                aria-label={currentContent.closeModalButton || "Close"}
                             >
                                 &times;
                             </button>
                         </div>
                         <div className="bn-modal-body">
-                            <p style={{marginBottom: '20px'}}>{currentContent.confirmPayMessage}</p>
+                            <p style={{marginBottom: '20px'}}>{currentContent.confirmPayMessage || "You are about to proceed to payment."}</p>
                             {renderCaptchaSection(currentContent.confirmActionPrompt(languageType === 'en' ? 'pay for this booking' : 'इस बुकिंग के लिए भुगतान करें'))}
                         </div>
                         <div className="bn-modal-footer">

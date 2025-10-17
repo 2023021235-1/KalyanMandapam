@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Clock, Ban } from 'lucide-react'; // Added Ban icon for 'AwaitingPayment'
-import './styles/BookingManagement.css'; // Import the CSS file
+import { CheckCircle, XCircle, Clock, Ban } from 'lucide-react';
+import './styles/BookingManagement.css';
 
-const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
+// The getAuthToken prop is no longer needed and has been removed.
+const BookingManagement = ({ API_BASE_URL }) => {
     const [bookings, setBookings] = useState([]);
     const [loadingBookings, setLoadingBookings] = useState(true);
     const [bookingError, setBookingError] = useState(null);
@@ -10,19 +11,14 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
     const fetchBookings = async () => {
         setLoadingBookings(true);
         setBookingError(null);
-        const token = getAuthToken();
-        if (!token) {
-            setBookingError('Authentication token not found.');
-            setLoadingBookings(false);
-            return;
-        }
         try {
+            // The Authorization header is removed. credentials: 'include' handles cookies.
             const response = await fetch(`${API_BASE_URL}/bookings`, {
                 method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` },
+                credentials: 'include', // <-- SEND COOKIES
             });
             if (!response.ok) {
-                if (response.status === 401) throw new Error('Authentication failed or token expired.');
+                if (response.status === 401) throw new Error('Authentication failed or session expired.');
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
@@ -40,16 +36,11 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
     }, []);
 
     const handleBookingAction = async (url, method, body, successMessage, errorMessagePrefix) => {
-        const token = getAuthToken();
-        if (!token) {
-            // Using a custom message box instead of alert()
-            alert('Authentication token not found.'); // Replace with custom modal/toast
-            return false;
-        }
         try {
             const options = {
                 method,
-                headers: { 'Authorization': `Bearer ${token}` },
+                credentials: 'include', 
+                headers: {},
             };
             if (body) {
                 options.headers['Content-Type'] = 'application/json';
@@ -60,13 +51,12 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                 const errorData = await response.json();
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
-            fetchBookings();
-            console.log(successMessage); // Log success
+            await fetchBookings(); // Await the fetch to ensure data is fresh before proceeding
+            console.log(successMessage);
             return true;
         } catch (error) {
             console.error(`${errorMessagePrefix}:`, error);
-            // Using a custom message box instead of alert()
-            alert(`${errorMessagePrefix}: ${error.message}`); // Replace with custom modal/toast
+            alert(`${errorMessagePrefix}: ${error.message}`);
             return false;
         }
     };
@@ -79,8 +69,7 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
         }
     };
 
-    // Admin confirms a booking (sets status to Confirmed, isPaid to true, updates hall availability)
-    // This acts as an admin override if payment isn't handled by the user flow.
+    // Admin confirms a booking (sets status to Confirmed, isPaid to true, etc.)
     const handleConfirmBooking = (bookingId) => {
         if (window.confirm(`Are you sure you want to CONFIRM booking ${bookingId}? This will mark it as paid and update hall availability.`)) {
             handleBookingAction(`${API_BASE_URL}/bookings/${bookingId}/status`, 'PUT', { status: 'Confirmed' },
@@ -115,7 +104,7 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
             case 'confirmed': case 'approved': statusClass = 'admin-status-confirmed'; Icon = CheckCircle; statusText = 'Confirmed'; break;
             case 'rejected': statusClass = 'admin-status-rejected'; Icon = XCircle; statusText = 'Rejected'; break;
             case 'pending-approval': statusClass = 'admin-status-pending'; Icon = Clock; statusText = 'Pending-Approval'; break;
-            case 'awaitingpayment': statusClass = 'admin-status-awaiting-payment'; Icon = Ban; statusText = 'Awaiting Payment'; break; // New status
+            case 'awaitingpayment': statusClass = 'admin-status-awaiting-payment'; Icon = Ban; statusText = 'Awaiting Payment'; break;
             case 'cancelled': statusClass = 'admin-status-cancelled'; Icon = XCircle; statusText = 'Cancelled'; break;
             case 'processed': statusClass = 'admin-status-confirmed'; Icon = CheckCircle; statusText = 'Processed'; break;
             case 'n/a': statusClass = 'admin-status-na'; Icon = null; statusText = 'N/A'; break;
@@ -139,8 +128,8 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                                 <tr>
                                     <th>Booking ID</th><th>Trans. ID</th><th>Hall Name</th><th>Booking Date</th><th>Amount</th><th>Status</th>
                                     <th>Allowed</th><th>Paid</th><th>Refund Status</th>
-                                    <th>Booker Name</th> {/* Added Booker Name */}
-                                    <th>Booker Email</th> {/* Added Booker Email */}
+                                    <th>Booker Name</th>
+                                    <th>Booker Email</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -153,29 +142,24 @@ const BookingManagement = ({ API_BASE_URL, getAuthToken }) => {
                                         <td>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</td>
                                         <td>Rs. {booking.booking_amount}</td>
                                         <td>{renderStatus(booking.booking_status)}</td>
-                                        <td>{booking.isAllowed ? 'Yes' : 'No'}</td> {/* Display isAllowed */}
-                                        <td>{booking.isPaid ? 'Yes' : 'No'}</td>       {/* Display isPaid */}
+                                        <td>{booking.isAllowed ? 'Yes' : 'No'}</td>
+                                        <td>{booking.isPaid ? 'Yes' : 'No'}</td>
                                         <td>{renderStatus(booking.refund_status)}</td>
-                                        <td>{booking.user_id?.name || 'N/A'}</td> {/* Display booker's name */}
-                                        <td>{booking.user_id?.email || 'N/A'}</td> {/* Display booker's email */}
+                                        <td>{booking.user_id?.name || 'N/A'}</td>
+                                        <td>{booking.user_id?.email || 'N/A'}</td>
                                         <td className="admin-table-actions">
-                                            {/* Allow button: Only for Pending bookings */}
                                             {booking.booking_status === 'Pending-Approval' && (
                                                 <button onClick={() => handleAllowBooking(booking.booking_id)} className="book-m-allow-button">Allow</button>
                                             )}
-                                            {/* Confirm button: Can be used as an admin override, e.g., for AwaitingPayment or Pending */}
                                             {['Pending-Approval', 'AwaitingPayment'].includes(booking.booking_status) && (
                                                 <button onClick={() => handleConfirmBooking(booking.booking_id)} className="book-m-confirm-button">Confirm</button>
                                             )}
-                                            {/* Cancel button: If not already cancelled */}
                                             {booking.booking_status !== 'Cancelled' && (
                                                 <button onClick={() => handleCancelBooking(booking.booking_id)} className="book-m-cancel-button">Cancel</button>
                                             )}
-                                            {/* Process Refund button: If refund status is Pending */}
                                             {booking.refund_status === 'Pending' && (
                                                 <button onClick={() => handleProcessRefund(booking.booking_id)} className="book-m-process-refund-button">Process Refund</button>
                                             )}
-                                            {/* Delete button: Always available for admin */}
                                             <button onClick={() => deleteBooking(booking.booking_id)} className="book-m-delete-button">Delete</button>
                                         </td>
                                     </tr>

@@ -25,7 +25,7 @@ const CheckRentSection = ({ languageType = 'en' }) => {
 
     // --- CONFIGURATION & CONTENT ---
 
-    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    const API_BASE_URL = 'http://localhost:5000/api';
 
     // Content updated for the new simplified pricing model
     const content = {
@@ -215,7 +215,7 @@ const CheckRentSection = ({ languageType = 'en' }) => {
                         {loadingDetails && <p className="ca-availability-message">{currentContent.fetchingDetailsMessage}</p>}
                         {detailsError && <p className="ca-availability-message rental-message--error">{detailsError}</p>}
 
-                        {/* --- MODIFIED & SIMPLIFIED DETAILS DISPLAY --- */}
+                      
                         {selectedHallDetails && showDetailsAfterCaptcha && (
                             <div className="rental-hall-details">
                                 <h4>{selectedHallDetails.hall_name}</h4>

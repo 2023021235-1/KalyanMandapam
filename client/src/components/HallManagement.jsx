@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import './styles/HallManagement.css'; // Assuming the CSS file is for general styling
+import './styles/HallManagement.css';
 
-const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
+// The getAuthToken prop is no longer needed and has been removed.
+const HallManagement = ({ API_BASE_URL }) => {
     const [halls, setHalls] = useState([]);
     const [loadingHalls, setLoadingHalls] = useState(true);
     const [hallError, setHallError] = useState(null);
@@ -10,7 +11,7 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
     // The hall being edited, or null if creating a new one.
     const [currentHall, setCurrentHall] = useState(null); 
 
-    // The state for the form is now much simpler.
+    // State for the form.
     const [hallFormData, setHallFormData] = useState({
         hall_name: '',
         location: '',
@@ -23,6 +24,7 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
         setLoadingHalls(true);
         setHallError(null);
         try {
+            // This is a public endpoint, so no credentials are needed.
             const response = await fetch(`${API_BASE_URL}/halls`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
@@ -37,7 +39,7 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
 
     useEffect(() => {
         fetchHalls();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
     // --- Form Handling ---
 
@@ -58,18 +60,11 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
 
     const handleHallSubmit = async (e) => {
         e.preventDefault();
-        const token = getAuthToken();
-        if (!token) {
-            alert('Authentication token not found. Please log in again.');
-            return;
-        }
-
-        // Determine if we are updating (PUT) or creating (POST)
+        
+        // No need to get token manually.
         const method = currentHall ? 'PUT' : 'POST';
-        // Use the hall's `_id` for the URL when updating
         const url = currentHall ? `${API_BASE_URL}/halls/${currentHall._id}` : `${API_BASE_URL}/halls`;
 
-        // The payload is now very simple
         const payload = {
             ...hallFormData,
             pricing: Number(hallFormData.pricing), // Ensure pricing is a number
@@ -78,7 +73,8 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
         try {
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                credentials: 'include', // <-- SEND COOKIES FOR AUTHENTICATION
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
@@ -87,8 +83,8 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
                 throw new Error(errorData.message || `Failed to save the hall.`);
             }
 
-            fetchHalls();    // Refresh the list of halls
-            resetHallForm(); // Hide and reset the form
+            fetchHalls();
+            resetHallForm();
         } catch (error) {
             console.error('Error saving hall:', error);
             alert(`Error: ${error.message}`);
@@ -98,27 +94,22 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
     // --- Actions ---
 
     const startEditHall = (hall) => {
-        setCurrentHall(hall); // Set the current hall to get its _id for submission
+        setCurrentHall(hall);
         setHallFormData({
             hall_name: hall.hall_name,
             location: hall.location,
             pricing: hall.pricing,
         });
-        setShowHallForm(true); // Show the form, pre-filled with hall data
+        setShowHallForm(true);
     };
 
     const deleteHall = async (hallId) => {
-        const token = getAuthToken();
-        if (!token) {
-            alert('Authentication token not found. Please log in again.');
-            return;
-        }
-
+        // No need to get token manually.
         if (window.confirm(`Are you sure you want to delete this hall? This action cannot be undone.`)) {
             try {
                 const response = await fetch(`${API_BASE_URL}/halls/${hallId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include', // <-- SEND COOKIES FOR AUTHENTICATION
                 });
 
                 if (!response.ok) {
@@ -126,9 +117,9 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
                     throw new Error(errorData.message || 'Failed to delete hall.');
                 }
 
-                fetchHalls(); // Refresh the hall list
+                fetchHalls();
                 if (currentHall && currentHall._id === hallId) {
-                    resetHallForm(); // If the deleted hall was being edited, close the form
+                    resetHallForm();
                 }
             } catch (error) {
                 console.error('Error deleting hall:', error);
@@ -150,7 +141,7 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
                             if (showHallForm) {
                                 resetHallForm();
                             } else {
-                                setCurrentHall(null); // Ensure we are in "create" mode
+                                setCurrentHall(null);
                                 setShowHallForm(true);
                             }
                         }}
@@ -159,7 +150,6 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
                     </button>
                 </div>
 
-                {/* The form is now much smaller and cleaner */}
                 {showHallForm && (
                     <div className="admin-form-container">
                         <h3>{currentHall ? `Editing "${currentHall.hall_name}"` : 'Create a New Hall'}</h3>
@@ -190,7 +180,6 @@ const HallManagement = ({ API_BASE_URL, getAuthToken }) => {
                     </div>
                 )}
 
-                {/* The table now shows the simplified hall data */}
                 {loadingHalls ? <p>Loading halls...</p> : hallError ? <p style={{ color: 'red' }}>{hallError}</p> : (
                     <div className="admin-table-container">
                         <table className="admin-table">

@@ -15,27 +15,27 @@ const {
     allowBooking,    // Added
     recordPayment    // Added
 } = require('../controller/bookController');
-const { protect, admin } = require('../middleware/authMiddleware'); // Assuming you have an admin middleware
+const { verifyToken, admin } = require('../middleware/authMiddleware'); // Assuming you have an admin middleware
 
 
-// Protected routes using the 'protect' middleware
-router.post('/', protect, createBooking); 
-router.get('/', protect, getAllBookings); 
-router.get('/:id', protect, getBookingById); 
-router.put('/:id', protect, updateBooking); 
+// verifyTokened routes using the 'verifyToken' middleware
+router.post('/', verifyToken, createBooking); 
+router.get('/', verifyToken, getAllBookings); 
+router.get('/:id', verifyToken, getBookingById); 
+router.put('/:id', verifyToken, updateBooking); 
 
 // Specific routes for status changes and refund actions
-router.put('/:id/cancel', protect, cancelBooking); 
-router.put('/:id/status', protect, admin, updateBookingStatus); // Admin action
-router.put('/:id/request-refund', protect, requestRefund); 
-router.put('/:id/process-refund', protect, admin, processRefund); // Admin action
+router.put('/:id/cancel', verifyToken, cancelBooking); 
+router.put('/:id/status', verifyToken, admin, updateBookingStatus); // Admin action
+router.put('/:id/request-refund', verifyToken, requestRefund); 
+router.put('/:id/process-refund', verifyToken, admin, processRefund); // Admin action
 
-router.put('/:id/allow', protect, admin, allowBooking); // Admin allows a booking
-router.put('/:id/pay', protect, recordPayment);       // User records payment
+router.put('/:id/allow', verifyToken, admin, allowBooking); // Admin allows a booking
+router.put('/:id/pay', verifyToken, recordPayment);       // User records payment
 
-router.delete('/:id', protect, admin, deleteBooking); // Admin hard delete
+router.delete('/:id', verifyToken, admin, deleteBooking); // Admin hard delete
 
-router.get('/:id/refund-status', protect, getRefundStatus); 
+router.get('/:id/refund-status', verifyToken, getRefundStatus); 
 
 
 module.exports = router;

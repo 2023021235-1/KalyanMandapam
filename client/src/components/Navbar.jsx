@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './styles/Navbar.css'; // Make sure to create/update this CSS file
-import { Bell, X, Edit3, Save, UserCircle } from 'lucide-react'; // Added X, Edit3, Save, UserCircle
+import { Bell, X, Edit3, Save, UserCircle, KeyRound, Phone, LogOut,User, Settings, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
@@ -20,15 +20,31 @@ const textContent = {
     login: 'Login',
     logout: 'Logout',
     noNotifications: 'No notifications',
-    profile: 'Profile',
+    profile: 'Profile Settings',
     editProfile: 'Edit Profile',
-    save: 'Save',
+    save: 'Save Changes',
     cancel: 'Cancel',
     name: 'Name',
     email: 'Email',
+    phone: 'Phone Number',
     userType: 'User Type',
     updateSuccess: 'Profile updated successfully!',
     updateError: 'Failed to update profile.',
+    changePassword: 'Change Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmNewPassword: 'Confirm New Password',
+    passwordsDoNotMatch: 'New passwords do not match.',
+    passwordUpdateSuccess: 'Password updated successfully!',
+    passwordUpdateError: 'Failed to update password.',
+    changePhone: 'Update Phone Number',
+    newPhone: 'New Phone Number',
+    sendOtp: 'Send OTP',
+    otp: 'Enter OTP',
+    verifyOtp: 'Verify & Update',
+    otpSent: 'OTP sent to your new phone number.',
+    phoneUpdateSuccess: 'Phone number updated successfully!',
+    phoneUpdateError: 'Failed to update phone number.',
   },
   hi: {
     logoTopText: 'नगर निगम गोरखपुर',
@@ -36,362 +52,538 @@ const textContent = {
     login: 'लॉग इन करें',
     logout: 'लॉग आउट करें',
     noNotifications: 'कोई सूचना नहीं',
-    profile: 'प्रोफ़ाइल',
+    profile: 'प्रोफ़ाइल सेटिंग्स',
     editProfile: 'प्रोफ़ाइल संपादित करें',
-    save: 'सहेजें',
+    save: 'बदलाव सहेजें',
     cancel: 'रद्द करें',
     name: 'नाम',
     email: 'ईमेल',
+    phone: 'फ़ोन नंबर',
     userType: 'उपयोगकर्ता प्रकार',
     updateSuccess: 'प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!',
     updateError: 'प्रोफ़ाइल अपडेट करने में विफल।',
+    changePassword: 'पासवर्ड बदलें',
+    currentPassword: 'वर्तमान पासवर्ड',
+    newPassword: 'नया पासवर्ड',
+    confirmNewPassword: 'नए पासवर्ड की पुष्टि करें',
+    passwordsDoNotMatch: 'नया पासवर्ड मेल नहीं खाता।',
+    passwordUpdateSuccess: 'पासवर्ड सफलतापूर्वक अपडेट किया गया!',
+    passwordUpdateError: 'पासवर्ड अपडेट करने में विफल।',
+    changePhone: 'फ़ोन नंबर अपडेट करें',
+    newPhone: 'नया फ़ोन नंबर',
+    sendOtp: 'ओटीपी भेजें',
+    otp: 'ओटीपी दर्ज करें',
+    verifyOtp: 'सत्यापित करें और अपडेट करें',
+    otpSent: 'आपके नए फ़ोन नंबर पर OTP भेज दिया गया है।',
+    phoneUpdateSuccess: 'फ़ोन नंबर सफलतापूर्वक अपडेट किया गया!',
+    phoneUpdateError: 'फ़ोन नंबर अपडेट करने में विफल।',
   }
 };
 
 const pathsToHideWhenLoggedOut = ['/book', '/refund-status'];
+const backendUrl = 'http://localhost:5000'; // Your backend URL
 
-function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType, isAdmin, onProfileUpdate }) {
+function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType, isAdmin, setUser }) {
+  // --- STATE MANAGEMENT ---
   const [showMenu, setShowMenu] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [showProfilePopover, setShowProfilePopover] = useState(false);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editableName, setEditableName] = useState(user?.name || '');
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileMessage, setProfileMessage] = useState({ type: '', text: '' });
+  const [isEditMode, setIsEditMode] = useState(false);
 
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [isPhoneOpen, setIsPhoneOpen] = useState(false);
 
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  const [editableName, setEditableName] = useState(user?.name || '');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordMatchError, setPasswordMatchError] = useState(false);
+  const [newPhone, setNewPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [phoneUpdateStep, setPhoneUpdateStep] = useState('idle');
+
+  // --- REFS & ROUTING ---
   const navigate = useNavigate();
   const location = useLocation();
   const notifRef = useRef(null);
   const menuRef = useRef(null);
   const hamburgerRef = useRef(null);
   const profilePopoverRef = useRef(null);
-  const usernameRef = useRef(null);
-
-
+  const userDisplayRef = useRef(null);
+  
   const label = (item) => languageType === 'hi' ? item.hi : item.en;
   const currentText = textContent[languageType] || textContent.en;
 
+  // --- LIFECYCLE HOOKS ---
   useEffect(() => {
-    if (user) {
-      setEditableName(user.name);
-    }
+    if (user) setEditableName(user.name || '');
   }, [user]);
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (notifRef.current && !notifRef.current.contains(event.target)) {
-        setShowNotif(false);
-      }
-      if (showMenu && menuRef.current && !menuRef.current.contains(event.target) &&
-          hamburgerRef.current && !hamburgerRef.current.contains(event.target)) {
-        setShowMenu(false);
-      }
-      if (profilePopoverRef.current && !profilePopoverRef.current.contains(event.target) &&
-          usernameRef.current && !usernameRef.current.contains(event.target)) {
-        setShowProfilePopover(false);
-        setIsEditingProfile(false);
-        setProfileMessage({ type: '', text: '' });
+      if (notifRef.current && !notifRef.current.contains(event.target)) setShowNotif(false);
+      if (showMenu && menuRef.current && !menuRef.current.contains(event.target) && hamburgerRef.current && !hamburgerRef.current.contains(event.target)) setShowMenu(false);
+      if (profilePopoverRef.current && !profilePopoverRef.current.contains(event.target) && userDisplayRef.current && !userDisplayRef.current.contains(event.target)) {
+        closeAndResetProfile();
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMenu, showNotif, showProfilePopover]);
+  }, [showMenu, showProfilePopover]);
 
+  useEffect(() => {
+    setPasswordMatchError(confirmNewPassword && newPassword !== confirmNewPassword);
+  }, [newPassword, confirmNewPassword]);
+
+  // --- HELPER FUNCTIONS ---
+  const closeAndResetProfile = () => {
+    setShowProfilePopover(false);
+    setShowProfileModal(false);
+    setIsEditMode(false);
+    resetFormState();
+  };
+    
+  const resetFormState = () => {
+    setProfileMessage({ type: '', text: '' });
+    if(user) setEditableName(user.name);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setPasswordMatchError(false);
+    setNewPhone('');
+    setOtp('');
+    setPhoneUpdateStep('idle');
+    setIsPasswordOpen(false);
+    setIsPhoneOpen(false);
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmNewPassword(false);
+  }
+  
+  const processApiResponse = (response, data) => {
+    if (response.ok) {
+      return { success: true, data };
+    } else {
+      return { success: false, message: data.message || 'An unknown error occurred.' };
+    }
+  };
+
+  // --- API HANDLERS ---
+  const handleRequestPhoneUpdate = async () => {
+    if (!newPhone) return;
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/profile/request-phone-update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newPhone: `+91${newPhone}` }), // Assuming +91 for India
+            credentials: 'include' 
+        });
+        const data = await response.json();
+        const result = processApiResponse(response, data);
+
+        if (result.success) {
+            setProfileMessage({ type: 'success', text: currentText.otpSent });
+            setPhoneUpdateStep('awaiting-otp');
+        } else {
+            setProfileMessage({ type: 'error', text: result.message });
+        }
+    } catch (error) {
+        setProfileMessage({ type: 'error', text: currentText.phoneUpdateError });
+    }
+  };
+
+  const handleConfirmPhoneUpdate = async () => {
+    if (!otp) return;
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/profile/confirm-phone-update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otp }),
+            credentials: 'include' 
+        });
+        const data = await response.json();
+        const result = processApiResponse(response, data);
+
+        if (result.success) {
+            setProfileMessage({ type: 'success', text: currentText.phoneUpdateSuccess });
+            const updatedUser = { ...user, phone: result.data.phone };
+            setUser(updatedUser); // Update parent state
+            setPhoneUpdateStep('idle');
+            setNewPhone('');
+            setOtp('');
+        } else {
+            setProfileMessage({ type: 'error', text: result.message });
+        }
+    } catch (error) {
+        setProfileMessage({ type: 'error', text: currentText.phoneUpdateError });
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!editableName.trim()) return { success: false, message: 'Name cannot be empty.' };
+    try {
+      const response = await fetch(`${backendUrl}/api/auth/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editableName }),
+        credentials: 'include'
+      });
+      const data = await response.json();
+      return processApiResponse(response, data);
+    } catch (error) {
+      return { success: false, message: currentText.updateError };
+    }
+  };
+  
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || newPassword !== confirmNewPassword) {
+      return { success: false, message: currentText.passwordUpdateError };
+    }
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/profile/change-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword, newPassword }),
+            credentials: 'include' 
+        });
+        const data = await response.json();
+        return processApiResponse(response, data);
+    } catch (error) {
+        return { success: false, message: currentText.passwordUpdateError };
+    }
+  };
+
+  const handleSaveAllChanges = async () => {
+    let updatesMade = 0;
+    let errors = [];
+    setProfileMessage({ type: '', text: '' }); 
+
+    if (passwordMatchError) {
+        errors.push(currentText.passwordsDoNotMatch);
+    } else if (newPassword.trim()) {
+        if (!currentPassword.trim()) {
+            errors.push("Current password is required to set a new one.");
+        } else {
+            const result = await handleChangePassword();
+            if(result.success) {
+                updatesMade++;
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmNewPassword('');
+            } else {
+                errors.push(result.message);
+            }
+        }
+    }
+    
+    if (editableName.trim() && editableName.trim() !== user.name) {
+        const result = await handleSaveName();
+        if(result.success) {
+          updatesMade++;
+          const updatedUser = { ...user, name: result.data.user.name };
+          setUser(updatedUser); // Update parent state
+        } else {
+          errors.push(result.message);
+        }
+    }
+    
+    if (errors.length > 0) {
+        setProfileMessage({ type: 'error', text: errors.join(' ') });
+    } else if (updatesMade > 0) {
+        setProfileMessage({ type: 'success', text: currentText.updateSuccess });
+        setTimeout(() => closeAndResetProfile(), 1500);
+    } else {
+        setIsEditMode(false); // No changes were made, just exit edit mode
+    }
+  };
+
+  // --- UI HANDLERS ---
+  const handleEdit = () => {
+    setIsEditMode(true);
+    setProfileMessage({ type: '', text: '' });
+  };
+  const handleCancel = () => {
+    setIsEditMode(false);
+    resetFormState();
+  };
+  const handleLogout = () => { onLogout(); closeAndResetProfile(); };
+  const handleLoginNav = () => { navigate('/login'); closeAndResetProfile(); };
+  const toggleMenu = () => setShowMenu(!showMenu);
+  
+  const handleDesktopProfileClick = () => setShowProfilePopover(!showProfilePopover);
+  const handleMobileProfileClick = () => {
+    setShowMenu(false);
+    setShowProfileModal(true);
+  };
   const handleNavItemClick = (path) => {
     navigate(path);
     setShowMenu(false);
   };
 
-  const toggleMenu = () => {
-    setShowMenu(!showMenu);
-    setShowNotif(false);
-    setShowProfilePopover(false);
-  };
-
-  const toggleProfilePopover = () => {
-    setShowProfilePopover(!showProfilePopover);
-    setIsEditingProfile(false); // Reset editing state when toggling
-    setProfileMessage({ type: '', text: '' });
-    if (user && !showProfilePopover) { // If opening and user exists
-        setEditableName(user.name);
-    }
-  };
-
-  const handleEditProfile = () => {
-    setIsEditingProfile(true);
-    setProfileMessage({ type: '', text: '' });
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditingProfile(false);
-    if (user) setEditableName(user.name); // Reset to original name
-    setProfileMessage({ type: '', text: '' });
-  };
-
-  const handleSaveProfile = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setProfileMessage({ type: 'error', text: 'Authentication token not found.' });
-      // Handle token expiry or missing token, e.g., redirect to login
-      onLogout(); // Or navigate('/login');
-      return;
-    }
-
-    try {
-      const response = await fetch('https://kalyanmandapam.onrender.com/api/auth/profile', { // Ensure this matches your backend route prefix if any
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: editableName }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setProfileMessage({ type: 'success', text: currentText.updateSuccess });
-        setIsEditingProfile(false);
-        // Update user in parent component or global state if applicable
-        if (onProfileUpdate && data.user) {
-          onProfileUpdate(data.user);
-        } else if (user) { // Fallback to update local state for display if no callback
-            // This is a simplified update; ideally, the parent component manages the user object
-            // For Navbar to reflect change immediately if 'user' prop isn't directly mutable:
-            // You might need a local copy of 'user' or a more robust state management.
-            // For now, we assume onProfileUpdate or a page refresh will show the change.
-            // Let's directly update the user.name which the popover uses if editableName changes
-            // This is a bit of a hack if `user` prop is not updated from parent.
-            // A better way would be to have onProfileUpdate update the parent's state.
-            // For immediate visual feedback:
-             if (user && data.user) {
-                user.name = data.user.name; // This mutates the prop, which is not ideal.
-                                          // Consider if 'user' should be state within Navbar, initialized by prop.
-             }
-        }
-         setTimeout(() => setShowProfilePopover(false), 2000); // Close popover after success
-      } else {
-        setProfileMessage({ type: 'error', text: data.message || currentText.updateError });
-      }
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      setProfileMessage({ type: 'error', text: currentText.updateError });
-    }
-  };
-
-
   const displayedNavItems = isAdmin
     ? [
         { hi: 'होम', en: 'Home', path: '/' },
         { hi: 'हॉल प्रबंधन', en: 'Hall Management', path: '/admin/hall-management' },
-                { hi: 'बुकिंग प्रबंधन', en: 'Booking Management', path: '/admin/booking-management' },
+        { hi: 'बुकिंग प्रबंधन', en: 'Booking Management', path: '/admin/booking-management' },
         { hi: 'बुकिंग सत्यापित करें', en: 'Verify Booking', path: '/admin/verify-booking' },
         { hi: 'आंकड़े', en: 'Statistics', path: '/admin/stats' },
-        
       ]
     : user
       ? navItems
       : navItems.filter(item => !pathsToHideWhenLoggedOut.includes(item.path));
 
-  return (
-    <nav className="navbar navbar--gov">
-      <div className="navbar__container">
-        <div className="navbar__top-row">
-          <button
-            ref={hamburgerRef}
-            className={`hamburger ${showMenu ? 'active' : ''}`}
-            aria-label={languageType === 'hi' ? 'मेनू टॉगल करें' : 'Toggle menu'}
-            onClick={toggleMenu}
-          >
-            <span></span><span></span><span></span>
-          </button>
-
-          <div className="navbar__logo">
-            <img src="/logo.webp" alt="Logo" className="navbar__logo-img" />
-            <div className="navbar__logo-text-container">
-              <span className="gov-logo">{currentText.logoTopText}</span>
-              <span className="kalyan-mandapam-heading">{currentText.logoBottomText}</span>
-            </div>
-          </div>
-
-          <div className="navbar__actions">
-            <div className="navbar__controls">
-              <div className="lang-toggle-container">
-                <button className="lang-toggle" aria-label={languageType === 'hi' ? 'भाषा बदलें' : 'Toggle language'}>
-                  <span className={languageType === 'hi' ? 'active' : ''} onClick={() =>setLanguageType('hi')}>अ</span>
-                  <span>/</span>
-                  <span className={languageType === 'en' ? 'active' : ''} onClick={() => setLanguageType('en')}>A</span>
-                </button>
-              </div>
-
-              {user && (
-                <div className="notif" ref={notifRef}>
-                  <button className="notif__icon-btn" aria-label={languageType === 'hi' ? 'सूचनाएं' : 'Notifications'} onClick={() => setShowNotif(!showNotif)}>
-                    <Bell size={20} />
-                    {notifications.length > 0 && <span className="notif__badge">{notifications.length}</span>}
-                  </button>
-                  {showNotif && (
-                    <ul className="notif__dropdown">
-                      {notifications.length > 0
-                        ? notifications.map((n, i) => <li key={i} className="notif__item">{n}</li>)
-                        : <li className="notif__empty">{currentText.noNotifications}</li>}
-                    </ul>
-                  )}
+  // --- RENDER PROFILE UI ---
+  const renderProfileUI = (onClose) => {
+    return (
+        <>
+            <div className="profile-header">
+                <div className="profile-title">
+                    <UserCircle size={20} />
+                    {isEditMode ? currentText.editProfile : currentText.profile}
                 </div>
-              )}
+                <button className="close-btn" onClick={onClose}><X size={18} /></button>
             </div>
 
-            <div className="navbar__desktop-only">
-              {user && (
-                <div className="navbar__user-section" ref={usernameRef}>
-                  <button className="navbar__username-btn" onClick={toggleProfilePopover}>
-                    <UserCircle size={20} style={{ marginRight: '5px' }} />
-                    {user.name}
-                  </button>
-                  {showProfilePopover && (
-                    <div className="profile-popover" ref={profilePopoverRef}>
-                      <button className="profile-popover__close" onClick={toggleProfilePopover}><X size={18} /></button>
-                      <h4>{currentText.profile}</h4>
-                      {profileMessage.text && <p className={`profile-message ${profileMessage.type}`}>{profileMessage.text}</p>}
-                      {!isEditingProfile ? (
-                        <>
-                          <div className="profile-details">
-                            <p><strong>{currentText.name}:</strong> {user.name}</p>
-                            <p><strong>{currentText.email}:</strong> {user.email}</p>
-                            <p><strong>{currentText.userType}:</strong> {user.userType}</p>
-                          </div>
-                          <button className="btn btn--sm btn--profile-action" onClick={handleEditProfile}>
-                            <Edit3 size={16} /> {currentText.editProfile}
-                          </button>
-                        </>
-                      ) : (
-                        <div className="profile-edit-form">
-                          <div className="form-group">
-                            <label htmlFor="profileName">{currentText.name}:</label>
-                            <input
-                              type="text"
-                              id="profileName"
-                              value={editableName}
-                              onChange={(e) => setEditableName(e.target.value)}
-                            />
-                          </div>
-                           <p><strong>{currentText.email}:</strong> {user.email} <small>(cannot be changed)</small></p>
-                           <p><strong>{currentText.userType}:</strong> {user.userType} <small>(cannot be changed)</small></p>
-                          <div className="profile-edit-actions">
-                            <button className="btn btn--sm btn-primary-theme" onClick={handleSaveProfile}>
-                              <Save size={16} /> {currentText.save}
-                            </button>
-                            <button className="btn btn--sm btn--outline" onClick={handleCancelEdit}>
-                              {currentText.cancel}
-                            </button>
-                          </div>
+            {profileMessage.text && (
+                <div className={`profile-message ${profileMessage.type}`}>{profileMessage.text}</div>
+            )}
+            
+            {isEditMode ? (
+                // --- Edit View ---
+                <div className="profile-content edit-mode">
+                    <div className="edit-sections">
+                        {/* Name Section */}
+                        <div className="edit-section">
+                            <div className="section-header"><User size={18} /> <h4>{currentText.name}</h4></div>
+                            <div className="form-field">
+                                <input type="text" value={editableName} onChange={(e) => setEditableName(e.target.value)} placeholder="Enter your full name" className="form-input" />
+                            </div>
                         </div>
-                      )}
+                        {/* Password Section */}
+                        <div className="edit-section">
+                            <div className="section-header collapsible" onClick={() => setIsPasswordOpen(!isPasswordOpen)}>
+                                <div className='collapsible-title'><KeyRound size={18} /> <h4>{currentText.changePassword}</h4></div>
+                                <ChevronDown size={20} className={`chevron-icon ${isPasswordOpen ? 'open' : ''}`} />
+                            </div>
+                            {isPasswordOpen && (
+                                <div className="collapsible-content">
+                                    <div className="form-field password-field-wrapper">
+                                        <input type={showCurrentPassword ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder={currentText.currentPassword} className="form-input" />
+                                        <button type="button" className="password-toggle-icon" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>{showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                                    </div>
+                                    <div className="form-field password-field-wrapper">
+                                        <input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={currentText.newPassword} className="form-input" />
+                                        <button type="button" className="password-toggle-icon" onClick={() => setShowNewPassword(!showNewPassword)}>{showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                                    </div>
+                                    <div className="form-field password-field-wrapper">
+                                        {passwordMatchError && (<label className="error-label">{currentText.passwordsDoNotMatch}</label>)}
+                                        <input type={showConfirmNewPassword ? 'text' : 'password'} value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} placeholder={currentText.confirmNewPassword} className={`form-input ${passwordMatchError ? 'input-error' : ''}`} />
+                                        <button type="button" className="password-toggle-icon" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}>{showConfirmNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        {/* Phone Section */}
+                        <div className="edit-section">
+                            <div className="section-header collapsible" onClick={() => setIsPhoneOpen(!isPhoneOpen)}>
+                                <div className='collapsible-title'><Phone size={18} /> <h4>{currentText.changePhone}</h4></div>
+                                <ChevronDown size={20} className={`chevron-icon ${isPhoneOpen ? 'open' : ''}`} />
+                            </div>
+                            {isPhoneOpen && (
+                                <div className="collapsible-content">
+                                    {phoneUpdateStep === 'idle' && (
+                                        <>
+                                            <div className="phone-input">
+                                                <span className="country-code">+91</span>
+                                                <input type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="1234567890" className="form-input phone-number-input"/>
+                                            </div>
+                                            <button className="otp-btn" onClick={handleRequestPhoneUpdate}>{currentText.sendOtp}</button>
+                                        </>
+                                    )}
+                                    {phoneUpdateStep === 'awaiting-otp' && (
+                                        <>
+                                            <div className="form-field">
+                                                <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder={currentText.otp} className="form-input"/>
+                                            </div>
+                                            <div className="otp-actions">
+                                                <button className="verify-btn" onClick={handleConfirmPhoneUpdate}>{currentText.verifyOtp}</button>
+                                                <button className="cancel-otp-btn" onClick={() => { setPhoneUpdateStep('idle'); setOtp(''); setProfileMessage({type:'', text:''}); }}>{currentText.cancel}</button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                       
+                       
                     </div>
-                  )}
                 </div>
-              )}
-
-              <div className="auth-action">
-                {user
-                  ? <button className="btn btn--gov btn-primary-theme" onClick={() => { setShowMenu(false); setShowProfilePopover(false); onLogout(); }}>{currentText.logout}</button>
-                  : <button className="btn btn--gov btn-primary-theme" onClick={() => { setShowMenu(false); navigate('/login'); }}>{currentText.login}</button>}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className={`navbar__mobile-menu ${showMenu ? 'show' : ''}`} ref={menuRef}>
-          <ul className="navbar__menu">
-            {displayedNavItems.map((item, idx) => (
-              <li
-                key={idx}
-                className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`}
-                onClick={() => handleNavItemClick(item.path)}
-              >
-                {label(item)}
-              </li>
-            ))}
-            <li className="nav-item nav-item--gov mobile-auth">
-              {user
-                ? (
-                  <>
-                  <div className="mobile-user-info">
-                    <button className="navbar__username-btn" onClick={toggleProfilePopover}>
-                      <UserCircle size={20} /> {user.name}
-                    </button>
-                    {/* Popover can be adapted for mobile or use a separate modal if complex */}
-                  </div>
-                  <button className="btn btn--gov btn-primary-theme" onClick={() => { setShowMenu(false); setShowProfilePopover(false); onLogout(); }}>{currentText.logout}</button>
-                  </>
-                )
-                : <button className="btn btn--gov btn-primary-theme" onClick={() => { setShowMenu(false); navigate('/login'); }}>{currentText.login}</button>
-              }
-            </li>
-          </ul>
-           {/* Mobile Popover - can be improved with modal styling */}
-            {user && showProfilePopover && showMenu && (
-                <div className="profile-popover mobile-profile-popover" ref={profilePopoverRef}>
-                     <button className="profile-popover__close" onClick={toggleProfilePopover}><X size={18} /></button>
-                      <h4>{currentText.profile}</h4>
-                      {profileMessage.text && <p className={`profile-message ${profileMessage.type}`}>{profileMessage.text}</p>}
-                      {!isEditingProfile ? (
-                        <>
-                          <div className="profile-details">
-                            <p><strong>{currentText.name}:</strong> {user.name}</p>
-                            <p><strong>{currentText.email}:</strong> {user.email}</p>
-                            <p><strong>{currentText.userType}:</strong> {user.userType}</p>
-                          </div>
-                          <button className="btn btn--sm btn--profile-action" onClick={handleEditProfile}>
-                            <Edit3 size={16} /> {currentText.editProfile}
-                          </button>
-                        </>
-                      ) : (
-                        <div className="profile-edit-form">
-                          <div className="form-group">
-                            <label htmlFor="profileNameMobile">{currentText.name}:</label>
-                            <input
-                              type="text"
-                              id="profileNameMobile"
-                              value={editableName}
-                              onChange={(e) => setEditableName(e.target.value)}
-                            />
-                          </div>
-                           <p><strong>{currentText.email}:</strong> {user.email} <small>(cannot be changed)</small></p>
-                           <p><strong>{currentText.userType}:</strong> {user.userType} <small>(cannot be changed)</small></p>
-                          <div className="profile-edit-actions">
-                            <button className="btn btn--sm btn-primary-theme" onClick={handleSaveProfile}>
-                              <Save size={16} /> {currentText.save}
-                            </button>
-                            <button className="btn btn--sm btn--outline" onClick={handleCancelEdit}>
-                              {currentText.cancel}
-                            </button>
-                          </div>
+            ) : (
+                // --- Display View ---
+                <div className="profile-content">
+                    <div className="info-card">
+                        <div className="info-row">
+                            <div className="info-label"><User size={18} className="info-icon" /> {currentText.name}</div>
+                            <div className="info-value">{user?.name}</div>
                         </div>
-                      )}
+                         <div className="info-row">
+                            <div className="info-label"><Phone size={18} className="info-icon" /> {currentText.phone}</div>
+                            <div className="info-value">{user?.phone || 'Not set'}</div>
+                        </div>
+                      
+                    </div>
+                    <div className="profile-actions">
+                        <button className="edit-btn" onClick={handleEdit}><Edit3 size={16} /> {currentText.editProfile}</button>
+                    </div>
                 </div>
             )}
-        </div>
 
-        <div className='navbar__desktop-only'>
-          {displayedNavItems.length > 0 && (
-            <div className="navbar__bottom-row">
-              <ul className="navbar__menu">
-                {displayedNavItems.map((item, idx) => (
-                  <li
-                    key={idx}
-                    className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`}
-                    onClick={() => handleNavItemClick(item.path)}
-                  >
-                    {label(item)}
-                  </li>
-                ))}
-              </ul>
+            {isEditMode && (
+                <div className="profile-footer">
+                    <button className="cancel-btn" onClick={handleCancel}>{currentText.cancel}</button>
+                    <button className="save-btn" onClick={handleSaveAllChanges} disabled={passwordMatchError}><Save size={16} /> {currentText.save}</button>
+                </div>
+            )}
+        </>
+    );
+  }
+
+  return (
+    <>
+      <nav className="navbar navbar--gov">
+        <div className="navbar__container">
+          <div className="navbar__top-row">
+            <button
+              ref={hamburgerRef}
+              className={`hamburger ${showMenu ? 'active' : ''}`}
+              aria-label={languageType === 'hi' ? 'मेनू टॉगल करें' : 'Toggle menu'}
+              onClick={toggleMenu}
+            >
+              <span></span><span></span><span></span>
+            </button>
+
+            <div className="navbar__logo">
+              <img src="/logo.webp" alt="Logo" className="navbar__logo-img" />
+              <div className="navbar__logo-text-container">
+                <span className="gov-logo">{currentText.logoTopText}</span>
+                <span className="kalyan-mandapam-heading">{currentText.logoBottomText}</span>
+              </div>
             </div>
-          )}
+
+            <div className="navbar__actions">
+              <div className="navbar__controls">
+                <div className="lang-toggle-container">
+                  <button className="lang-toggle" aria-label={languageType === 'hi' ? 'भाषा बदलें' : 'Toggle language'}>
+                    <span className={languageType === 'hi' ? 'active' : ''} onClick={() =>setLanguageType('hi')}>अ</span>
+                    <span>/</span>
+                    <span className={languageType === 'en' ? 'active' : ''} onClick={() => setLanguageType('en')}>A</span>
+                  </button>
+                </div>
+
+                {user && (
+                  <div className="notif" ref={notifRef}>
+                    <button className="notif__icon-btn" aria-label={languageType === 'hi' ? 'सूचनाएं' : 'Notifications'} onClick={() => setShowNotif(!showNotif)}>
+                      <Bell size={20} />
+                      {notifications.length > 0 && <span className="notif__badge">{notifications.length}</span>}
+                    </button>
+                    {showNotif && (
+                      <ul className="notif__dropdown">
+                        {notifications.length > 0
+                          ? notifications.map((n, i) => <li key={i} className="notif__item">{n}</li>)
+                          : <li className="notif__empty">{currentText.noNotifications}</li>}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="navbar__desktop-only">
+                {user && (
+                  <div className="navbar__user-section" ref={userDisplayRef}>
+                    <button className="navbar__username-btn" onClick={handleDesktopProfileClick}>
+                      <UserCircle size={24} />
+                      <span>{user.name}</span>
+                    </button>
+                    {showProfilePopover && (
+                        <div className="profile-popover" ref={profilePopoverRef}>
+                            {renderProfileUI(closeAndResetProfile)}
+                        </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="auth-action">
+                  {user
+                    ? <button className="btn btn--gov btn-primary-theme" onClick={handleLogout}>{currentText.logout}</button>
+                    : <button className="btn btn--gov btn-primary-theme" onClick={handleLoginNav}>{currentText.login}</button>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={`navbar__mobile-menu ${showMenu ? 'show' : ''}`} ref={menuRef}>
+            <ul className="navbar__menu">
+              {user && (
+                <li className="nav-item nav-item--gov mobile-user-profile-section">
+                    <div className="mobile-user-info" onClick={handleMobileProfileClick}>
+                        <UserCircle size={20} /> {user.name}
+                        <Edit3 size={16} style={{marginLeft: 'auto'}}/>
+                    </div>
+                </li>
+              )}
+              {displayedNavItems.map((item, idx) => (
+                <li
+                  key={idx}
+                  className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`}
+                  onClick={() => handleNavItemClick(item.path)}
+                >
+                  {label(item)}
+                </li>
+              ))}
+              <li className="nav-item nav-item--gov mobile-auth">
+                {user
+                  ? <button className="btn btn--gov btn-primary-theme" onClick={handleLogout}>{currentText.logout}</button>
+                  : <button className="btn btn--gov btn-primary-theme" onClick={handleLoginNav}>{currentText.login}</button>
+                }
+              </li>
+            </ul>
+          </div>
+
+          <div className='navbar__desktop-only'>
+            {displayedNavItems.length > 0 && (
+              <div className="navbar__bottom-row">
+                <ul className="navbar__menu">
+                  {displayedNavItems.map((item, idx) => (
+                    <li
+                      key={idx}
+                      className={`nav-item nav-item--gov ${location.pathname === item.path ? 'active-nav-item' : ''}`}
+                      onClick={() => handleNavItemClick(item.path)}
+                    >
+                      {label(item)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Fullscreen Modal for Mobile Profile */}
+      {showProfileModal && (
+        <div className="profile-modal-overlay" onClick={closeAndResetProfile}>
+            <div className="profile-modal-content" onClick={(e) => e.stopPropagation()}>
+                {renderProfileUI(closeAndResetProfile)}
+            </div>
+        </div>
+      )}
+    </>
   );
 }
 

@@ -88,7 +88,7 @@ const createBooking = async (req, res) => {
 
     // Check if the same user already has a pending or confirmed booking for this hall and date
     const existingUserBooking = await Booking.findOne({
-        user_id: req.user._id,
+        user_id: req.user.userId,
         hall_id: hall._id,
         booking_date: desiredDate,
         booking_status: { $nin: ['Cancelled', 'Payment-Failed', 'Refunded'] } // Check against any active status
@@ -99,7 +99,7 @@ const createBooking = async (req, res) => {
 
     // Create the new booking with the simplified data
     const newBooking = new Booking({
-      user_id: req.user._id,
+      user_id: req.user.userId,
       hall_id: hall._id,
       booking_id: generateUniqueId(),
       booking_date: desiredDate,
@@ -122,7 +122,8 @@ const createBooking = async (req, res) => {
  */
 const getAllBookings = async (req, res) => {
   try {
-    const query = req.user.userType === 'Admin' ? {} : { user_id: req.user._id };
+    //console.log(req.user)
+    const query = req.user.role === 'Admin' ? {} : { user_id: req.user.userId };
     
     const bookings = await Booking.find(query)
       .populate('hall_id', 'hall_name location pricing') // Populate with new simplified hall fields
@@ -149,7 +150,7 @@ const getBookingById = async (req, res) => {
     }
 
     // Ensure only the owner or an admin can view the booking
-    if (req.user.userType !== 'Admin' && booking.user_id._id.toString() !== req.user._id.toString()) {
+    if (req.user.userType !== 'Admin' && booking.user_id._id.toString() !== req.user.userId.toString()) {
         return res.status(403).json({ message: 'Not authorized to view this booking' });
     }
     
@@ -175,7 +176,7 @@ const updateBooking = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        if (req.user.userType !== 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
+        if (req.user.userType !== 'Admin' && booking.user_id.toString() !== req.user.userId.toString()) {
             return res.status(403).json({ message: 'Not authorized to update this booking' });
         }
 
@@ -217,8 +218,11 @@ const updateBooking = async (req, res) => {
  */
 const allowBooking = async (req, res) => {
     try {
-        const booking = await Booking.findOne({ booking_id: req.params.id });
+        const booking = await Booking.findOne({ booking_id: req.params.id }).populate('user_id');
+        
+        
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
+        const phone=booking.user_id.phone;
 
         if (booking.booking_status !== 'Pending-Approval') {
             return res.status(400).json({ message: `Cannot approve this booking. Its status is '${booking.booking_status}'.` });
@@ -238,7 +242,11 @@ const allowBooking = async (req, res) => {
         booking.isAllowed = true;
         booking.booking_status = 'AwaitingPayment';
         await booking.save();
+         const message = `Dear Applicant, your Kalyan Mandapam booking request has been allowed by Nagar Nigam Gorakhpur.Please complete the payment to confirm the booking.Thank you.`;
+         const apiUrl = `${process.env.SMS_API_URL}?authentic-key=${process.env.SMS_API_KEY}&senderid=${process.env.SMS_SENDER_ID}&route=${process.env.SMS_ROUTE}&number=${phone}&message=${encodeURIComponent(message)}&templateid=${process.env.SMS_TEMPLATE_ID_ALLOW}`;
 
+         const response = await fetch(apiUrl);
+         const result = await response.text();
         res.json({ message: 'Booking approved. User can now proceed to payment.', booking });
 
     } catch (error) {
@@ -257,7 +265,7 @@ const recordPayment = async (req, res) => {
         const booking = await Booking.findOne({ booking_id: req.params.id });
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-        if (booking.user_id.toString() !== req.user._id.toString()) {
+        if (booking.user_id.toString() !== req.user.userId.toString()) {
              return res.status(403).json({ message: 'Not authorized to pay for this booking' });
         }
 
@@ -287,13 +295,13 @@ const recordPayment = async (req, res) => {
  */
 const cancelBooking = async (req, res) => {
   try {
-    const booking = await Booking.findOne({ booking_id: req.params.id });
+    const booking = await Booking.findOne({ booking_id: req.params.id }).populate('user_id');
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
-
-    if (req.user.userType !== 'Admin' && booking.user_id.toString() !== req.user._id.toString()) {
+    const phone=booking.user_id.phone;
+    if (req.user.role !== 'Admin' && booking.user_id._id.toString() !== req.user.userId.toString()) {
       return res.status(403).json({ message: 'Not authorized to cancel this booking' });
     }
-
+     const sendMsg=req.user.role == 'Admin';
     if (booking.booking_status === 'Cancelled') {
       return res.status(400).json({ message: 'Booking is already cancelled.' });
     }
@@ -307,6 +315,16 @@ const cancelBooking = async (req, res) => {
     }
     
     const cancelledBooking = await booking.save();
+    if(sendMsg)
+     {const message = `Dear Applicant,
+We regret to inform you that we were unable to process your booking request for the Kalyan Mandapam for the requested date.
+We apologize for the inconvenience. If you would like to inquire about alternative dates or need further information, visit our website.
+Best regards,
+Nagar Nigam Gorakhpur`;
+         const apiUrl = `${process.env.SMS_API_URL}?authentic-key=${process.env.SMS_API_KEY}&senderid=${process.env.SMS_SENDER_ID}&route=${process.env.SMS_ROUTE}&number=${phone}&message=${encodeURIComponent(message)}&templateid=${process.env.SMS_TEMPLATE_ID_REJECT}`;
+
+         const response = await fetch(apiUrl);
+         const result = await response.text();}
     res.json({ message: 'Booking cancelled successfully!', booking: cancelledBooking });
   } catch (error) {
     console.error('Error cancelling booking:', error);
