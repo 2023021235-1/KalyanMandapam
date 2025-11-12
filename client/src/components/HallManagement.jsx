@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import './styles/HallManagement.css';
 
 // The getAuthToken prop is no longer needed and has been removed.
@@ -20,7 +20,7 @@ const HallManagement = ({ API_BASE_URL }) => {
 
     // --- Data Fetching ---
 
-    const fetchHalls = async () => {
+    const fetchHalls = useCallback(async () => {
         setLoadingHalls(true);
         setHallError(null);
         try {
@@ -35,11 +35,11 @@ const HallManagement = ({ API_BASE_URL }) => {
         } finally {
             setLoadingHalls(false);
         }
-    };
+    },[API_BASE_URL]);
 
     useEffect(() => {
         fetchHalls();
-    }, []);
+    }, [fetchHalls]);
 
     // --- Form Handling ---
 

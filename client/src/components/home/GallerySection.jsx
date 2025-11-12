@@ -65,7 +65,7 @@ const GallerySection = ({ languageType = 'en' }) => {
               // Important: Each carousel item should have the same width as the container
               // This is handled by CSS (min-width: 100%) but can be added here too if needed
               <div className="carousel-item" key={index}>
-                <img src={image} alt={`Venue image ${index + 1}`} className="carousel-image" />
+                <img src={image} alt={`Venue  ${index + 1}`} className="carousel-image" />
               </div>
             ))}
           </div>
