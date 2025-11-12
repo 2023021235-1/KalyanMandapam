@@ -553,15 +553,15 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
             <form className="login-form" onSubmit={handleLogin}>
               <PhoneInput placeholder={t.username} value={username} onChange={setUsername} defaultCountry="IN" international required countrySelectProps={{ disabled: true }} />
               <input type="password" placeholder={t.password} value={password} onChange={e => setPassword(e.target.value)} required />
-              {/* {renderCaptchaFields(captchaInput, (e) => setCaptchaInput(e.target.value))} */}
+              {renderCaptchaFields(captchaInput, (e) => setCaptchaInput(e.target.value))}
               {error && <div className="error-message">{error}</div>}
               {success && <div className="success-message">{success}</div>}
-              <button type="submit" disabled={loading }> {/*//|| !captchaToken}>*/}
+              <button type="submit" disabled={loading || !captchaToken}>
                 {loading ? t.loggingIn : t.login}
               </button>
               <div className="links">
-                <a href="#" onClick={(e) => { e.preventDefault(); setView("signup"); resetAllForms(); }}>{t.createAccount}</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); handleForgotPasswordClick(); }}>{t.forgotPassword}</a>
+                <button1 href="#" onClick={(e) => { e.preventDefault(); setView("signup"); resetAllForms(); }}>{t.createAccount}</button1>
+                <button1 href="#" onClick={(e) => { e.preventDefault(); handleForgotPasswordClick(); }}>{t.forgotPassword}</button1>
               </div>
             </form>
           )}
@@ -613,7 +613,7 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
 
                   {renderResendOtpButton(handleSendOtp)}
                   <p style={{marginTop: '15px'}}>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setStep(1); setError(""); setSuccess(""); }}>{t.goBack}</a>
+                    <button href="#" onClick={(e) => { e.preventDefault(); setStep(1); setError(""); setSuccess(""); }}>{t.goBack}</button>
                   </p>
                 </form>
               )}

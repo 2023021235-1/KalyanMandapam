@@ -251,14 +251,14 @@
       justify-content: space-between;
     }
 
-    .links a {
+    .links button1 {
       font-size: 14px;
       color: #660033;
       text-decoration: none;
       transition: color 0.3s ease;
     }
 
-    .links a:hover {
+    .links button1:hover {
       color: #001f3f;
       text-decoration: underline;
     }
