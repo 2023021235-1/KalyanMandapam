@@ -242,8 +242,8 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
     }
     
     try {
-        // const captchaRes = await axios.post(`${API}/captcha/verify-captcha`, { captchaInput, captchaToken });
-        // if (!captchaRes.data?.success) throw new Error(t.invalidCaptcha);
+        const captchaRes = await axios.post(`${API}/captcha/verify-captcha`, { captchaInput, captchaToken });
+        if (!captchaRes.data?.success) throw new Error(t.invalidCaptcha);
 
       const res = await axios.post(`${API}/auth/login`, { phone: username, password }, { withCredentials: true });
       const data=res.data;
