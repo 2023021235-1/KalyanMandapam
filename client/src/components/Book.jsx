@@ -50,8 +50,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const [bookingIdToPayState, setBookingIdToPayState] = useState(null);
 
     // --- API ---
-    const API_BASE_URL = 'http://localhost:5000/api';
-    const API_BASE_URL2 = 'http://localhost:5000/';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    const API_BASE_URL2 = 'https://kalyanmandapam.onrender.com/';
     
     // The getAuthToken function is no longer needed as we are using cookie-based auth.
 
@@ -89,6 +89,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             closeButtonText: 'Close',
             cancelButton: 'Cancel',
             payNowButton: 'Pay Now',
+            retryPayButton: 'Retry Payment', // <-- NEW
             downloadButton: 'Download Certificate',
             noBookingsMessage: 'No bookings found. Click "New Booking" to get started!',
             loadingMessage: 'Loading...',
@@ -98,6 +99,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
             hallsErrorMessage: 'Failed to load halls.',
             loadingDetailsMessage: 'Fetching hall details...',
             detailsErrorMessage: 'Could not fetch hall details.',
+            statusPaymentFailed: 'Payment-Failed', // <-- NEW
             formValidation: {
                 hallRequired: 'Please select a hall.',
                 dateRequired: 'Please select a booking date.',
@@ -220,6 +222,7 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            console.log('Fetched bookings:', data);
              const bookingsWithHallNames = data.map(booking => ({
                 ...booking,
                 hall_display_name: booking.hall_id ? booking.hall_id.hall_name : 'N/A',
@@ -606,6 +609,11 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                 {booking.booking_status === 'Cancelled' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{booking.booking_status}</span>}
                                                 {booking.booking_status === 'Pending-Approval' && <span className="bn-status-indicator bn-status-pending"><CircleDot size={16} />{booking.booking_status}</span>}
                                                 {booking.booking_status === 'AwaitingPayment' && <span className="bn-status-indicator bn-status-awaiting-payment"><Clock size={16} />{booking.booking_status}</span>}
+                                                
+                                                {/* --- MODIFICATION START --- */}
+                                                {booking.booking_status === 'Payment-Failed' && <span className="bn-status-indicator bn-status-rejected"><CircleX size={16} />{currentContent.statusPaymentFailed}</span>}
+                                                {/* --- MODIFICATION END --- */}
+
                                                 {booking.booking_status === 'Payment-Processing' && (
                                                     <span className="bn-status-indicator bn-status-awaiting-payment">
                                                         <Clock size={16} />
@@ -638,15 +646,19 @@ const BookNowSection = ({ languageType = 'en', user }) => {
                                                     >
                                                         {currentContent.viewEditButton}
                                                     </button>
+                                                    
+                                                    {/* --- MODIFICATION START --- */}
                                                     {(booking.booking_status === 'AwaitingPayment' || booking.booking_status === 'Payment-Failed' ) && booking.isAllowed && (
                                                         <button 
                                                             className="bn-button bn-pay-button" 
                                                             onClick={() => initiatePayNow(booking.booking_id)} 
-                                                            aria-label={`${currentContent.payNowButton} for booking ${booking.booking_id}`}
+                                                            aria-label={`${booking.booking_status === 'Payment-Failed' ? currentContent.retryPayButton : currentContent.payNowButton} for booking ${booking.booking_id}`}
                                                         >
-                                                            {currentContent.payNowButton}
+                                                            {booking.booking_status === 'Payment-Failed' ? currentContent.retryPayButton : currentContent.payNowButton}
                                                         </button>
                                                     )}
+                                                    {/* --- MODIFICATION END --- */}
+                                                    
                                                     {booking.booking_status !== 'Cancelled' && booking.booking_status !== 'Confirmed' && (
                                                         <button 
                                                             className="bn-button bn-cancel-button" 

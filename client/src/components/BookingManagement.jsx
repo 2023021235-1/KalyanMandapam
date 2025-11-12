@@ -22,6 +22,7 @@ const BookingManagement = ({ API_BASE_URL }) => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            
             setBookings(data);
         } catch (error) {
             console.error('Error fetching bookings:', error);
@@ -129,7 +130,7 @@ const BookingManagement = ({ API_BASE_URL }) => {
                                     <th>Booking ID</th><th>Trans. ID</th><th>Hall Name</th><th>Booking Date</th><th>Amount</th><th>Status</th>
                                     <th>Allowed</th><th>Paid</th><th>Refund Status</th>
                                     <th>Booker Name</th>
-                                    <th>Booker Email</th>
+                                    <th>Booker Phone</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -146,7 +147,7 @@ const BookingManagement = ({ API_BASE_URL }) => {
                                         <td>{booking.isPaid ? 'Yes' : 'No'}</td>
                                         <td>{renderStatus(booking.refund_status)}</td>
                                         <td>{booking.user_id?.name || 'N/A'}</td>
-                                        <td>{booking.user_id?.email || 'N/A'}</td>
+                                        <td>{booking.user_id?.phone || 'N/A'}</td>
                                         <td className="admin-table-actions">
                                             {booking.booking_status === 'Pending-Approval' && (
                                                 <button onClick={() => handleAllowBooking(booking.booking_id)} className="book-m-allow-button">Allow</button>

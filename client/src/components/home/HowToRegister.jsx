@@ -40,7 +40,7 @@ const HowToRegister = ({ languageType = 'en' }) => {
               {
                   id: 'login',
                   title: 'Login/Signup', // Matches MobileIcon
-                  description: 'Use your mobile number or email to login or create an account with OTP.',
+                  description: 'Use your mobile number  to login or create an account with OTP.',
                   icon: <MobileIcon />
               },
               {
@@ -70,7 +70,7 @@ const HowToRegister = ({ languageType = 'en' }) => {
               {
                   id: 'login',
                   title: 'लॉग इन/साइन अप करें',
-                  description: 'ओटीपी के साथ लॉग इन करने या खाता बनाने के लिए अपने मोबाइल नंबर या ईमेल का उपयोग करें।',
+                  description: 'ओटीपी के साथ लॉग इन करने या खाता बनाने के लिए अपने मोबाइल नंबर  का उपयोग करें।',
                   icon: <MobileIcon />
               },
               {

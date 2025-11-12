@@ -126,7 +126,7 @@ const hasConsecutiveChars = (password) => {
 */
 // --- MODIFICATION END ---
 
-const API = `http://localhost:5000/api`;
+const API = `https://kalyanmandapam.onrender.com/api`;
 
 function LoginPage({ setUser, languageType,setIsAdmin }) {
   const [view, setView] = useState("login");

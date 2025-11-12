@@ -32,7 +32,7 @@ function App() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [showTokenExpiredDialog, setShowTokenExpiredDialog] = useState(false);
-  const backend = "http://localhost:5000";
+  const backend = "https://kalyanmandapam.onrender.com";
 
   const handleLogout = async () => {
     try {

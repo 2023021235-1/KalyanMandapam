@@ -10,6 +10,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "https://kalyan-mandapam.vercel.app",
     ],
     credentials: true,
   })

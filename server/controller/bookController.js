@@ -127,7 +127,7 @@ const getAllBookings = async (req, res) => {
     
     const bookings = await Booking.find(query)
       .populate('hall_id', 'hall_name location pricing') // Populate with new simplified hall fields
-      .populate('user_id', 'name email')
+      .populate('user_id', 'name phone')
       .sort({ createdAt: -1 });
       
     res.json(bookings);
@@ -146,7 +146,7 @@ const getBookingById = async (req, res) => {
       .populate('user_id', 'name email');
 
     if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
+      return res.status(44).json({ message: 'Booking not found' });
     }
 
     // Ensure only the owner or an admin can view the booking
@@ -262,10 +262,12 @@ const allowBooking = async (req, res) => {
  */
 const recordPayment = async (req, res) => {
     try {
-        const booking = await Booking.findOne({ booking_id: req.params.id });
+        // MODIFICATION: Added .populate('user_id') to get phone number
+        const booking = await Booking.findOne({ booking_id: req.params.id }).populate('user_id');
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-        if (booking.user_id.toString() !== req.user.userId.toString()) {
+        // MODIFICATION: Changed auth check to use ._id from populated user
+        if (booking.user_id._id.toString() !== req.user.userId.toString()) {
              return res.status(403).json({ message: 'Not authorized to pay for this booking' });
         }
 
@@ -280,6 +282,21 @@ const recordPayment = async (req, res) => {
         await updateHallAvailability(booking.hall_id, booking.booking_date, booking._id, true);
         
         const updatedBooking = await booking.save();
+
+        // --- NEW CONFIRMATION SMS LOGIC ---
+        try {
+            const phone = booking.user_id.phone;
+            const message = "Dear Applicant, your Kalyan Mandapam booking request has been confirmed by Nagar Nigam Gorakhpur. Please download the confirmation from our website. Thank you.";
+            const apiUrl = `${process.env.SMS_API_URL}?authentic-key=${process.env.SMS_API_KEY}&senderid=${process.env.SMS_SENDER_ID}&route=${process.env.SMS_ROUTE}&number=${phone}&message=${encodeURIComponent(message)}&templateid=${process.env.SMS_TEMPLATE_ID_CONFIRM}`;
+
+            const response = await fetch(apiUrl);
+            const result = await response.text();
+            console.log("Confirmation SMS result:", result);
+        } catch (smsError) {
+            console.error("Error sending confirmation SMS:", smsError); // Log SMS error but don't fail the request
+        }
+        // --- END SMS LOGIC ---
+        
         res.json({ message: 'Payment recorded and booking confirmed!', booking: updatedBooking });
 
     } catch (error) {
@@ -363,13 +380,15 @@ const deleteBooking = async (req, res) => {
 const updateBookingStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        const booking = await Booking.findOne({ booking_id: req.params.id });
+        // MODIFICATION: Added .populate('user_id') to get phone number
+        const booking = await Booking.findOne({ booking_id: req.params.id }).populate('user_id');
 
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
         if (!status) return res.status(400).json({ message: 'New status is required.' });
 
         const wasConfirmed = booking.booking_status === 'Confirmed';
         const isNowConfirmed = status === 'Confirmed';
+        let sendConfirmationSms = false; // Flag to send SMS
 
         booking.booking_status = status;
 
@@ -378,12 +397,30 @@ const updateBookingStatus = async (req, res) => {
             booking.isAllowed = true;
             booking.isPaid = true;
             await updateHallAvailability(booking.hall_id, booking.booking_date, booking._id, true);
+            sendConfirmationSms = true; // Set flag to send SMS
         } else if (wasConfirmed && !isNowConfirmed) {
             // Logic for when a confirmed booking is moved to another state (e.g., cancelled)
             await updateHallAvailability(booking.hall_id, booking.booking_date, booking._id, false);
         }
 
         const updatedBooking = await booking.save();
+
+        // --- NEW CONFIRMATION SMS LOGIC (for Admin manual update) ---
+        if (sendConfirmationSms) {
+            try {
+                const phone = booking.user_id.phone;
+                const message = "Dear Applicant, your Kalyan Mandapam booking request has been confirmed by Nagar Nigam Gorakhpur. Please download the confirmation from our website. Thank you.";
+                const apiUrl = `${process.env.SMS_API_URL}?authentic-key=${process.env.SMS_API_KEY}&senderid=${process.env.SMS_SENDER_ID}&route=${process.env.SMS_ROUTE}&number=${phone}&message=${encodeURIComponent(message)}&templateid=${process.env.SMS_TEMPLATE_ID_CONFIRM}`;
+
+                const response = await fetch(apiUrl);
+                const result = await response.text();
+                console.log("Confirmation SMS (admin) result:", result);
+            } catch (smsError) {
+                console.error("Error sending confirmation SMS (admin):", smsError); // Log SMS error but don't fail the request
+            }
+        }
+        // --- END SMS LOGIC ---
+
         res.json({ message: 'Booking status updated successfully!', booking: updatedBooking });
     } catch (error) {
         console.error('Error updating booking status:', error);
