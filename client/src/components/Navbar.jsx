@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './styles/Navbar.css'; // Make sure to create/update this CSS file
-import { Bell, X, Edit3, Save, UserCircle, KeyRound, Phone, LogOut,User, Settings, ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { Bell, X, Edit3, Save, UserCircle, KeyRound, Phone,User,  ChevronDown, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
@@ -121,35 +121,15 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
   const currentText = textContent[languageType] || textContent.en;
 
   // --- LIFECYCLE HOOKS ---
-  useEffect(() => {
-    if (user) setEditableName(user.name || '');
-  }, [user]);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (notifRef.current && !notifRef.current.contains(event.target)) setShowNotif(false);
-      if (showMenu && menuRef.current && !menuRef.current.contains(event.target) && hamburgerRef.current && !hamburgerRef.current.contains(event.target)) setShowMenu(false);
-      if (profilePopoverRef.current && !profilePopoverRef.current.contains(event.target) && userDisplayRef.current && !userDisplayRef.current.contains(event.target)) {
-        closeAndResetProfile();
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMenu, showProfilePopover]);
 
   useEffect(() => {
     setPasswordMatchError(confirmNewPassword && newPassword !== confirmNewPassword);
   }, [newPassword, confirmNewPassword]);
 
   // --- HELPER FUNCTIONS ---
-  const closeAndResetProfile = () => {
-    setShowProfilePopover(false);
-    setShowProfileModal(false);
-    setIsEditMode(false);
-    resetFormState();
-  };
-    
-  const resetFormState = () => {
+
+  const resetFormState = useCallback(() => {
     setProfileMessage({ type: '', text: '' });
     if(user) setEditableName(user.name);
     setCurrentPassword('');
@@ -164,8 +144,28 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
     setShowCurrentPassword(false);
     setShowNewPassword(false);
     setShowConfirmNewPassword(false);
-  }
-  
+  }, [user]);
+  const closeAndResetProfile = useCallback(() => {
+    setShowProfilePopover(false);
+    setShowProfileModal(false);
+    setIsEditMode(false);
+    resetFormState();
+  }, [resetFormState]); // Depends on the stable resetFormState
+      useEffect(() => {
+    if (user) setEditableName(user.name || '');
+  }, [user]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notifRef.current && !notifRef.current.contains(event.target)) setShowNotif(false);
+      if (showMenu && menuRef.current && !menuRef.current.contains(event.target) && hamburgerRef.current && !hamburgerRef.current.contains(event.target)) setShowMenu(false);
+      if (profilePopoverRef.current && !profilePopoverRef.current.contains(event.target) && userDisplayRef.current && !userDisplayRef.current.contains(event.target)) {
+        closeAndResetProfile();
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu, showProfilePopover,closeAndResetProfile]);
   const processApiResponse = (response, data) => {
     if (response.ok) {
       return { success: true, data };

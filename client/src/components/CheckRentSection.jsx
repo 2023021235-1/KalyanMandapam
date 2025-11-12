@@ -1,7 +1,7 @@
 // CheckRentSection.jsx
 import React, { useState, useEffect } from 'react';
 import './styles/CheckRent.css';
-import { Home, MapPin, DollarSign, BookOpen, Building } from 'lucide-react';
+import { Home, MapPin, BookOpen, Building } from 'lucide-react';
 import axios from 'axios';
 
 const CheckRentSection = ({ languageType = 'en' }) => {

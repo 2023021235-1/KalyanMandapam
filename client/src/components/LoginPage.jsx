@@ -560,8 +560,8 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
                 {loading ? t.loggingIn : t.login}
               </button>
               <div className="links">
-                <a href="#" onClick={(e) => { e.preventDefault(); setView("signup"); resetAllForms(); }}>{t.createAccount}</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); handleForgotPasswordClick(); }}>{t.forgotPassword}</a>
+                <button href="#" onClick={(e) => { e.preventDefault(); setView("signup"); resetAllForms(); }}>{t.createAccount}</button>
+                <button href="#" onClick={(e) => { e.preventDefault(); handleForgotPasswordClick(); }}>{t.forgotPassword}</button>
               </div>
             </form>
           )}
@@ -613,7 +613,7 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
 
                   {renderResendOtpButton(handleSendOtp)}
                   <p style={{marginTop: '15px'}}>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setStep(1); setError(""); setSuccess(""); }}>{t.goBack}</a>
+                    <button href="#" onClick={(e) => { e.preventDefault(); setStep(1); setError(""); setSuccess(""); }}>{t.goBack}</button>
                   </p>
                 </form>
               )}

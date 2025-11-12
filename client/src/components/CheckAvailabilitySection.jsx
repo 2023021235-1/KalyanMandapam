@@ -359,7 +359,7 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                                 <div className="ca-availability-calendar">
                                     <div className="ca-calendar-header">
                                         <button className="ca-nav-button" onClick={() => handleMonthNavigation(-1)} disabled={isPreviousMonthDisabled()}><ChevronLeft size={24} /></button>
-                                        <h3>{months.find(m => m.value == displayMonth)?.label} {displayYear}</h3>
+                                        <h3>{months.find(m => m.value === displayMonth)?.label} {displayYear}</h3>
                                         <button className="ca-nav-button" onClick={() => handleMonthNavigation(1)}><ChevronRight size={24} /></button>
                                     </div>
                                     <div className="ca-calendar-weekdays">{daysOfWeek.map(day => <div key={day.en}>{languageType === 'hi' ? day.hi : day.en}</div>)}</div>
@@ -375,7 +375,7 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
                                 <div className="ca-availability-list">
                                     <div className="ca-calendar-header">
                                         <button className="ca-nav-button" onClick={() => handleMonthNavigation(-1)} disabled={isPreviousMonthDisabled()}><ChevronLeft size={24} /></button>
-                                        <h4>{months.find(m => m.value == displayMonth)?.label} {displayYear}</h4>
+                                        <h4>{months.find(m => m.value === displayMonth)?.label} {displayYear}</h4>
                                         <button className="ca-nav-button" onClick={() => handleMonthNavigation(1)}><ChevronRight size={24} /></button>
                                     </div>
                                     {availabilityDataForMonth.length > 0 ? (

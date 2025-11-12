@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useCallback} from 'react';
 import { CheckCircle, XCircle, Clock, Ban } from 'lucide-react';
 import './styles/BookingManagement.css';
 
@@ -8,33 +8,33 @@ const BookingManagement = ({ API_BASE_URL }) => {
     const [loadingBookings, setLoadingBookings] = useState(true);
     const [bookingError, setBookingError] = useState(null);
 
-    const fetchBookings = async () => {
-        setLoadingBookings(true);
-        setBookingError(null);
-        try {
-            // The Authorization header is removed. credentials: 'include' handles cookies.
-            const response = await fetch(`${API_BASE_URL}/bookings`, {
-                method: 'GET',
-                credentials: 'include', // <-- SEND COOKIES
-            });
-            if (!response.ok) {
-                if (response.status === 401) throw new Error('Authentication failed or session expired.');
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            
-            setBookings(data);
-        } catch (error) {
-            console.error('Error fetching bookings:', error);
-            setBookingError(`Failed to fetch bookings: ${error.message}`);
-        } finally {
-            setLoadingBookings(false);
-        }
-    };
+   const fetchBookings = useCallback(async () => {
+        setLoadingBookings(true);
+        setBookingError(null);
+        try {
+            // The Authorization header is removed. credentials: 'include' handles cookies.
+            const response = await fetch(`${API_BASE_URL}/bookings`, {
+                method: 'GET',
+                credentials: 'include', // <-- SEND COOKIES
+            });
+            if (!response.ok) {
+                if (response.status === 401) throw new Error('Authentication failed or session expired.');
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            setBookings(data);
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+            setBookingError(`Failed to fetch bookings: ${error.message}`);
+        } finally {
+            setLoadingBookings(false);
+        }
+    }, [API_BASE_URL]);
 
-    useEffect(() => {
-        fetchBookings();
-    }, []);
+useEffect(() => {
+        fetchBookings();
+    }, [fetchBookings]);
 
     const handleBookingAction = async (url, method, body, successMessage, errorMessagePrefix) => {
         try {

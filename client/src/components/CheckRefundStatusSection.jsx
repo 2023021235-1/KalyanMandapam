@@ -79,7 +79,7 @@ const CheckRefundStatusSection = ({ languageType = 'en', user }) => {
             confirmActionPromptCaptcha: 'स्थिति जांचने के लिए कृपया कैप्चा पूरा करें।',
             loadingCaptchaMessage: 'कैप्चा लोड हो रहा है...',
         },
-    }), [languageType]); // Added languageType as dependency
+    }), []); // Added languageType as dependency
 
     const currentContent = content[languageType] || content.en;
 
