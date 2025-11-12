@@ -242,8 +242,8 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
     }
     
     try {
-        const captchaRes = await axios.post(`${API}/captcha/verify-captcha`, { captchaInput, captchaToken });
-        if (!captchaRes.data?.success) throw new Error(t.invalidCaptcha);
+        // const captchaRes = await axios.post(`${API}/captcha/verify-captcha`, { captchaInput, captchaToken });
+        // if (!captchaRes.data?.success) throw new Error(t.invalidCaptcha);
 
       const res = await axios.post(`${API}/auth/login`, { phone: username, password }, { withCredentials: true });
       const data=res.data;
@@ -560,8 +560,8 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
                 {loading ? t.loggingIn : t.login}
               </button>
               <div className="links">
-                <button href="#" onClick={(e) => { e.preventDefault(); setView("signup"); resetAllForms(); }}>{t.createAccount}</button>
-                <button href="#" onClick={(e) => { e.preventDefault(); handleForgotPasswordClick(); }}>{t.forgotPassword}</button>
+                <a href="#" onClick={(e) => { e.preventDefault(); setView("signup"); resetAllForms(); }}>{t.createAccount}</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); handleForgotPasswordClick(); }}>{t.forgotPassword}</a>
               </div>
             </form>
           )}
@@ -613,7 +613,7 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
 
                   {renderResendOtpButton(handleSendOtp)}
                   <p style={{marginTop: '15px'}}>
-                    <button href="#" onClick={(e) => { e.preventDefault(); setStep(1); setError(""); setSuccess(""); }}>{t.goBack}</button>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setStep(1); setError(""); setSuccess(""); }}>{t.goBack}</a>
                   </p>
                 </form>
               )}
