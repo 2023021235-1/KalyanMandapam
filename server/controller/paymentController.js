@@ -194,7 +194,7 @@ exports.eazypayReturn = async (req, res) => {
     const mand = req.body['mandatory fields'];
     const parts = mand.split('|');
     const bid = parts[parts.length - 1];
-    const booking = await Booking.findOne({ booking_id: bid });
+    const booking = await Booking.findOne({ booking_id: bid }).populate('user_id', 'phone');
      const hall = await Hall.findById(booking.hall_id);
         if (!hall) {
             console.log('Hall not found for the booking.');
@@ -243,6 +243,25 @@ exports.eazypayReturn = async (req, res) => {
             } else {
                 console.warn(`Booking not found for ID ${bid}`);
             }
+            try {
+                    if (booking.user_id && booking.user_id.phone) {
+                        const phone = booking.user_id.phone;
+                        const message = "Dear Applicant, your Kalyan Mandapam booking request has been confirmed by Nagar Nigam Gorakhpur. Please download the confirmation from our website. Thank you.";
+                        // Use the confirmation template ID from your .env
+                        const templateId = process.env.SMS_TEMPLATE_ID_CONFIRM; 
+                        
+                        const apiUrl = `${process.env.SMS_API_URL}?authentic-key=${process.env.SMS_API_KEY}&senderid=${process.env.SMS_SENDER_ID}&route=${process.env.SMS_ROUTE}&number=${phone}&message=${encodeURIComponent(message)}&templateid=${templateId}`;
+
+                        console.log(`Sending confirmation SMS to ${phone}`);
+                        const response = await fetch(apiUrl);
+                        const result = await response.text();
+                        console.log("Confirmation SMS result:", result);
+                    } else {
+                        console.warn(`Booking ${bid} confirmed, but no user phone number found to send SMS.`);
+                    }
+                } catch (smsError) {
+                    console.error("Error sending confirmation SMS:", smsError); // Log SMS error but don't fail the payment confirmation
+                }
             respondToUser('success');
         } catch (err) {
             console.error('Error updating booking:', err);
@@ -297,6 +316,25 @@ exports.verifyEazypayPayment = async (req, res) => {
         if (paymentState === 'success') {
             booking.isPaid = true;
             booking.booking_status = 'Confirmed';
+             try {
+                    if (booking.user_id && booking.user_id.phone) {
+                        const phone = booking.user_id.phone;
+                        const message = "Dear Applicant, your Kalyan Mandapam booking request has been confirmed by Nagar Nigam Gorakhpur. Please download the confirmation from our website. Thank you.";
+                        // Use the confirmation template ID from your .env
+                        const templateId = process.env.SMS_TEMPLATE_ID_CONFIRM; 
+                        
+                        const apiUrl = `${process.env.SMS_API_URL}?authentic-key=${process.env.SMS_API_KEY}&senderid=${process.env.SMS_SENDER_ID}&route=${process.env.SMS_ROUTE}&number=${phone}&message=${encodeURIComponent(message)}&templateid=${templateId}`;
+
+                        console.log(`Sending confirmation SMS to ${phone}`);
+                        const response = await fetch(apiUrl);
+                        const result = await response.text();
+                        console.log("Confirmation SMS result:", result);
+                    } else {
+                        console.warn(`Booking ${bid} confirmed, but no user phone number found to send SMS.`);
+                    }
+                } catch (smsError) {
+                    console.error("Error sending confirmation SMS:", smsError); // Log SMS error but don't fail the payment confirmation
+                }
         } else if (paymentState === 'processing') {
             booking.booking_status = 'Payment-Processing';
         } else {
