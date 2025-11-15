@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { verifyToken } = require("../middleware/authMiddleware.js");
-const adminAuthController = require('../controller/adminAuthController');
-const { isAdmin } = require("../middleWare/isAdmin");
+const { verifyToken, admin } = require('../middleware/authMiddleware'); // Assuming you have an admin middleware
 
-router.post('/add-admin', verifyToken, isAdmin, adminAuthController.addAdmin);
-router.get('/admins', verifyToken, isAdmin, adminAuthController.getAllAdmins);
+const adminAuthController = require('../controller/adminAuthController');
+// const { nameadmin } = require("../middleWare/nameadmin");
+
+router.post('/add-admin', verifyToken, nameadmin, adminAuthController.addAdmin);
+router.get('/admins', verifyToken, nameadmin, adminAuthController.getAllAdmins);
 // --- NEW ROUTES ADDED ---
-router.patch('/admin/:id', verifyToken, isAdmin, adminAuthController.updateAdmin);
-router.delete('/admin/:id', verifyToken, isAdmin, adminAuthController.deleteAdmin);
+router.patch('/admin/:id', verifyToken, nameadmin, adminAuthController.updateAdmin);
+router.delete('/admin/:id', verifyToken, nameadmin, adminAuthController.deleteAdmin);
 // 
 
 module.exports = router;
