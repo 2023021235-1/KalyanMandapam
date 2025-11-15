@@ -539,7 +539,6 @@ function LoginPage({ setUser, languageType,setIsAdmin }) {
           </button>
           <img src='/logo.webp' alt="Nagar Nigam Logo" className="logo" />
           <h2>{t.municipalCorporation}</h2>
-          <h3>{t.petRegistrationPortal}</h3>
           <div className="tab-buttons">
             <button onClick={() => { setView("login"); resetAllForms(); }} className={view === "login" ? "active-tab" : ""}>
               {t.login}
