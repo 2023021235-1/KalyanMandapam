@@ -21,7 +21,7 @@ import HallManagement from "./components/HallManagement";
 import BookingManagement from "./components/BookingManagement";
 import VerifyBooking from "./components/VerifyBooking";
 import AdminStats from "./components/AdminStats";
-
+import AdminManagement from "./components/AdminManagement";
 // Set axios to send cookies with every request
 axios.defaults.withCredentials = true;
 
@@ -32,7 +32,7 @@ function App() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [showTokenExpiredDialog, setShowTokenExpiredDialog] = useState(false);
-  const backend = "https://kalyanmandapam.onrender.com";
+  const backend = "http://localhost:5000";
 
   const handleLogout = async () => {
     try {
@@ -148,7 +148,8 @@ function App() {
             path="/admin/stats"
             element={isAdmin ? <AdminStats API_BASE_URL={backend + '/api'} getAuthToken={() => localStorage.getItem('token')} /> : <Navigate to="/" />}
           />
-        </Routes>
+         <Route path="/admin/admin-management" element={isAdmin ? <AdminManagement languageType={languageType}/> : <Navigate to="/login" />} /> </Routes>
+
       )}
 
       {/* Token Expired Dialog */}

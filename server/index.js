@@ -15,6 +15,7 @@ app.use(
     credentials: true,
   })
 );
+const adminRoutes =require('./routes/adminRoutes.js');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -29,6 +30,7 @@ app.use('/api/bookings', require('./routes/bookRoutes'));
 app.use('/', paymentRoutes);
 const statsRoutes = require('./routes/statsRoutes');
 app.use('/api/stats', statsRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get('/health-check-polling', (req, res) => {
   res.status(200).send('OK');

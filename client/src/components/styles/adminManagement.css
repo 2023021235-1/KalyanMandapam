@@ -1,0 +1,439 @@
+/* ============================
+   Modern Admin Management UI
+=============================== */
+
+.admin-mgmt-container {
+  max-width: 900px;
+  min-height: 70vh;
+  margin: 2rem auto;
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+}
+
+.admin-mgmt-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  padding: 35px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.admin-mgmt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-height: 45px; 
+  margin-bottom: 10px;
+}
+
+.admin-mgmt-message-container {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.admin-mgmt-message {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.admin-mgmt-message--success {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #b9e5fe;
+}
+.admin-mgmt-message--error {
+  background: #ffe4e6;
+  color: #b91c1c;
+  border: 1px solid #fecdd3;
+}
+
+
+.admin-mgmt-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.admin-mgmt-subtitle {
+  text-align: center;
+  font-size: 15px;
+  color: #6b7280;
+  margin-bottom: 30px;
+}
+
+.admin-mgmt-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.admin-mgmt-form-wrapper {
+  margin-top: 15px;
+}
+
+.admin-mgmt-fade-in {
+  animation: adminMgmtFadeIn 0.3s ease;
+}
+@keyframes adminMgmtFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form */
+.admin-mgmt-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-mgmt-form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.admin-mgmt-form-group {
+  flex: 1;
+}
+
+.admin-mgmt-form-group label {
+  display: block; /* Ensures label is on its own line */
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.admin-mgmt-form-control {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 15px;
+  background: #f9fafb;
+  transition: 0.25s;
+  width: 100%; 
+  box-sizing: border-box; 
+}
+
+.admin-mgmt-form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+  background: white;
+}
+
+/* Buttons */
+.admin-mgmt-btn-submit {
+  background:  #800000;
+  color: white;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  width: fit-content;
+  transition: 0.25s;
+}
+
+/* --- NEW --- */
+.admin-mgmt-btn-mobile-fab {
+    display: none; /* Hidden by default */
+}
+/* --- END NEW --- */
+
+
+.admin-mgmt-btn-submit-form {
+  background:  #800000;
+  color: white;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.25s;
+  min-width: 160px; 
+  text-align: center; 
+  box-sizing: border-box; 
+}
+
+
+.admin-mgmt-btn-submit:hover {
+  filter: brightness(90%);
+  transform: translateY(-2px);
+}
+
+.admin-mgmt-btn-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.admin-mgmt-btn-cancel-form {
+  background: #e42727;
+  color: #fff;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.25s;
+  min-width: 160px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.admin-mgmt-btn-cancel-form:hover {
+  filter: brightness(90%);
+}
+
+
+.admin-mgmt-form-button-row {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  justify-content: center; 
+}
+
+
+.admin-mgmt-divider {
+  margin: 30px 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.admin-mgmt-list-title {
+  margin-top: 25px;
+}
+
+/* ============================
+   Admin List
+=============================== */
+
+.admin-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: 0.25s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.admin-list-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  border-color: #ffd7ac;
+}
+
+.admin-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-avatar {
+  width: 42px;
+  height: 42px;
+  background: #ffd7ac;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #800000;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-username {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.admin-detail {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* --- NEW: List Actions --- */
+.admin-list-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-btn-edit, .admin-btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-btn-edit {
+    color: #3b82f6; /* Blue */
+}
+.admin-btn-edit:hover {
+    background-color: #eff6ff; /* Light blue */
+}
+
+.admin-btn-delete {
+    color: #ef4444; /* Red */
+}
+.admin-btn-delete:hover {
+    background-color: #fee2e2; /* Light red */
+}
+.admin-btn-delete:disabled {
+    color: #9ca3af; /* Gray */
+    cursor: not-allowed;
+    background-color: transparent;
+}
+/* --- End List Actions --- */
+
+
+.admin-mgmt-loader {
+  text-align: center;
+  padding: 25px;
+  color: #6b7280;
+}
+
+.admin-mgmt-empty-state {
+  text-align: center;
+  padding: 25px;
+  color: #6b7280;
+}
+
+/* --- NEW: Delete Modal --- */
+.admin-mgmt-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.admin-mgmt-modal {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 400px;
+    animation: adminMgmtFadeIn 0.2s ease;
+}
+
+.admin-mgmt-modal h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+.admin-mgmt-modal p {
+    font-size: 15px;
+    color: #4b5563;
+    margin-bottom: 25px;
+}
+
+.admin-mgmt-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.admin-mgmt-btn-modal-cancel, .admin-mgmt-btn-modal-confirm {
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.admin-mgmt-btn-modal-cancel {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+.admin-mgmt-btn-modal-cancel:hover {
+    background: #e5e7eb;
+}
+
+.admin-mgmt-btn-modal-confirm {
+    background: #ef4444;
+    color: white;
+}
+.admin-mgmt-btn-modal-confirm:hover {
+    background: #dc2626;
+}
+/* --- End Delete Modal --- */
+
+
+/* Responsive */
+@media (max-width: 600px) {
+  .admin-mgmt-header {
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .admin-mgmt-message-container {
+    margin-right: 0;
+    width: 100%;
+  }
+  .admin-mgmt-header .admin-mgmt-btn-submit {
+    width: 100%;
+  }
+
+  /* --- MODIFICATION START --- */
+  /* Hide the header's add button on mobile */
+  .admin-mgmt-header .admin-mgmt-btn-submit {
+    display: none;
+  }
+  
+  /* Show and style the mobile-specific button */
+  .admin-mgmt-btn-mobile-fab {
+      display: block;
+      width: 100%;
+      margin-top: 25px; /* Space from the list above */
+  }
+  /* --- MODIFICATION END --- */
+
+  .admin-mgmt-form-row {
+    flex-direction: column;
+  }
+  
+  .admin-mgmt-form-button-row {
+    flex-direction: column;
+  }
+  
+  .admin-mgmt-form-button-row .admin-mgmt-btn-submit-form {
+    width: 100%;
+  }
+
+  .admin-mgmt-form-button-row .admin-mgmt-btn-cancel-form {
+    width: 100%;
+  }
+}

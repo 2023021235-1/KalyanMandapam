@@ -81,7 +81,7 @@ const textContent = {
 };
 
 const pathsToHideWhenLoggedOut = ['/book', '/refund-status'];
-const backendUrl = 'https://kalyanmandapam.onrender.com'; // Your backend URL
+const backendUrl = 'http://localhost:5000'; // Your backend URL
 
 function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType, isAdmin, setUser }) {
   // --- STATE MANAGEMENT ---
@@ -332,6 +332,7 @@ function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLa
         { hi: 'हॉल प्रबंधन', en: 'Hall Management', path: '/admin/hall-management' },
         { hi: 'बुकिंग प्रबंधन', en: 'Booking Management', path: '/admin/booking-management' },
         { hi: 'बुकिंग सत्यापित करें', en: 'Verify Booking', path: '/admin/verify-booking' },
+        {hi: 'प्रशासन प्रबंधन', en: 'Admin Management', path: '/admin/admin-management' },
         { hi: 'आंकड़े', en: 'Statistics', path: '/admin/stats' },
       ]
     : user
