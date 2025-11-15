@@ -50,8 +50,8 @@ const BookNowSection = ({ languageType = 'en', user }) => {
     const [bookingIdToPayState, setBookingIdToPayState] = useState(null);
 
     // --- API ---
-    const API_BASE_URL = 'http://localhost:5000/api';
-    const API_BASE_URL2 = 'http://localhost:5000/';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
+    const API_BASE_URL2 = 'https://kalyanmandapam.onrender.com/';
     
     // The getAuthToken function is no longer needed as we are using cookie-based auth.
 

@@ -35,7 +35,7 @@ const CheckAvailabilitySection = ({ languageType = 'en' }) => {
 
     // --- CONFIGURATION & CONTENT ---
 
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
 
     const months = [
         { value: '', label: languageType === 'hi' ? 'महीना चुनें' : 'Select Month' },

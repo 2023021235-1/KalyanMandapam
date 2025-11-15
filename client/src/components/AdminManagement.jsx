@@ -111,7 +111,7 @@ const AdminManagement = ({ languageType = 'en' }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // NEW: State for delete modal
 
     const currentContent = content[languageType] || content.en;
-    const backend = "http://localhost:5000";
+    const backend = "https://kalyanmandapam.onrender.com";
 
     const fetchAdmins = async () => {
         try {

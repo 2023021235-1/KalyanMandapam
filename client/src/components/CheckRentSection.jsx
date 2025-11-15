@@ -25,7 +25,7 @@ const CheckRentSection = ({ languageType = 'en' }) => {
 
     // --- CONFIGURATION & CONTENT ---
 
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://kalyanmandapam.onrender.com/api';
 
     // Content updated for the new simplified pricing model
     const content = {

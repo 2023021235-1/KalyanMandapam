@@ -81,7 +81,7 @@ const textContent = {
 };
 
 const pathsToHideWhenLoggedOut = ['/book', '/refund-status'];
-const backendUrl = 'http://localhost:5000'; // Your backend URL
+const backendUrl = 'https://kalyanmandapam.onrender.com'; // Your backend URL
 
 function Navbar({ languageType = 'en', user, notifications = [], onLogout, setLanguageType, isAdmin, setUser }) {
   // --- STATE MANAGEMENT ---
